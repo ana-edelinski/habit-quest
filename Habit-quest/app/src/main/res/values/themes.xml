@@ -2,7 +2,14 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.HabitQuest" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+
+        <!-- Važno: oba atributa -->
+        <item name="toolbarStyle">@style/Widget.HabitQuest.Toolbar</item>
+
+        <!-- Svetle ikone u status baru isključene (jer je status bar taman ako toolbar taman) -->
+        <item name="android:statusBarColor">@color/toolbar_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.HabitQuest" parent="Base.Theme.HabitQuest" />

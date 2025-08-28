@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Naslov u toolbaru -->
+    <style name="TextAppearance.HabitQuest.ToolbarTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="fontFamily">@font/poppins_medium</item>
+        <item name="android:textColor">@color/onToolbar</item>
+    </style>
+
+    <!-- (po želji) Podnaslov -->
+    <style name="TextAppearance.HabitQuest.ToolbarSubtitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="fontFamily">@font/poppins</item>
+        <item name="android:textColor">@color/onToolbar</item>
+    </style>
+
+    <!-- Overlay za overflow meni (tri tačkice) -->
+    <style name="ThemeOverlay.HabitQuest.ToolbarMenu" parent="ThemeOverlay.Material3.Light">
+        <item name="colorSurface">@color/toolbar_bg</item>
+        <item name="backgroundColor">@color/colorPrimary</item>
+        <item name="colorOnSurface">@color/onToolbar</item>
+    </style>
+
+    <!-- Stil samog Toolbara -->
+    <style name="Widget.HabitQuest.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/toolbar_bg</item>
+        <item name="titleTextAppearance">@style/TextAppearance.HabitQuest.ToolbarTitle</item>
+        <item name="subtitleTextAppearance">@style/TextAppearance.HabitQuest.ToolbarSubtitle</item>
+        <item name="navigationIconTint">@color/onToolbar</item>
+        <item name="titleCentered">true</item>
+        <item name="popupMenuStyle">@style/ThemeOverlay.HabitQuest.ToolbarMenu</item>
+    </style>
+</resources>
