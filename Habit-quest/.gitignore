@@ -13,3 +13,22 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# APK/AAR outputs
+*.apk
+*.aar
+*.ap_
+
+# Logs
+*.log
+
+# Keystores (ako koristiš lokalne; ne guraj u repo)
+*.keystore
+*.jks
+
+# Misc
+navigation.json
