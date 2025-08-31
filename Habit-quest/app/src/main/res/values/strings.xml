@@ -5,6 +5,9 @@
     <string name="title_tasks">Tasks</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <string name="welcome">Welcome to HabitQuest!</string>
+    <string name="welcome_subtitle">Build habits and achieve goals.</string>
+
     <string name="sign_in">Sign In</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
@@ -16,6 +19,7 @@
     <string name="hint_confirm_password">Confirm Password</string>
     <string name="choose_avatar">Choose your avatar</string>
     <string name="register_button">Register</string>
+    <string name="sign_up_button">Sign Up</string>
     <string name="already_have_account">Already have an account? Log In</string>
 
 </resources>
