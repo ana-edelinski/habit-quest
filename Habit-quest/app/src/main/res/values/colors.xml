@@ -7,4 +7,6 @@
 
     <color name="toolbar_bg">#242424</color>      <!-- pozadina toolbara -->
     <color name="onToolbar">#009688</color>       <!-- boja teksta/ikonica -->
+
+    <color name="darkGreen">#0F2A1D</color>
 </resources>

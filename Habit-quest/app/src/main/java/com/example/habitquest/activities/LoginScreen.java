@@ -1,10 +1,18 @@
 package com.example.habitquest.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -20,6 +28,7 @@ public class LoginScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login_screen);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -28,5 +37,34 @@ public class LoginScreen extends AppCompatActivity {
 
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
+
+        TextView tvNoAccount = findViewById(R.id.tvNoAccount);
+        SpannableString spannable = new SpannableString("No account yet? Sign Up");
+
+        int signUpStart = spannable.toString().indexOf("Sign Up");
+        int signUpEnd = signUpStart + "Sign Up".length();
+
+        ForegroundColorSpan colorSpan = new ForegroundColorSpan(ContextCompat.getColor(this, R.color.darkGreen));
+        spannable.setSpan(colorSpan, signUpStart, signUpEnd, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        ClickableSpan clickableSpan = new ClickableSpan() {
+            @Override
+            public void onClick(View widget) {
+                Intent intent = new Intent(LoginScreen.this, SingUpActivity.class);
+                startActivity(intent);
+            }
+
+            @Override
+            public void updateDrawState(android.text.TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setUnderlineText(true);
+                ds.setColor(ContextCompat.getColor(LoginScreen.this, R.color.darkGreen));
+            }
+        };
+
+        spannable.setSpan(clickableSpan, signUpStart, signUpEnd, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        tvNoAccount.setText(spannable);
+        tvNoAccount.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }
