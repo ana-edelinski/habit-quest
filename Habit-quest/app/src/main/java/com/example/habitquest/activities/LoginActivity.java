@@ -19,7 +19,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.habitquest.R;
 
-public class LoginScreen extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     EditText emailEditText, passwordEditText;
 
@@ -50,7 +50,7 @@ public class LoginScreen extends AppCompatActivity {
         ClickableSpan clickableSpan = new ClickableSpan() {
             @Override
             public void onClick(View widget) {
-                Intent intent = new Intent(LoginScreen.this, SingUpActivity.class);
+                Intent intent = new Intent(LoginActivity.this, SingUpActivity.class);
                 startActivity(intent);
             }
 
@@ -58,7 +58,7 @@ public class LoginScreen extends AppCompatActivity {
             public void updateDrawState(android.text.TextPaint ds) {
                 super.updateDrawState(ds);
                 ds.setUnderlineText(true);
-                ds.setColor(ContextCompat.getColor(LoginScreen.this, R.color.darkGreen));
+                ds.setColor(ContextCompat.getColor(LoginActivity.this, R.color.darkGreen));
             }
         };
 
