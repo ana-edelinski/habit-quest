@@ -9,4 +9,10 @@
     <color name="onToolbar">#009688</color>       <!-- boja teksta/ikonica -->
 
     <color name="darkGreen">#0F2A1D</color>
+
+    <!-- gradijent -->
+    <color name="greenShadeLight">#A8E6CF</color>
+    <color name="greenShadeMedium">#56C596</color>
+    <color name="greenShadeDark">#064E3B</color>
+
 </resources>
