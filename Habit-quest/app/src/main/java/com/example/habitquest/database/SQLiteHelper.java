@@ -12,18 +12,20 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_EMAIL = "email";
     public static final String COLUMN_USERNAME = "username";
     public static final String COLUMN_PASSWORD = "password";
+    public static final String COLUMN_AVATAR = "avatar";
 
     //Dajemo ime bazi
     private static final String DATABASE_NAME = "habitquest.db";
     //i pocetnu verziju baze. Obicno krece od 1
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 4;
 
     private static final String DB_CREATE = "create table "
             + TABLE_USERS + "("
             + COLUMN_ID  + " integer primary key autoincrement , "
             + COLUMN_EMAIL + " text, "
             + COLUMN_USERNAME + " text, "
-            + COLUMN_PASSWORD + " text"
+            + COLUMN_PASSWORD + " text, "
+            + COLUMN_AVATAR + " integer default 1"
             + ")";
 
 

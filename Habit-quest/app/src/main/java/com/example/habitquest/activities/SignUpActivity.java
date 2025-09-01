@@ -1,5 +1,6 @@
 package com.example.habitquest.activities;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +12,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.habitquest.R;
+import com.example.habitquest.database.DBContentProvider;
+import com.example.habitquest.database.SQLiteHelper;
+import com.example.habitquest.database.UserRepository;
 import com.google.android.material.button.MaterialButton;
 
 public class SignUpActivity extends AppCompatActivity {
@@ -70,12 +74,20 @@ public class SignUpActivity extends AppCompatActivity {
                 return;
             }
 
-            // TODO
-            Toast.makeText(this, "Registered successfully!", Toast.LENGTH_SHORT).show();
+            UserRepository userRepository = new UserRepository(this);
+            userRepository.open();
+            long newId = userRepository.insertUser(email, username, password, selectedAvatar);
+            userRepository.close();
 
-            Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
+            if (newId > 0) {
+                Toast.makeText(this, "Registered successfully!", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show();
+            }
         });
 
         TextView tvHaveAccount = findViewById(R.id.tvHaveAccount);

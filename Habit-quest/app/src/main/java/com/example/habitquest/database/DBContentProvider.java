@@ -23,8 +23,8 @@ public class DBContentProvider extends ContentProvider {
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     /**
-     * content://com.example.habitquest/products
-     * content://com.example.habitquest/products/1
+     * content://com.example.habitquest/users
+     * content://com.example.habitquest/users/1
      */
     static {
         sURIMatcher.addURI(AUTHORITY, USERS_PATH, USERS);
