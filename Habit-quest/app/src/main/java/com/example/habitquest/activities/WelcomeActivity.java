@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.habitquest.R;
+import com.example.habitquest.tools.Util;
 import com.google.android.material.button.MaterialButton;
 
 public class WelcomeActivity extends AppCompatActivity {
@@ -25,5 +26,8 @@ public class WelcomeActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> {
             startActivity(new Intent(WelcomeActivity.this, LoginActivity.class));
         });
+
+        // Ovo će ubaciti Pera i Žika u bazu
+        Util.initDB(this);
     }
 }
