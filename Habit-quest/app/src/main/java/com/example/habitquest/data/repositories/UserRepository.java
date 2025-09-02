@@ -1,4 +1,4 @@
-package com.example.habitquest.database;
+package com.example.habitquest.data.repositories;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,7 +8,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
-public class UserRepository {
+import com.example.habitquest.data.local.db.AppContract;
+import com.example.habitquest.data.local.db.SQLiteHelper;
+import com.example.habitquest.domain.repositoryinterfaces.IUserRepository;
+
+public class UserRepository implements IUserRepository {
 
     private SQLiteDatabase database;
     private SQLiteHelper dbHelper;
@@ -25,24 +29,26 @@ public class UserRepository {
         dbHelper.close();
     }
 
+    @Override
     public long insertUser(String email, String username, String password, int avatar) {
         Log.i("REZ_DB", "insertUser to database");
         ContentValues values = new ContentValues();
-        values.put(SQLiteHelper.COLUMN_EMAIL, email);
-        values.put(SQLiteHelper.COLUMN_USERNAME, username);
-        values.put(SQLiteHelper.COLUMN_PASSWORD, password);
-        values.put("avatar", avatar);
+        values.put(AppContract.UserEntry.COLUMN_EMAIL, email);
+        values.put(AppContract.UserEntry.COLUMN_USERNAME, username);
+        values.put(AppContract.UserEntry.COLUMN_PASSWORD, password);
+        values.put(AppContract.UserEntry.COLUMN_AVATAR, avatar);
 
-        return database.insert(SQLiteHelper.TABLE_USERS, null, values);
+        return database.insert(AppContract.UserEntry.TABLE_NAME, null, values);
     }
 
+    @Override
     public Cursor getUser(Long id, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Log.i("REZ_DB", "getUser from database - queryBuilder");
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         if (id != null) {
-            queryBuilder.appendWhere(SQLiteHelper.COLUMN_ID + "=" + id);
+            queryBuilder.appendWhere(AppContract.UserEntry._ID + "=" + id);
         }
-        queryBuilder.setTables(SQLiteHelper.TABLE_USERS);
+        queryBuilder.setTables(AppContract.UserEntry.TABLE_NAME);
 
         return queryBuilder.query(
                 database,
@@ -55,21 +61,23 @@ public class UserRepository {
         );
     }
 
+    @Override
     public int updateUser(long id, String email, String username, String password, int avatar) {
         ContentValues values = new ContentValues();
-        values.put(SQLiteHelper.COLUMN_EMAIL, email);
-        values.put(SQLiteHelper.COLUMN_USERNAME, username);
-        values.put(SQLiteHelper.COLUMN_PASSWORD, password);
-        values.put("avatar", avatar);
+        values.put(AppContract.UserEntry.COLUMN_EMAIL, email);
+        values.put(AppContract.UserEntry.COLUMN_USERNAME, username);
+        values.put(AppContract.UserEntry.COLUMN_PASSWORD, password);
+        values.put(AppContract.UserEntry.COLUMN_AVATAR, avatar);
 
-        String whereClause = SQLiteHelper.COLUMN_ID + " = ?";
+        String whereClause = AppContract.UserEntry._ID + " = ?";
         String[] whereArgs = {String.valueOf(id)};
-        return database.update(SQLiteHelper.TABLE_USERS, values, whereClause, whereArgs);
+        return database.update(AppContract.UserEntry.TABLE_NAME, values, whereClause, whereArgs);
     }
 
+    @Override
     public int deleteUser(long id) {
-        String whereClause = SQLiteHelper.COLUMN_ID + " = ?";
+        String whereClause = AppContract.UserEntry._ID + " = ?";
         String[] whereArgs = {String.valueOf(id)};
-        return database.delete(SQLiteHelper.TABLE_USERS, whereClause, whereArgs);
+        return database.delete(AppContract.UserEntry.TABLE_NAME, whereClause, whereArgs);
     }
 }

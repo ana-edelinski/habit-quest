@@ -1,4 +1,4 @@
-package com.example.habitquest.activities;
+package com.example.habitquest.presentation.activities;
 
 import android.content.Intent;
 import android.os.Bundle;

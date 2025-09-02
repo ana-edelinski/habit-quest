@@ -1,6 +1,5 @@
-package com.example.habitquest.activities;
+package com.example.habitquest.presentation.activities;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -12,9 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.habitquest.R;
-import com.example.habitquest.database.DBContentProvider;
-import com.example.habitquest.database.SQLiteHelper;
-import com.example.habitquest.database.UserRepository;
+import com.example.habitquest.data.repositories.UserRepository;
 import com.google.android.material.button.MaterialButton;
 
 public class SignUpActivity extends AppCompatActivity {

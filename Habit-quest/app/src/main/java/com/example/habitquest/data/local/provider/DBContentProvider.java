@@ -1,4 +1,4 @@
-package com.example.habitquest.database;
+package com.example.habitquest.data.local.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -12,7 +12,12 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.example.habitquest.data.local.db.AppContract;
+import com.example.habitquest.data.local.db.SQLiteHelper;
 
+// Implementira ContentProvider za pristup bazi podataka.
+// Omogucava aplikaciji (i potencijalno drugim aplikacijama) da koriste
+// standardizovane URI-je za CRUD operacije nad tabelom USERS.
 public class DBContentProvider extends ContentProvider {
     private SQLiteHelper database;
     private static final int USERS = 5;
@@ -50,7 +55,7 @@ public class DBContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Log.i("REZ_DB", "QUERY");
-        // Uisng SQLiteQueryBuilder instead of query() method
+        // Using SQLiteQueryBuilder instead of query() method
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
         // check if the caller has requested a column which does not exist
@@ -59,10 +64,10 @@ public class DBContentProvider extends ContentProvider {
         switch (uriType) {
             case USER_ID:
                 // Adding the ID to the original query
-                queryBuilder.appendWhere(SQLiteHelper.COLUMN_ID + "="  + uri.getLastPathSegment());
+                queryBuilder.appendWhere(AppContract.UserEntry._ID + "=" + uri.getLastPathSegment());
             case USERS:
                 // Set the table
-                queryBuilder.setTables(SQLiteHelper.TABLE_USERS);
+                queryBuilder.setTables(AppContract.UserEntry.TABLE_NAME);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -95,7 +100,7 @@ public class DBContentProvider extends ContentProvider {
         long id = 0;
         switch (uriType) {
             case USERS:
-                id = sqlDB.insert(SQLiteHelper.TABLE_USERS, null, values);
+                id = sqlDB.insert(AppContract.UserEntry.TABLE_NAME, null, values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -116,19 +121,17 @@ public class DBContentProvider extends ContentProvider {
         int rowsDeleted = 0;
         switch (uriType) {
             case USERS:
-                rowsDeleted = sqlDB.delete(SQLiteHelper.TABLE_USERS,
-                        selection,
-                        selectionArgs);
+                rowsDeleted = sqlDB.delete(AppContract.UserEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             case USER_ID:
                 String idUSER = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(SQLiteHelper.TABLE_USERS,
-                            SQLiteHelper.COLUMN_ID + "=" + idUSER,
+                    rowsDeleted = sqlDB.delete(AppContract.UserEntry.TABLE_NAME,
+                            AppContract.UserEntry._ID + "=" + idUSER,
                             null);
                 } else {
-                    rowsDeleted = sqlDB.delete(SQLiteHelper.TABLE_USERS,
-                            SQLiteHelper.COLUMN_ID + "=" + idUSER +
+                    rowsDeleted = sqlDB.delete(AppContract.UserEntry.TABLE_NAME,
+                            AppContract.UserEntry._ID + "=" + idUSER +
                                     (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                             selectionArgs);
                 }
@@ -150,15 +153,15 @@ public class DBContentProvider extends ContentProvider {
         int rowsUpdated = 0;
         switch (uriType) {
             case USERS:
-                rowsUpdated = sqlDB.update(SQLiteHelper.TABLE_USERS,
+                rowsUpdated = sqlDB.update(AppContract.UserEntry.TABLE_NAME,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case USER_ID:
                 String idUSER = uri.getLastPathSegment();
-                rowsUpdated = sqlDB.update(SQLiteHelper.TABLE_USERS, values,
-                        SQLiteHelper.COLUMN_ID + "=" + idUSER +
+                rowsUpdated = sqlDB.update(AppContract.UserEntry.TABLE_NAME, values,
+                        AppContract.UserEntry._ID + "=" + idUSER +
                                 (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                         selectionArgs);
                 break;

@@ -1,14 +1,13 @@
-package com.example.habitquest;
+package com.example.habitquest.presentation.activities;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
+import com.example.habitquest.R;
+import com.example.habitquest.presentation.fragments.CategoryListFragment;
+import com.example.habitquest.presentation.fragments.TaskListFragment;
 import com.google.android.material.appbar.MaterialToolbar;
 
 public class MainActivity extends AppCompatActivity {
@@ -43,13 +42,13 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_categories) {
             setTitle(R.string.title_categories);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.content_container, new com.example.habitquest.fragments.CategoryListFragment(), "CAT")
+                    .replace(R.id.content_container, new CategoryListFragment(), "CAT")
                     .commit();
             return true;
         } else if (id == R.id.action_tasks) {
             setTitle(R.string.title_tasks);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.content_container, new com.example.habitquest.fragments.TaskListFragment(), "TASK")
+                    .replace(R.id.content_container, new TaskListFragment(), "TASK")
                     .commit();
             return true;
         }

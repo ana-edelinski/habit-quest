@@ -1,4 +1,4 @@
-package com.example.habitquest.fragments;
+package com.example.habitquest.presentation.fragments;
 
 import android.os.Bundle;
 

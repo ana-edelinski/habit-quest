@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HabitQuest"
         tools:targetApi="31">
-        <activity android:name=".activities.WelcomeActivity"
+        <activity android:name=".presentation.activities.WelcomeActivity"
                   android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -20,19 +20,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.SignUpActivity"
+            android:name=".presentation.activities.SignUpActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.LoginActivity"
+            android:name=".presentation.activities.LoginActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.activities.MainActivity"
             android:exported="false">
         </activity>
 
         <provider
-            android:name="com.example.habitquest.database.DBContentProvider"
+            android:name="com.example.habitquest.data.local.provider.DBContentProvider"
             android:authorities="com.example.habitquest"
             android:exported="true" />
 

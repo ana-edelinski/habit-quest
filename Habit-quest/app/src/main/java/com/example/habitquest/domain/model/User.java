@@ -1,4 +1,4 @@
-package com.example.habitquest.model;
+package com.example.habitquest.domain.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
