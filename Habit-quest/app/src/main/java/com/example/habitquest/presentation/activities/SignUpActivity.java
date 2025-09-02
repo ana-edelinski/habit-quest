@@ -72,9 +72,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
 
             UserRepository userRepository = new UserRepository(this);
-            userRepository.open();
             long newId = userRepository.insertUser(email, username, password, selectedAvatar);
-            userRepository.close();
 
             if (newId > 0) {
                 Toast.makeText(this, "Registered successfully!", Toast.LENGTH_SHORT).show();
