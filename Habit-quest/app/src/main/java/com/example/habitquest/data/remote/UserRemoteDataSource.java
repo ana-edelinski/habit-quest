@@ -30,17 +30,27 @@ public class UserRemoteDataSource {
 
     public void registerUser(String email, String password, String username, int avatar,
                                            RepositoryCallback<Void> callback) {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        auth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener(authResult -> {
-                    FirebaseUser firebaseUser = auth.getCurrentUser();
-                    if (firebaseUser != null) {
-                        firebaseUser.sendEmailVerification();
+        db.collection(COLLECTION_NAME)
+                .whereEqualTo("username", username)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        callback.onFailure(new Exception("Username is already taken"));
+                    } else {
+                        FirebaseAuth auth = FirebaseAuth.getInstance();
+                        auth.createUserWithEmailAndPassword(email, password)
+                                .addOnSuccessListener(authResult -> {
+                                    FirebaseUser firebaseUser = auth.getCurrentUser();
+                                    if (firebaseUser != null) {
+                                        firebaseUser.sendEmailVerification();
 
-                        String uid = firebaseUser.getUid();
-                        User user = new User(null, email, username, password, avatar, false);
-                        db.collection(COLLECTION_NAME).document(uid).set(user)
-                                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                                        String uid = firebaseUser.getUid();
+                                        User user = new User(null, email, username, password, avatar, false);
+                                        db.collection(COLLECTION_NAME).document(uid).set(user)
+                                                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                                                .addOnFailureListener(callback::onFailure);
+                                    }
+                                })
                                 .addOnFailureListener(callback::onFailure);
                     }
                 })
