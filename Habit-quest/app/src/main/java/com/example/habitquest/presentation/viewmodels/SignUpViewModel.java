@@ -42,6 +42,7 @@ public class SignUpViewModel extends ViewModel {
             @Override
             public void onSuccess(Void result) {
                 _registrationSuccess.postValue(true);
+                _errorMessage.postValue("Verification email sent. Please check your inbox.");
             }
 
             @Override
