@@ -5,8 +5,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.example.habitquest.domain.model.User;
+import com.example.habitquest.utils.RepositoryCallback;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -25,14 +28,23 @@ public class UserRemoteDataSource {
         db = FirebaseFirestore.getInstance();
     }
 
-    // Insert user
-    public void insertUser(User user) {
-        db.collection(COLLECTION_NAME)
-                .add(user)
-                .addOnSuccessListener(documentReference ->
-                        Log.d("REMOTE_DB", "User added with ID: " + documentReference.getId()))
-                .addOnFailureListener(e ->
-                        Log.w("REMOTE_DB", "Error adding user", e));
+    public void registerUser(String email, String password, String username, int avatar,
+                                           RepositoryCallback<Void> callback) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser firebaseUser = auth.getCurrentUser();
+                    if (firebaseUser != null) {
+                        firebaseUser.sendEmailVerification();
+
+                        String uid = firebaseUser.getUid();
+                        User user = new User(null, email, username, password, avatar, false);
+                        db.collection(COLLECTION_NAME).document(uid).set(user)
+                                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                                .addOnFailureListener(callback::onFailure);
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
     }
 
     // Get all users

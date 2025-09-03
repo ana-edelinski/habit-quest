@@ -11,25 +11,28 @@ public class User implements Parcelable {
     private String username;
     private String password;
     private int avatar; // samo indeks (1–5 za predefinisane slike)
+    private boolean isVerified;
 
-    public User(Long id, String email, String username, String password, int avatar) {
+    public User(Long id, String email, String username, String password, int avatar, boolean isVerified) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
         this.avatar = avatar;
+        this.isVerified = isVerified;
     }
 
     public User() {
     }
 
-    // Konstruktor za čitanje iz Parcel objekta
+    // Konstruktor za citanje iz Parcel objekta
     protected User(Parcel in) {
         id = in.readLong();
         email = in.readString();
         username = in.readString();
         password = in.readString();
         avatar = in.readInt();
+        isVerified = in.readByte() != 0; //boolean se cita kao byte
     }
 
     // GET / SET
@@ -47,6 +50,8 @@ public class User implements Parcelable {
 
     public int getAvatar() { return avatar; }
     public void setAvatar(int avatar) { this.avatar = avatar; }
+    public boolean isVerified() { return isVerified; }
+    public void setVerified(boolean verified) { isVerified = verified; }
 
     @Override
     public String toString() {
@@ -54,6 +59,7 @@ public class User implements Parcelable {
                 "email='" + email + '\'' +
                 ", username='" + username + '\'' +
                 ", avatar=" + avatar +
+                ", verified=" + isVerified +
                 '}';
     }
 
@@ -70,6 +76,7 @@ public class User implements Parcelable {
         dest.writeString(username);
         dest.writeString(password);
         dest.writeInt(avatar);
+        dest.writeByte((byte) (isVerified ? 1 : 0));
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {

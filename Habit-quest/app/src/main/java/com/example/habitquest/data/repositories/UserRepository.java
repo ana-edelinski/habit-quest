@@ -14,6 +14,7 @@ import com.example.habitquest.data.local.db.SQLiteHelper;
 import com.example.habitquest.data.remote.UserRemoteDataSource;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.domain.repositoryinterfaces.IUserRepository;
+import com.example.habitquest.utils.RepositoryCallback;
 
 public class UserRepository implements IUserRepository {
 
@@ -26,12 +27,21 @@ public class UserRepository implements IUserRepository {
     }
 
     @Override
-    public long insertUser(String email, String username, String password, int avatar) {
-        long localId = localDataSource.insertUser(email, username, password, avatar);
-        User user = new User(localId, email, username, password, avatar);
-        remoteDataSource.insertUser(user);
+    public void insertUser(String email, String username, String password, int avatar,
+                                 RepositoryCallback<Void> callback) {
+        remoteDataSource.registerUser(email, password, username, avatar, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // Ako uspešno registrovan remote → upiši i lokalno (cache)
+                localDataSource.insertUser(email, username, password, avatar);
+                callback.onSuccess(null);
+            }
 
-        return localId;
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
     }
 
     @Override
