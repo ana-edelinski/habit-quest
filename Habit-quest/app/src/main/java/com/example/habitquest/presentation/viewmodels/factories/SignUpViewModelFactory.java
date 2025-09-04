@@ -1,4 +1,4 @@
-package com.example.habitquest.presentation.viewmodels;
+package com.example.habitquest.presentation.viewmodels.factories;
 
 import android.content.Context;
 
@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.habitquest.data.repositories.UserRepository;
+import com.example.habitquest.presentation.viewmodels.SignUpViewModel;
 
 public class SignUpViewModelFactory implements ViewModelProvider.Factory {
     private final Context context;

@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.habitquest.R;
 import com.example.habitquest.presentation.viewmodels.SignUpViewModel;
-import com.example.habitquest.presentation.viewmodels.SignUpViewModelFactory;
+import com.example.habitquest.presentation.viewmodels.factories.SignUpViewModelFactory;
 import com.google.android.material.button.MaterialButton;
 
 public class SignUpActivity extends AppCompatActivity {

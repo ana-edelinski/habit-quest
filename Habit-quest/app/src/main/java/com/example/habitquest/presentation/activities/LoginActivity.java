@@ -9,6 +9,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,55 +17,54 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.habitquest.R;
+import com.example.habitquest.presentation.viewmodels.LoginViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.LoginViewModelFactory;
 
 public class LoginActivity extends AppCompatActivity {
 
-    EditText emailEditText, passwordEditText;
+    private EditText emailEditText, passwordEditText;
+    private LoginViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // ViewModel
+        LoginViewModelFactory factory = new LoginViewModelFactory(this);
+        viewModel = new ViewModelProvider(this, factory).get(LoginViewModel.class);
 
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
 
-        TextView tvNoAccount = findViewById(R.id.tvNoAccount);
-        SpannableString spannable = new SpannableString("No account yet? Sign Up");
+        findViewById(R.id.btnLogin).setOnClickListener(v -> {
+            String email = emailEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString();
+            viewModel.login(email, password);
+        });
 
-        int signUpStart = spannable.toString().indexOf("Sign Up");
-        int signUpEnd = signUpStart + "Sign Up".length();
-
-        ForegroundColorSpan colorSpan = new ForegroundColorSpan(ContextCompat.getColor(this, R.color.darkGreen));
-        spannable.setSpan(colorSpan, signUpStart, signUpEnd, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        ClickableSpan clickableSpan = new ClickableSpan() {
-            @Override
-            public void onClick(View widget) {
-                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-                startActivity(intent);
+        // LiveData observe
+        viewModel.loginSuccess.observe(this, success -> {
+            if (Boolean.TRUE.equals(success)) {
+                Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, WelcomeActivity.class)); // ili MainActivity
+                finish();
             }
+        });
 
-            @Override
-            public void updateDrawState(android.text.TextPaint ds) {
-                super.updateDrawState(ds);
-                ds.setUnderlineText(true);
-                ds.setColor(ContextCompat.getColor(LoginActivity.this, R.color.darkGreen));
+        viewModel.errorMessage.observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, "Error: " + error, Toast.LENGTH_SHORT).show();
             }
-        };
+        });
 
-        spannable.setSpan(clickableSpan, signUpStart, signUpEnd, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        tvNoAccount.setText(spannable);
-        tvNoAccount.setMovementMethod(LinkMovementMethod.getInstance());
+        findViewById(R.id.tvNoAccount).setOnClickListener(v -> {
+            startActivity(new Intent(this, SignUpActivity.class));
+            finish();
+        });
     }
 }
+

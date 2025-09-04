@@ -45,7 +45,8 @@ public class UserRepository implements IUserRepository {
     }
 
     @Override
-    public Cursor getUser(Long id, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        return localDataSource.getAllUsers();
+    public void loginUser(String email, String password, RepositoryCallback<Void> callback) {
+        remoteDataSource.loginUser(email, password, callback);
     }
+
 }
