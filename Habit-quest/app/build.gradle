@@ -40,6 +40,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore'
 
     implementation 'com.google.android.gms:play-services-base:18.5.0'
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

@@ -6,6 +6,7 @@ import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.presentation.viewmodels.LoginViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.LoginViewModelFactory;
 
@@ -49,8 +51,9 @@ public class LoginActivity extends AppCompatActivity {
         // LiveData observe
         viewModel.loginSuccess.observe(this, success -> {
             if (Boolean.TRUE.equals(success)) {
+                Log.d("DEBUG", "Observer fired -> start HomeActivity");
                 Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, WelcomeActivity.class)); // ili MainActivity
+                startActivity(new Intent(this, HomeActivity.class));
                 finish();
             }
         });

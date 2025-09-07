@@ -10,7 +10,14 @@
         <!-- Svetle ikone u status baru isključene (jer je status bar taman ako toolbar taman) -->
         <item name="android:statusBarColor">@color/toolbar_bg</item>
         <item name="android:windowLightStatusBar">true</item>
+
+        <item name="actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
     </style>
 
     <style name="Theme.HabitQuest" parent="Base.Theme.HabitQuest" />
+
+    <style name="OverflowButtonStyle" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">@android:color/white</item>
+    </style>
+
 </resources>
