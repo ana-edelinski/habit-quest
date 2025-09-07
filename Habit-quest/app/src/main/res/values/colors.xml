@@ -9,6 +9,7 @@
     <color name="onToolbar">#009688</color>       <!-- boja teksta/ikonica -->
 
     <color name="darkGreen">#0F2A1D</color>
+    <color name="selectedBackground">#f4f4f4</color>
 
     <!-- gradijent -->
     <color name="greenShadeLight">#A8E6CF</color>

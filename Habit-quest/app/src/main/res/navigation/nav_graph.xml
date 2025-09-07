@@ -6,6 +6,12 @@
     app:startDestination="@id/nav_account">
 
     <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.habitquest.presentation.fragments.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
         android:id="@+id/nav_account"
         android:name="com.example.habitquest.presentation.fragments.AccountFragment"
         android:label="My Account"

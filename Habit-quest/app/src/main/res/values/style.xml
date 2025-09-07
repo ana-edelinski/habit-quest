@@ -29,4 +29,5 @@
         <item name="titleCentered">true</item>
         <item name="popupMenuStyle">@style/ThemeOverlay.HabitQuest.ToolbarMenu</item>
     </style>
+
 </resources>
