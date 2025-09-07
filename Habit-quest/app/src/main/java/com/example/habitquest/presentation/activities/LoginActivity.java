@@ -35,20 +35,36 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // ViewModel
+        initViewModel();
+        initViews();
+        setupListeners();
+        setupObservers();
+    }
+
+    private void initViewModel() {
         LoginViewModelFactory factory = new LoginViewModelFactory(this);
         viewModel = new ViewModelProvider(this, factory).get(LoginViewModel.class);
+    }
 
+    private void initViews() {
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
+    }
 
+    private void setupListeners() {
         findViewById(R.id.btnLogin).setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString();
             viewModel.login(email, password);
         });
 
-        // LiveData observe
+        findViewById(R.id.tvNoAccount).setOnClickListener(v -> {
+            startActivity(new Intent(this, SignUpActivity.class));
+            finish();
+        });
+    }
+
+    private void setupObservers() {
         viewModel.loginSuccess.observe(this, success -> {
             if (Boolean.TRUE.equals(success)) {
                 Log.d("DEBUG", "Observer fired -> start HomeActivity");
@@ -62,11 +78,6 @@ public class LoginActivity extends AppCompatActivity {
             if (error != null) {
                 Toast.makeText(this, "Error: " + error, Toast.LENGTH_SHORT).show();
             }
-        });
-
-        findViewById(R.id.tvNoAccount).setOnClickListener(v -> {
-            startActivity(new Intent(this, SignUpActivity.class));
-            finish();
         });
     }
 }

@@ -31,25 +31,41 @@ public class HomeActivity extends AppCompatActivity {
 
         appPreferences = new AppPreferences(this);
 
+        initViewModel();
+        setupObservers();
+        setupToolbar();
+        setupBottomNavigation();
+    }
+
+    private void initViewModel() {
         LoginViewModelFactory factory = new LoginViewModelFactory(this);
         loginViewModel = new ViewModelProvider(this, factory).get(LoginViewModel.class);
+    }
 
+    private void setupObservers() {
         loginViewModel.logoutSuccess.observe(this, success -> {
             if (Boolean.TRUE.equals(success)) {
-                Intent intent = new Intent(this, LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
+                navigateToLogin();
             }
         });
+    }
 
+    private void navigateToLogin() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
 
+    private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.topAppBar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(getString(R.string.app_name));
         }
+    }
 
+    private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
 
         NavHostFragment navHostFragment =
