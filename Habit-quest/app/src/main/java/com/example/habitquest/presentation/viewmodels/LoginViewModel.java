@@ -18,6 +18,9 @@ public class LoginViewModel extends ViewModel {
     private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
     public LiveData<String> errorMessage = _errorMessage;
 
+    private final MutableLiveData<Boolean> _logoutSuccess = new MutableLiveData<>();
+    public LiveData<Boolean> logoutSuccess = _logoutSuccess;
+
     public LoginViewModel(UserRepository userRepository, AppPreferences appPreferences) {
         this.userRepository = userRepository;
         this.appPreferences = appPreferences;
@@ -44,7 +47,9 @@ public class LoginViewModel extends ViewModel {
     }
 
     public void logout() {
+        com.google.firebase.auth.FirebaseAuth.getInstance().signOut();
         appPreferences.clearSession();
+        _logoutSuccess.postValue(true); 
     }
 
     public boolean isLoggedIn() {
