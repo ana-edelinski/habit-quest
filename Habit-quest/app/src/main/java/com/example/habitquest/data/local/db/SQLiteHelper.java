@@ -20,11 +20,13 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         Log.i("REZ_DB", "ON CREATE SQLITE HELPER");
         db.execSQL(AppContract.UserEntry.CREATE_TABLE);
+        db.execSQL(AppContract.CategoryEntry.CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.i("REZ_DB", "onUpgrade DB");
+        db.execSQL("DROP TABLE IF EXISTS " + AppContract.UserEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + AppContract.UserEntry.TABLE_NAME);
         onCreate(db);
     }
