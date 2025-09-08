@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.data.repositories.UserRepository;
+import com.example.habitquest.domain.model.User;
 import com.example.habitquest.utils.RepositoryCallback;
 
 public class LoginViewModel extends ViewModel {
@@ -32,10 +33,12 @@ public class LoginViewModel extends ViewModel {
             return;
         }
 
-        userRepository.loginUser(email, password, new RepositoryCallback<Void>() {
+        userRepository.loginUser(email, password, new RepositoryCallback<User>() {
             @Override
-            public void onSuccess(Void result) {
-                appPreferences.saveUserSession(email);
+            public void onSuccess(User result) {
+                appPreferences.saveUserSession(result.getEmail());
+                appPreferences.saveUsername(result.getUsername());
+                appPreferences.saveAvatarIndex(result.getAvatar());
                 _loginSuccess.postValue(true);
             }
 
@@ -44,6 +47,7 @@ public class LoginViewModel extends ViewModel {
                 _errorMessage.postValue(e.getMessage());
             }
         });
+
     }
 
     public void logout() {

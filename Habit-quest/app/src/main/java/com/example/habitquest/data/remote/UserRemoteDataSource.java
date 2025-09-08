@@ -57,18 +57,32 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void loginUser(String email, String password, RepositoryCallback<Void> callback) {
+    public void loginUser(String email, String password, RepositoryCallback<User> callback) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
-                    FirebaseUser user = auth.getCurrentUser();
-                    if (user != null && user.isEmailVerified()) {
-                        callback.onSuccess(null);
+                    FirebaseUser firebaseUser = auth.getCurrentUser();
+                    if (firebaseUser != null && firebaseUser.isEmailVerified()) {
+                        String uid = firebaseUser.getUid();
+
+                        db.collection(COLLECTION_NAME).document(uid)
+                                .get()
+                                .addOnSuccessListener(document -> {
+                                    if (document.exists()) {
+                                        User user = document.toObject(User.class);
+                                        callback.onSuccess(user);
+                                    } else {
+                                        callback.onFailure(new Exception("User data not found."));
+                                    }
+                                })
+                                .addOnFailureListener(callback::onFailure);
+
                     } else {
                         callback.onFailure(new Exception("Please verify your email before logging in."));
                     }
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
 }

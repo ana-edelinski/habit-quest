@@ -36,5 +36,10 @@ public class AppPreferences {
     public boolean isLoggedIn() {
         return prefs.getBoolean(KEY_IS_LOGGED_IN, false);
     }
+    public void saveUsername(String username) { prefs.edit().putString("username", username).apply(); }
+    public String getUsername() { return prefs.getString("username", ""); }
+
+    public void saveAvatarIndex(int index) { prefs.edit().putInt("avatar", index).apply(); }
+    public int getAvatarIndex() { return prefs.getInt("avatar", 0); }
 }
 

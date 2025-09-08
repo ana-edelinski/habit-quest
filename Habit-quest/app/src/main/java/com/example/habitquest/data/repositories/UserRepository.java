@@ -45,7 +45,7 @@ public class UserRepository implements IUserRepository {
     }
 
     @Override
-    public void loginUser(String email, String password, RepositoryCallback<Void> callback) {
+    public void loginUser(String email, String password, RepositoryCallback<User> callback) {
         remoteDataSource.loginUser(email, password, callback);
     }
 
