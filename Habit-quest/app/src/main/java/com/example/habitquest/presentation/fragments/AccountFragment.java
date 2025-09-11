@@ -1,6 +1,7 @@
 package com.example.habitquest.presentation.fragments;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,7 @@ import androidx.navigation.Navigation;
 import com.example.habitquest.R;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.AccountViewModelFactory;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 public class AccountFragment extends Fragment {
 
@@ -38,6 +40,8 @@ public class AccountFragment extends Fragment {
 
         imgAvatar = view.findViewById(R.id.imgAvatar);
         txtUsername = view.findViewById(R.id.tvUsername);
+        ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
+
         View btnSettings = view.findViewById(R.id.btnSettings);
 
         btnSettings.setOnClickListener(v -> {
@@ -64,6 +68,18 @@ public class AccountFragment extends Fragment {
                     default: resId = R.drawable.avatar5;
                 }
                 imgAvatar.setImageResource(resId);
+
+                // GENERISANJE QR KODA
+                try {
+                    String qrContent = "HabitQuest User: " + user.getUsername(); // ili user.getEmail()
+                    BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+                    Bitmap bitmap = barcodeEncoder.encodeBitmap(qrContent,
+                            com.google.zxing.BarcodeFormat.QR_CODE,
+                            400, 400);
+                    imgQrCode.setImageBitmap(bitmap);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
