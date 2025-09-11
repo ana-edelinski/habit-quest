@@ -22,4 +22,10 @@
     <string name="sign_up_button">Sign Up</string>
     <string name="already_have_account">Already have an account? Log In</string>
 
+    <string name="current_password">Current Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="change_password">Change Password</string>
+
+
 </resources>

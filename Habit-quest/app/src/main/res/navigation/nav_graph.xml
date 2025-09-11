@@ -16,4 +16,11 @@
         android:name="com.example.habitquest.presentation.fragments.AccountFragment"
         android:label="My Account"
         tools:layout="@layout/fragment_account" />
+
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.example.habitquest.presentation.fragments.ChangePasswordFragment"
+        android:label="Change Password"
+        tools:layout="@layout/fragment_change_password" />
+
 </navigation>

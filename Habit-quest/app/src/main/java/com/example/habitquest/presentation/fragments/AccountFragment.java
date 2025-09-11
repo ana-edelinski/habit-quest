@@ -1,5 +1,6 @@
 package com.example.habitquest.presentation.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.habitquest.R;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
@@ -35,6 +38,13 @@ public class AccountFragment extends Fragment {
 
         imgAvatar = view.findViewById(R.id.imgAvatar);
         txtUsername = view.findViewById(R.id.tvUsername);
+        View btnSettings = view.findViewById(R.id.btnSettings);
+
+        btnSettings.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+            navController.navigate(R.id.changePasswordFragment);
+        });
+
 
         AccountViewModelFactory factory = new AccountViewModelFactory(requireContext());
         viewModel = new ViewModelProvider(this, factory).get(AccountViewModel.class);
