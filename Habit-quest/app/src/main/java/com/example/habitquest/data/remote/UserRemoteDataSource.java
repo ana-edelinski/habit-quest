@@ -47,7 +47,7 @@ public class UserRemoteDataSource {
                                         firebaseUser.sendEmailVerification();
 
                                         String uid = firebaseUser.getUid();
-                                        User user = new User(null, email, username, password, avatar, false);
+                                        User user = new User(null, email, username, avatar);
                                         db.collection(COLLECTION_NAME).document(uid).set(user)
                                                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                                                 .addOnFailureListener(callback::onFailure);
@@ -99,17 +99,13 @@ public class UserRemoteDataSource {
                 .addOnSuccessListener(aVoid -> {
                     user.updatePassword(newPassword)
                             .addOnSuccessListener(unused -> {
-                                // Update Firestore dokument da bude u skladu
-                                String uid = user.getUid();
-                                db.collection(COLLECTION_NAME).document(uid)
-                                        .update("password", newPassword)
-                                        .addOnSuccessListener(v -> callback.onSuccess(null))
-                                        .addOnFailureListener(callback::onFailure);
+                                callback.onSuccess(null);
                             })
                             .addOnFailureListener(callback::onFailure);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
 
 

@@ -19,6 +19,20 @@ public class UsersLocalDataSource {
 
     public long insertUser(String email, String username, String password, int avatar) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        Cursor cursor = db.query(AppContract.UserEntry.TABLE_NAME,
+                new String[]{AppContract.UserEntry.COLUMN_EMAIL},
+                AppContract.UserEntry.COLUMN_EMAIL + " = ?",
+                new String[]{email},
+                null, null, null);
+
+        boolean exists = cursor.moveToFirst();
+        cursor.close();
+
+        if (exists) {
+            return -1;
+        }
+
         ContentValues values = new ContentValues();
         values.put(AppContract.UserEntry.COLUMN_EMAIL, email);
         values.put(AppContract.UserEntry.COLUMN_USERNAME, username);
