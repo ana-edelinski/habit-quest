@@ -74,7 +74,7 @@ public class AccountFragment extends Fragment {
                 //QR kod
                 FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (firebaseUser != null) {
-                    String uid = firebaseUser.getUid(); 
+                    String uid = firebaseUser.getUid();
                     try {
                         String qrContent = uid;
                         BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
