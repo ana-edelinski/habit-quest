@@ -19,6 +19,8 @@ import androidx.navigation.Navigation;
 import com.example.habitquest.R;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.AccountViewModelFactory;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 public class AccountFragment extends Fragment {
@@ -69,17 +71,25 @@ public class AccountFragment extends Fragment {
                 }
                 imgAvatar.setImageResource(resId);
 
-                // GENERISANJE QR KODA
-                try {
-                    String qrContent = "HabitQuest User: " + user.getUsername(); // ili user.getEmail()
-                    BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-                    Bitmap bitmap = barcodeEncoder.encodeBitmap(qrContent,
-                            com.google.zxing.BarcodeFormat.QR_CODE,
-                            400, 400);
-                    imgQrCode.setImageBitmap(bitmap);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                //QR kod
+                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (firebaseUser != null) {
+                    String uid = firebaseUser.getUid(); 
+                    try {
+                        String qrContent = uid;
+                        BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+                        Bitmap bitmap = barcodeEncoder.encodeBitmap(
+                                qrContent,
+                                com.google.zxing.BarcodeFormat.QR_CODE,
+                                400,
+                                400
+                        );
+                        imgQrCode.setImageBitmap(bitmap);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
+
             }
         });
     }
