@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -12,8 +13,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.habitquest.R;
+import com.example.habitquest.presentation.viewmodels.ChangePasswordViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.ChangePasswordViewModelFactory;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -74,12 +80,45 @@ public class ChangePasswordFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ImageView btnClose = view.findViewById(R.id.btnClose);
-
         btnClose.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(view);
             navController.popBackStack();
         });
+
+        // --- Change password polja ---
+        TextInputEditText etOld = view.findViewById(R.id.etOldPassword);
+        TextInputEditText etNew = view.findViewById(R.id.etNewPassword);
+        TextInputEditText etConfirm = view.findViewById(R.id.etConfirmPassword);
+        MaterialButton btnChange = view.findViewById(R.id.btnChangePassword);
+
+        // ViewModel
+        ChangePasswordViewModelFactory factory = new ChangePasswordViewModelFactory(requireContext());
+        ChangePasswordViewModel viewModel = new ViewModelProvider(this, factory).get(ChangePasswordViewModel.class);
+
+        // Klik na dugme
+        btnChange.setOnClickListener(v -> {
+            String oldPass = etOld.getText() != null ? etOld.getText().toString().trim() : "";
+            String newPass = etNew.getText() != null ? etNew.getText().toString().trim() : "";
+            String confirmPass = etConfirm.getText() != null ? etConfirm.getText().toString().trim() : "";
+
+            viewModel.changePassword(oldPass, newPass, confirmPass);
+        });
+
+        // Posmatrači
+        viewModel.changeSuccess.observe(getViewLifecycleOwner(), success -> {
+            if (Boolean.TRUE.equals(success)) {
+                Toast.makeText(requireContext(), "Password changed successfully!", Toast.LENGTH_SHORT).show();
+                Navigation.findNavController(view).popBackStack(); // vrati na Account
+            }
+        });
+
+        viewModel.errorMessage.observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 
 
 }

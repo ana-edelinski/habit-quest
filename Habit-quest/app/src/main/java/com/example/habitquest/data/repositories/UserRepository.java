@@ -49,4 +49,8 @@ public class UserRepository implements IUserRepository {
         remoteDataSource.loginUser(email, password, callback);
     }
 
+    public void changePassword(String oldPassword, String newPassword, RepositoryCallback<Void> callback) {
+        remoteDataSource.changePassword(oldPassword, newPassword, callback);
+    }
+
 }

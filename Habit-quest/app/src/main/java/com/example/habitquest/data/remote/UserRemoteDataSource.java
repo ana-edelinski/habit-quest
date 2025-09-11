@@ -8,6 +8,8 @@ import com.example.habitquest.domain.model.User;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -83,6 +85,33 @@ public class UserRemoteDataSource {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void changePassword(String oldPassword, String newPassword, RepositoryCallback<Void> callback) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || user.getEmail() == null) {
+            callback.onFailure(new Exception("No authenticated user"));
+            return;
+        }
+
+        // Re-authenticate
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), oldPassword);
+        user.reauthenticate(credential)
+                .addOnSuccessListener(aVoid -> {
+                    user.updatePassword(newPassword)
+                            .addOnSuccessListener(unused -> {
+                                // Update Firestore dokument da bude u skladu
+                                String uid = user.getUid();
+                                db.collection(COLLECTION_NAME).document(uid)
+                                        .update("password", newPassword)
+                                        .addOnSuccessListener(v -> callback.onSuccess(null))
+                                        .addOnFailureListener(callback::onFailure);
+                            })
+                            .addOnFailureListener(callback::onFailure);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 
 
 }
