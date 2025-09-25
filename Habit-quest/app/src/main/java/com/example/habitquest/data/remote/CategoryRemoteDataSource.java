@@ -22,8 +22,8 @@ public class CategoryRemoteDataSource {
     /* ---------- public API koji koristi tvoj CategoryRepository ---------- */
 
     /** Jednokratno čitanje svih kategorija korisnika. */
-    public void fetchAll(@NonNull String userId, @NonNull RepositoryCallback<List<Category>> cb) {
-        cats(userId)
+    public void fetchAll(@NonNull String firebaseUid, @NonNull RepositoryCallback<List<Category>> cb) {
+        cats(firebaseUid)
                 .orderBy("name", Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(snap -> {
@@ -43,9 +43,9 @@ public class CategoryRemoteDataSource {
                 .addOnFailureListener(cb::onFailure);
     }
 
-    /** Real-time slušanje cele liste. Obavezno pozovi close() na povratnoj vrednosti kada više ne treba. */
-    public Closeable listenAll(@NonNull String userId, @NonNull RemoteListener listener) {
-        ListenerRegistration reg = cats(userId)
+    /** Real-time slušanje cele liste. */
+    public Closeable listenAll(@NonNull String firebaseUid, @NonNull RemoteListener listener) {
+        ListenerRegistration reg = cats(firebaseUid)
                 .orderBy("name", Query.Direction.ASCENDING)
                 .addSnapshotListener((snap, e) -> {
                     if (e != null) { listener.onError(e); return; }
@@ -63,16 +63,13 @@ public class CategoryRemoteDataSource {
                     listener.onChanged(out);
                 });
 
-        // Vrati Closeable koji samo poziva reg.remove()
-        return new Closeable() {
-            @Override public void close() throws IOException { reg.remove(); }
-        };
+        return () -> reg.remove();
     }
 
-    /** Provera da li je boja već zauzeta (case-insensitive → normalize na UPPER pre slanja). */
-    public void isColorTaken(@NonNull String userId, @NonNull String colorHex, @NonNull RepositoryCallback<Boolean> cb) {
+    /** Provera da li je boja već zauzeta. */
+    public void isColorTaken(@NonNull String firebaseUid, @NonNull String colorHex, @NonNull RepositoryCallback<Boolean> cb) {
         String normalized = colorHex.toUpperCase();
-        cats(userId)
+        cats(firebaseUid)
                 .whereEqualTo("colorHex", normalized)
                 .limit(1)
                 .get()
@@ -80,28 +77,29 @@ public class CategoryRemoteDataSource {
                 .addOnFailureListener(cb::onFailure);
     }
 
-    /** Kreiranje nove kategorije: generišemo long id i koristimo ga kao docId. */
-    public void create(@NonNull String userId, @NonNull String name, @NonNull String colorHex,
+    /** Kreiranje nove kategorije. */
+    public void create(@NonNull String firebaseUid, @NonNull String name, @NonNull String colorHex,
                        @NonNull RepositoryCallback<Category> cb) {
         long now = System.currentTimeMillis();
-        long newId = now; // dovoljno za projekat; možeš dodati random sufiks ako želiš
+        long newId = now; // docId
+
         Category c = new Category(
                 newId,
-                parseUserIdOrThrow(userId),
+                0L, // local userId nije bitan za Firestore
                 name.trim(),
                 colorHex.toUpperCase(),
                 now,
                 now
         );
 
-        cats(userId).document(String.valueOf(newId))
+        cats(firebaseUid).document(String.valueOf(newId))
                 .set(c)
                 .addOnSuccessListener(v -> cb.onSuccess(c))
                 .addOnFailureListener(cb::onFailure);
     }
 
-    /** Izmena postojeće kategorije (po id-u). */
-    public void update(@NonNull Category category, @NonNull RepositoryCallback<Void> cb) {
+    /** Izmena postojeće kategorije. */
+    public void update(@NonNull String firebaseUid, @NonNull Category category, @NonNull RepositoryCallback<Void> cb) {
         if (category.getId() == null) {
             cb.onFailure(new IllegalArgumentException("Category id is null"));
             return;
@@ -109,58 +107,50 @@ public class CategoryRemoteDataSource {
         long now = System.currentTimeMillis();
         category.setUpdatedAt(now);
 
-        String userIdStr = String.valueOf(category.getUserId());
         String docId = String.valueOf(category.getId());
 
-        cats(userIdStr).document(docId)
-                .set(category) // set() je prost; ako želiš delimično: .set(category, SetOptions.merge())
+        cats(firebaseUid).document(docId)
+                .set(category)
                 .addOnSuccessListener(v -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onFailure);
     }
 
     /** Da li postoje aktivni taskovi koji koriste ovu kategoriju. */
-    public void hasActiveTasks(@NonNull String userId, @NonNull Object categoryId,
+    public void hasActiveTasks(@NonNull String firebaseUid, @NonNull Object categoryId,
                                @NonNull RepositoryCallback<Boolean> cb) {
         long catId = parseId(categoryId);
 
-        tasks(userId)
-                .whereEqualTo("categoryId", catId)     // pretpostavka: task.categoryId je LONG u Firestore-u
-                .whereEqualTo("active", true)          // pretpostavka: task.active = boolean
+        tasks(firebaseUid)
+                .whereEqualTo("categoryId", catId)
+                .whereEqualTo("active", true)
                 .limit(1)
                 .get()
                 .addOnSuccessListener(q -> cb.onSuccess(!q.isEmpty()))
                 .addOnFailureListener(cb::onFailure);
     }
 
-    /** Brisanje dokumenta po id-u. */
-    public void delete(@NonNull String userId, @NonNull Object categoryId, @NonNull RepositoryCallback<Void> cb) {
+    /** Brisanje kategorije. */
+    public void delete(@NonNull String firebaseUid, @NonNull Object categoryId, @NonNull RepositoryCallback<Void> cb) {
         String docId = String.valueOf(parseId(categoryId));
-        cats(userId).document(docId)
+        cats(firebaseUid).document(docId)
                 .delete()
                 .addOnSuccessListener(v -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onFailure);
     }
 
-    /* ---------- helper interfejs i util-i ---------- */
+    /* ---------- helpers ---------- */
 
     public interface RemoteListener {
         void onChanged(List<Category> list);
         void onError(Exception e);
     }
 
-    private CollectionReference cats(String userId) {
-        // šema: /users/{uid}/categories/{categoryId}
-        return db.collection("users").document(userId).collection("categories");
+    private CollectionReference cats(String firebaseUid) {
+        return db.collection("users").document(firebaseUid).collection("categories");
     }
 
-    private CollectionReference tasks(String userId) {
-        // šema: /users/{uid}/tasks/{taskId}
-        return db.collection("users").document(userId).collection("tasks");
-    }
-
-    private static long parseUserIdOrThrow(String userIdStr) {
-        try { return Long.parseLong(userIdStr); }
-        catch (Exception e) { throw new IllegalArgumentException("Local domain expects numeric userId, got: " + userIdStr, e); }
+    private CollectionReference tasks(String firebaseUid) {
+        return db.collection("users").document(firebaseUid).collection("tasks");
     }
 
     private static long parseId(Object idObj) {

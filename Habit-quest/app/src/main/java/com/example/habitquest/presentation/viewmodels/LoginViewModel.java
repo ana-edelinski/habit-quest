@@ -8,6 +8,7 @@ import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.utils.RepositoryCallback;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginViewModel extends ViewModel {
     private final UserRepository userRepository;
@@ -33,10 +34,14 @@ public class LoginViewModel extends ViewModel {
             return;
         }
 
+
+
         userRepository.loginUser(email, password, new RepositoryCallback<User>() {
             @Override
             public void onSuccess(User result) {
-                appPreferences.saveUserSession(result.getEmail());
+                String firebaseUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                String localUserId = String.valueOf(result.getId());
+                appPreferences.saveUserSession(localUserId, firebaseUid);
                 appPreferences.saveUsername(result.getUsername());
                 appPreferences.saveAvatarIndex(result.getAvatar());
                 _loginSuccess.postValue(true);

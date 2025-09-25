@@ -27,7 +27,6 @@ public final class AppContract {
 
     public static final class CategoryEntry implements BaseColumns {
         public static final String TABLE_NAME = "CATEGORIES";
-        public static final String COLUMN_ID = "_id";
         public static final String COLUMN_USER_ID   = "userId";     // LONG (ako ti je uid String, promeni u TEXT)
         public static final String COLUMN_NAME      = "name";       // TEXT NOT NULL
         public static final String COLUMN_COLOR_HEX = "colorHex";   // TEXT NOT NULL, format #RRGGBB

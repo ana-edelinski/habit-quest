@@ -31,4 +31,24 @@ public class UsersLocalDataSource {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         return db.query(AppContract.UserEntry.TABLE_NAME, null, null, null, null, null, null);
     }
+
+    public Long getUserIdByEmail(String email) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
+                AppContract.UserEntry.TABLE_NAME,
+                new String[]{AppContract.UserEntry._ID},
+                AppContract.UserEntry.COLUMN_EMAIL + "=?",
+                new String[]{email},
+                null, null, null
+        );
+        if (cursor != null && cursor.moveToFirst()) {
+            long id = cursor.getLong(cursor.getColumnIndexOrThrow(AppContract.UserEntry._ID));
+            cursor.close();
+            return id;
+        }
+        if (cursor != null) cursor.close();
+        return null;
+    }
+
+
 }

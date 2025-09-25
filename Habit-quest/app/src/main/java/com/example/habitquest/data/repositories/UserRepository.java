@@ -46,7 +46,22 @@ public class UserRepository implements IUserRepository {
 
     @Override
     public void loginUser(String email, String password, RepositoryCallback<User> callback) {
-        remoteDataSource.loginUser(email, password, callback);
+        remoteDataSource.loginUser(email, password, new RepositoryCallback<User>() {
+            @Override
+            public void onSuccess(User remoteUser) {
+                // Uzmi localId iz SQLite baze
+                Long localId = localDataSource.getUserIdByEmail(email);
+                if (localId != null) {
+                    remoteUser.setId(localId);
+                }
+                callback.onSuccess(remoteUser);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
     }
 
 }

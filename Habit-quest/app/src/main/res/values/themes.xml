@@ -12,6 +12,7 @@
         <item name="android:windowLightStatusBar">true</item>
 
         <item name="actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
+
     </style>
 
     <style name="Theme.HabitQuest" parent="Base.Theme.HabitQuest" />

@@ -1,66 +1,90 @@
 package com.example.habitquest.presentation.fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.presentation.adapters.CategoryAdapter;
+import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link CategoryListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class CategoryListFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private CategoryAdapter adapter;
+    private CategoryViewModel viewModel;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public CategoryListFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment CatgoryListFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static CategoryListFragment newInstance(String param1, String param2) {
-        CategoryListFragment fragment = new CategoryListFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_category_list, container, false);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerCategories);
+        FloatingActionButton fabAdd = view.findViewById(R.id.fabAddCategory);
+
+        adapter = new CategoryAdapter();
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
+
+        // ViewModel
+        viewModel = new ViewModelProvider(this).get(CategoryViewModel.class);
+
+        // posmatraj promene u listi
+        viewModel.categories.observe(getViewLifecycleOwner(), categories -> {
+            adapter.setCategories(categories);
+        });
+
+        AppPreferences prefs = new AppPreferences(requireContext());
+        String firebaseUid = prefs.getFirebaseUid();
+        String localUserId = prefs.getUserId();
+        viewModel.startListening(firebaseUid, localUserId);
+
+        fabAdd.setOnClickListener(v -> {
+            showAddCategoryDialog();
+        });
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_catgory_list, container, false);
+    private void showAddCategoryDialog() {
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_category, null);
+
+        EditText editName = dialogView.findViewById(R.id.editCategoryName);
+        EditText editColor = dialogView.findViewById(R.id.editCategoryColor); // za sad unos HEX ručno
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Add Category")
+                .setView(dialogView)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String name = editName.getText().toString().trim();
+                    String color = editColor.getText().toString().trim();
+
+                    if (!name.isEmpty() && !color.isEmpty()) {
+                        AppPreferences prefs = new AppPreferences(requireContext());
+                        String firebaseUid = prefs.getFirebaseUid();
+                        String localUserId = prefs.getUserId();
+
+                        viewModel.createCategory(firebaseUid, localUserId, name, color);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
+
 }

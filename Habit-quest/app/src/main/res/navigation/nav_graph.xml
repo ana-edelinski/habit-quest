@@ -16,4 +16,9 @@
         android:name="com.example.habitquest.presentation.fragments.AccountFragment"
         android:label="My Account"
         tools:layout="@layout/fragment_account" />
+
+    <fragment
+        android:id="@+id/categoryListFragment"
+        android:name="com.example.habitquest.presentation.fragments.CategoryListFragment"
+        android:label="Categories"/>
 </navigation>

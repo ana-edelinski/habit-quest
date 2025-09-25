@@ -27,7 +27,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.i("REZ_DB", "onUpgrade DB");
         db.execSQL("DROP TABLE IF EXISTS " + AppContract.UserEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + AppContract.UserEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + AppContract.CategoryEntry.TABLE_NAME);
         onCreate(db);
     }
 
