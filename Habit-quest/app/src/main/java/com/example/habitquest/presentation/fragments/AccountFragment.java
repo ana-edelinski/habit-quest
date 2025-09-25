@@ -1,5 +1,7 @@
 package com.example.habitquest.presentation.fragments;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,10 +13,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.habitquest.R;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.AccountViewModelFactory;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 public class AccountFragment extends Fragment {
 
@@ -35,6 +42,15 @@ public class AccountFragment extends Fragment {
 
         imgAvatar = view.findViewById(R.id.imgAvatar);
         txtUsername = view.findViewById(R.id.tvUsername);
+        ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
+
+        View btnSettings = view.findViewById(R.id.btnSettings);
+
+        btnSettings.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+            navController.navigate(R.id.changePasswordFragment);
+        });
+
 
         AccountViewModelFactory factory = new AccountViewModelFactory(requireContext());
         viewModel = new ViewModelProvider(this, factory).get(AccountViewModel.class);
@@ -54,6 +70,26 @@ public class AccountFragment extends Fragment {
                     default: resId = R.drawable.avatar5;
                 }
                 imgAvatar.setImageResource(resId);
+
+                //QR kod
+                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (firebaseUser != null) {
+                    String uid = firebaseUser.getUid();
+                    try {
+                        String qrContent = uid;
+                        BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+                        Bitmap bitmap = barcodeEncoder.encodeBitmap(
+                                qrContent,
+                                com.google.zxing.BarcodeFormat.QR_CODE,
+                                400,
+                                400
+                        );
+                        imgQrCode.setImageBitmap(bitmap);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
             }
         });
     }

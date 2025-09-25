@@ -21,8 +21,8 @@ public final class AppContract {
                         COLUMN_EMAIL + " TEXT, " +
                         COLUMN_USERNAME + " TEXT, " +
                         COLUMN_PASSWORD + " TEXT, " +
-                        COLUMN_AVATAR + " INTEGER DEFAULT 1, " +
-                        "isVerified INTEGER DEFAULT 0)";
+                        COLUMN_AVATAR + " INTEGER DEFAULT 1)";
+
     }
 
     public static final class CategoryEntry implements BaseColumns {
