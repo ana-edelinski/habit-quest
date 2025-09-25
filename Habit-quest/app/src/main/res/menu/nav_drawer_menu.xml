@@ -3,4 +3,7 @@
     <item
         android:id="@+id/categoryListFragment"
         android:title="Categories" />
+    <item
+        android:id="@+id/taskListFragment"
+        android:title="Tasks" />
 </menu>

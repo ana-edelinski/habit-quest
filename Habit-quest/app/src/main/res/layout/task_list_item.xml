@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp">
+
+    <!-- Task name -->
+    <TextView
+        android:id="@+id/tvTaskName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Task name"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/cbTaskStatus" />
+
+    <!-- Category -->
+    <TextView
+        android:id="@+id/tvCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Health"
+        android:drawablePadding="6dp"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvTaskName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:drawableStartCompat="@drawable/ic_circle"/>
+
+    <!-- Date or Repeat -->
+    <TextView
+        android:id="@+id/tvDateOrRepeat"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Tomorrow 18:00"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintTop_toBottomOf="@id/tvTaskName"
+        app:layout_constraintStart_toEndOf="@id/tvCategory"
+        app:layout_constraintEnd_toStartOf="@id/tvXp" />
+
+    <!-- XP -->
+    <TextView
+        android:id="@+id/tvXp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+10 XP"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:textColor="@color/greenShadeDark"
+        app:layout_constraintTop_toBottomOf="@id/tvTaskName"
+        app:layout_constraintEnd_toStartOf="@id/cbTaskStatus" />
+
+    <!-- Task status -->
+    <CheckBox
+        android:id="@+id/cbTaskStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:buttonTint="@color/greenShadeDark"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

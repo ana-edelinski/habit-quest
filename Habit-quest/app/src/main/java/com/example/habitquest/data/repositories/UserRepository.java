@@ -51,6 +51,15 @@ public class UserRepository implements IUserRepository {
             public void onSuccess(User remoteUser) {
                 // Uzmi localId iz SQLite baze
                 Long localId = localDataSource.getUserIdByEmail(email);
+                if (localId == null) {
+                    // User ne postoji lokalno → kreiraj ga
+                    localId = localDataSource.insertUser(
+                            email,
+                            remoteUser.getUsername(),
+                            password,
+                            remoteUser.getAvatar()
+                    );
+                }
                 if (localId != null) {
                     remoteUser.setId(localId);
                 }

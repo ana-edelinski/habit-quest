@@ -46,4 +46,41 @@ public final class AppContract {
                         "UNIQUE (" + CategoryEntry.COLUMN_USER_ID + ", " + CategoryEntry.COLUMN_COLOR_HEX + ")" +
                         ");";
     }
+
+    public static final class TaskEntry implements BaseColumns {
+        public static final String TABLE_NAME = "TASKS";
+
+        public static final String COLUMN_USER_ID      = "userId";        // LONG (lokalni ID korisnika)
+        public static final String COLUMN_CATEGORY_ID  = "categoryId";    // LONG (FK na kategoriju)
+        public static final String COLUMN_NAME         = "name";          // TEXT NOT NULL
+        public static final String COLUMN_DESCRIPTION  = "description";   // TEXT (opciono)
+        public static final String COLUMN_DATE         = "date";          // INTEGER (epoch millis, za jednokratni)
+        public static final String COLUMN_START_DATE   = "startDate";     // INTEGER (epoch millis, za ponavljajući)
+        public static final String COLUMN_END_DATE     = "endDate";       // INTEGER (epoch millis, za ponavljajući)
+        public static final String COLUMN_INTERVAL     = "interval";      // INTEGER (npr. 2 dana / 3 nedelje)
+        public static final String COLUMN_UNIT         = "unit";          // TEXT (day / week)
+        public static final String COLUMN_DIFFICULTY_XP= "difficultyXp";  // INTEGER (XP za težinu)
+        public static final String COLUMN_IMPORTANCE_XP= "importanceXp";  // INTEGER (XP za bitnost)
+        public static final String COLUMN_TOTAL_XP     = "totalXp";       // INTEGER (ukupno XP)
+        public static final String COLUMN_COMPLETED    = "completed";     // INTEGER (0/1)
+
+        public static final String CREATE_TABLE =
+                "CREATE TABLE " + TABLE_NAME + " (" +
+                        _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        COLUMN_USER_ID      + " INTEGER NOT NULL, " +
+                        COLUMN_CATEGORY_ID  + " INTEGER NOT NULL, " +
+                        COLUMN_NAME         + " TEXT NOT NULL, " +
+                        COLUMN_DESCRIPTION  + " TEXT, " +
+                        COLUMN_DATE         + " INTEGER, " +
+                        COLUMN_START_DATE   + " INTEGER, " +
+                        COLUMN_END_DATE     + " INTEGER, " +
+                        COLUMN_INTERVAL     + " INTEGER, " +
+                        COLUMN_UNIT         + " TEXT, " +
+                        COLUMN_DIFFICULTY_XP+ " INTEGER NOT NULL, " +
+                        COLUMN_IMPORTANCE_XP+ " INTEGER NOT NULL, " +
+                        COLUMN_TOTAL_XP     + " INTEGER NOT NULL, " +
+                        COLUMN_COMPLETED    + " INTEGER NOT NULL DEFAULT 0" +
+                        ");";
+    }
+
 }

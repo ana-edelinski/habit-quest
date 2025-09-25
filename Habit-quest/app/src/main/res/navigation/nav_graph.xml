@@ -27,4 +27,11 @@
         android:label="Change Password"
         tools:layout="@layout/fragment_change_password" />
 
+    <fragment
+        android:id="@+id/taskListFragment"
+        android:name="com.example.habitquest.presentation.fragments.TaskListFragment"
+        android:label="Tasks"
+        tools:layout="@layout/fragment_task_list" />
+
+
 </navigation>

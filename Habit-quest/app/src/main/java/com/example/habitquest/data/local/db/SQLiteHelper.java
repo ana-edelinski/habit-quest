@@ -21,6 +21,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         Log.i("REZ_DB", "ON CREATE SQLITE HELPER");
         db.execSQL(AppContract.UserEntry.CREATE_TABLE);
         db.execSQL(AppContract.CategoryEntry.CREATE_TABLE);
+        db.execSQL(AppContract.TaskEntry.CREATE_TABLE);
     }
 
     @Override
@@ -28,6 +29,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         Log.i("REZ_DB", "onUpgrade DB");
         db.execSQL("DROP TABLE IF EXISTS " + AppContract.UserEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + AppContract.CategoryEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + AppContract.TaskEntry.TABLE_NAME);
         onCreate(db);
     }
 
