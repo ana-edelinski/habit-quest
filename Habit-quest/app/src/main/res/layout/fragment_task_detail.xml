@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="?android:attr/dividerVertical"
+        android:showDividers="middle">
+
+        <!-- Naziv zadatka -->
+        <TextView
+            android:id="@+id/tvTaskNameDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Task Name"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingBottom="8dp"/>
+
+        <!-- Opis -->
+        <TextView
+            android:id="@+id/tvTaskDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description goes here"
+            android:textSize="16sp"
+            android:paddingBottom="12dp"/>
+
+        <!-- Kategorija -->
+        <TextView
+            android:id="@+id/tvCategoryDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Category"
+            android:textSize="16sp"
+            android:drawablePadding="8dp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_circle"/>
+
+
+        <!-- Datum ili ponavljanje -->
+        <TextView
+            android:id="@+id/tvTaskDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date or repeat info"
+            android:textSize="16sp"
+            android:paddingBottom="12dp"/>
+
+        <!-- XP -->
+        <TextView
+            android:id="@+id/tvTaskXp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+10 XP"
+            android:textStyle="bold"
+            android:textColor="@color/greenShadeDark"
+            android:textSize="16sp"
+            android:paddingBottom="12dp"/>
+
+        <!-- Status -->
+        <TextView
+            android:id="@+id/tvTaskStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ACTIVE"
+            android:textStyle="bold"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="16sp"
+            android:paddingBottom="20dp"/>
+
+        <!-- Akcione tipke -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="3"
+            android:paddingBottom="20dp">
+
+            <Button
+                android:id="@+id/btnMarkDone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@android:color/white"
+                android:text="Mark Done"/>
+
+            <Button
+                android:id="@+id/btnPause"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@android:color/white"
+                android:text="Pause"/>
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@android:color/white"
+                android:text="Cancel"/>
+        </LinearLayout>
+
+        <!-- Edit & Delete -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/btnEdit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@android:color/white"
+                android:text="Edit"/>
+
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@android:color/white"
+                android:text="Delete"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

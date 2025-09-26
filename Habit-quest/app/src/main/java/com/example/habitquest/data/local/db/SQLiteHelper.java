@@ -10,7 +10,7 @@ import android.util.Log;
 // Brine se o onCreate i onUpgrade metodama baze.
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "habitquest.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 12;
 
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -22,6 +22,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         db.execSQL(AppContract.UserEntry.CREATE_TABLE);
         db.execSQL(AppContract.CategoryEntry.CREATE_TABLE);
         db.execSQL(AppContract.TaskEntry.CREATE_TABLE);
+        db.execSQL(AppContract.UserXpLogEntry.CREATE_TABLE);
     }
 
     @Override
@@ -30,6 +31,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + AppContract.UserEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + AppContract.CategoryEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + AppContract.TaskEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + AppContract.UserXpLogEntry.TABLE_NAME);
         onCreate(db);
     }
 

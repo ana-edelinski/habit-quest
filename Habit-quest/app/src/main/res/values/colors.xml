@@ -2,7 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="colorPrimary">#334092</color>
+    <color name="colorPrimary">#064E3B</color>
     <color name="colorOnPrimary">#FFFFFF</color>
 
     <color name="toolbar_bg">#242424</color>      <!-- pozadina toolbara -->

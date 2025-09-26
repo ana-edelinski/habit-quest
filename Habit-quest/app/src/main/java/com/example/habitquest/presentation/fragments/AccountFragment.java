@@ -17,6 +17,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.AccountViewModelFactory;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,6 +29,8 @@ public class AccountFragment extends Fragment {
     private AccountViewModel viewModel;
     private ImageView imgAvatar;
     private TextView txtUsername;
+    private TextView txtXp;
+
 
     @Nullable
     @Override
@@ -42,6 +45,7 @@ public class AccountFragment extends Fragment {
 
         imgAvatar = view.findViewById(R.id.imgAvatar);
         txtUsername = view.findViewById(R.id.tvUsername);
+        txtXp = view.findViewById(R.id.tvXP);
         ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
 
         View btnSettings = view.findViewById(R.id.btnSettings);
@@ -91,6 +95,15 @@ public class AccountFragment extends Fragment {
                 }
 
             }
+        });
+
+        AppPreferences prefs = new AppPreferences(requireContext());
+        long localUserId = Long.parseLong(prefs.getUserId());
+
+        viewModel.loadTotalXp(localUserId);
+
+        viewModel.totalXp.observe(getViewLifecycleOwner(), totalXp -> {
+            txtXp.setText("XP: " + totalXp);
         });
     }
 }

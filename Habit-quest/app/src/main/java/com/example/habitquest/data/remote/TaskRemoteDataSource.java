@@ -9,6 +9,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.SetOptions;
 
 
 import java.io.Closeable;
@@ -55,7 +56,7 @@ public class TaskRemoteDataSource {
             return;
         }
         tasks(firebaseUid).document(String.valueOf(task.getId()))
-                .set(task)
+                .set(task, SetOptions.merge())
                 .addOnSuccessListener(v -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onFailure);
     }

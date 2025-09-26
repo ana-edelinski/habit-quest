@@ -10,6 +10,7 @@ import com.example.habitquest.utils.RepositoryCallback;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TaskRepository implements ITaskRepository {
@@ -42,6 +43,9 @@ public class TaskRepository implements ITaskRepository {
             public void onChanged(List<Task> list) {
                 // syncuj lokalno
                 for (Task t : list) {
+                    if (t.getUserId() == null) {
+                        t.setUserId(localUserId); // fallback na lokalnog usera
+                    }
                     local.upsert(t);
                 }
                 listener.onChanged(list);

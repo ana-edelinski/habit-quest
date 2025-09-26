@@ -1,6 +1,9 @@
 package com.example.habitquest.domain.model;
 
-public class Task {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Task implements Parcelable {
     private Long id;
     private Long userId;        // lokalni user ID (SQLite)
     private String firebaseUid; // za Firestore
@@ -23,14 +26,14 @@ public class Task {
     private int importanceXp;
     private int totalXp;
 
-    private boolean completed;
+    private TaskStatus status;
 
     public Task() { }
 
     public Task(Long id, Long userId, String firebaseUid, Long categoryId,
                 String name, String description, Long date,
                 Long startDate, Long endDate, Integer interval, String unit,
-                int difficultyXp, int importanceXp, int totalXp, boolean completed) {
+                int difficultyXp, int importanceXp, int totalXp, TaskStatus status) {
         this.id = id;
         this.userId = userId;
         this.firebaseUid = firebaseUid;
@@ -45,8 +48,108 @@ public class Task {
         this.difficultyXp = difficultyXp;
         this.importanceXp = importanceXp;
         this.totalXp = totalXp;
-        this.completed = completed;
+        this.status = status;
     }
+
+
+    protected Task(Parcel in) {
+        id = in.readByte() == 0 ? null : in.readLong();
+        userId = in.readByte() == 0 ? null : in.readLong();
+        firebaseUid = in.readString();
+        categoryId = in.readByte() == 0 ? null : in.readLong();
+        name = in.readString();
+        description = in.readString();
+        date = in.readByte() == 0 ? null : in.readLong();
+        startDate = in.readByte() == 0 ? null : in.readLong();
+        endDate = in.readByte() == 0 ? null : in.readLong();
+        interval = in.readByte() == 0 ? null : in.readInt();
+        unit = in.readString();
+        difficultyXp = in.readInt();
+        importanceXp = in.readInt();
+        totalXp = in.readInt();
+        String statusName = in.readString();
+        status = statusName != null ? TaskStatus.valueOf(statusName) : null;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        if (id == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(id);
+        }
+
+        if (userId == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(userId);
+        }
+
+        dest.writeString(firebaseUid);
+
+        if (categoryId == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(categoryId);
+        }
+
+        dest.writeString(name);
+        dest.writeString(description);
+
+        if (date == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(date);
+        }
+
+        if (startDate == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(startDate);
+        }
+
+        if (endDate == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(endDate);
+        }
+
+        if (interval == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(interval);
+        }
+
+        dest.writeString(unit);
+        dest.writeInt(difficultyXp);
+        dest.writeInt(importanceXp);
+        dest.writeInt(totalXp);
+        dest.writeString(status != null ? status.name() : null);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Task> CREATOR = new Creator<Task>() {
+        @Override
+        public Task createFromParcel(Parcel in) {
+            return new Task(in);
+        }
+
+        @Override
+        public Task[] newArray(int size) {
+            return new Task[size];
+        }
+    };
 
     public Long getEndDate() {
         return endDate;
@@ -160,12 +263,12 @@ public class Task {
         this.totalXp = totalXp;
     }
 
-    public boolean isCompleted() {
-        return completed;
+    public TaskStatus getStatus() {
+        return status;
     }
 
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
+    public void setStatus(TaskStatus status) {
+        this.status = status;
     }
 }
 

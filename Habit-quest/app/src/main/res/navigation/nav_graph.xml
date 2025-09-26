@@ -33,5 +33,12 @@
         android:label="Tasks"
         tools:layout="@layout/fragment_task_list" />
 
+    <fragment
+        android:id="@+id/taskDetailFragment"
+        android:name="com.example.habitquest.presentation.fragments.TaskDetailFragment"
+        android:label="Task Detail"
+        tools:layout="@layout/fragment_task_detail" />
+
+
 
 </navigation>

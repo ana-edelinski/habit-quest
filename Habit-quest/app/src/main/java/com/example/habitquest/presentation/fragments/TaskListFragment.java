@@ -11,10 +11,18 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.presentation.adapters.TaskPagerAdapter;
+import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
+import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+
+import java.util.ArrayList;
+import androidx.lifecycle.ViewModelProvider;
+
 
 public class TaskListFragment extends Fragment {
 
@@ -34,6 +42,9 @@ public class TaskListFragment extends Fragment {
         ViewPager2 viewPager = view.findViewById(R.id.viewPager);
         FloatingActionButton fab = view.findViewById(R.id.fabAddTask);
 
+        TaskViewModel taskViewModel = new ViewModelProvider(requireActivity()).get(TaskViewModel.class);
+        CategoryViewModel categoryViewModel = new ViewModelProvider(requireActivity()).get(CategoryViewModel.class);
+
         TaskPagerAdapter adapter = new TaskPagerAdapter(requireActivity());
         viewPager.setAdapter(adapter);
 
@@ -41,8 +52,32 @@ public class TaskListFragment extends Fragment {
                 (tab, position) -> tab.setText(position == 0 ? "One-time" : "Recurring")
         ).attach();
 
-        fab.setOnClickListener(v -> {
-            // TODO: Open AddTask dialog
+        AppPreferences prefs = new AppPreferences(requireContext());
+        String firebaseUid = prefs.getFirebaseUid();
+        String localUserId = prefs.getUserId();
+
+        // 🔑 Pokreće učitavanje kategorija
+        categoryViewModel.startListening(firebaseUid, localUserId);
+
+
+
+        fab.setOnClickListener(v1 -> {
+            // 🔑 Kada se klikne na FAB, koristi iste kategorije za dijalog
+            ArrayList<AddTaskDialogFragment.CategoryItem> cats = new ArrayList<>();
+            if (categoryViewModel.categories.getValue() != null) {
+                for (Category c : categoryViewModel.categories.getValue()) {
+                    cats.add(new AddTaskDialogFragment.CategoryItem(c.getId(), c.getName()));
+                }
+            }
+
+            AddTaskDialogFragment dialog = AddTaskDialogFragment.newInstance(cats);
+            dialog.setOnTaskCreatedListener(task -> {
+                taskViewModel.createTask(firebaseUid, task);
+            });
+            dialog.show(getParentFragmentManager(), "AddTaskDialog");
         });
     }
+
+
+
 }

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.habitquest.data.local.db.SQLiteHelper;
 import com.example.habitquest.domain.model.Task;
+import com.example.habitquest.domain.model.TaskStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class TaskLocalDataSource {
 
     public long insert(Task task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = toValues(task, false);
+        ContentValues values = toValues(task, true);
         long id = db.insert("TASKS", null, values);
         task.setId(id);
         return id;
@@ -28,7 +29,7 @@ public class TaskLocalDataSource {
 
     public long upsert(Task task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = toValues(task, false);
+        ContentValues values = toValues(task, true);
         int rows = db.update("TASKS", values, "_id=? AND userId=?",
                 new String[]{String.valueOf(task.getId()), String.valueOf(task.getUserId())});
         if (rows == 0) {
@@ -70,7 +71,11 @@ public class TaskLocalDataSource {
         v.put("difficultyXp", t.getDifficultyXp());
         v.put("importanceXp", t.getImportanceXp());
         v.put("totalXp", t.getTotalXp());
-        v.put("completed", t.isCompleted() ? 1 : 0);
+        if (t.getStatus() != null) {
+            v.put("status", t.getStatus().name()); // npr. "ACTIVE", "PAUSED", ...
+        } else {
+            v.put("status", TaskStatus.ACTIVE.name()); // default
+        }
         return v;
     }
 
@@ -89,7 +94,14 @@ public class TaskLocalDataSource {
         t.setDifficultyXp(c.getInt(c.getColumnIndexOrThrow("difficultyXp")));
         t.setImportanceXp(c.getInt(c.getColumnIndexOrThrow("importanceXp")));
         t.setTotalXp(c.getInt(c.getColumnIndexOrThrow("totalXp")));
-        t.setCompleted(c.getInt(c.getColumnIndexOrThrow("completed")) == 1);
+        String statusStr = c.getString(c.getColumnIndexOrThrow("status"));
+        TaskStatus status = TaskStatus.ACTIVE; // default
+        try {
+            status = TaskStatus.valueOf(statusStr);
+        } catch (Exception e) {
+            // ostaje default
+        }
+        t.setStatus(status);
         return t;
     }
 }

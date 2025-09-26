@@ -15,6 +15,7 @@ public final class AppContract {
         public static final String COLUMN_PASSWORD = "password";
         public static final String COLUMN_AVATAR = "avatar";
 
+
         public static final String CREATE_TABLE =
                 "CREATE TABLE " + TABLE_NAME + " (" +
                         _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -50,37 +51,68 @@ public final class AppContract {
     public static final class TaskEntry implements BaseColumns {
         public static final String TABLE_NAME = "TASKS";
 
-        public static final String COLUMN_USER_ID      = "userId";        // LONG (lokalni ID korisnika)
-        public static final String COLUMN_CATEGORY_ID  = "categoryId";    // LONG (FK na kategoriju)
-        public static final String COLUMN_NAME         = "name";          // TEXT NOT NULL
-        public static final String COLUMN_DESCRIPTION  = "description";   // TEXT (opciono)
-        public static final String COLUMN_DATE         = "date";          // INTEGER (epoch millis, za jednokratni)
-        public static final String COLUMN_START_DATE   = "startDate";     // INTEGER (epoch millis, za ponavljajući)
-        public static final String COLUMN_END_DATE     = "endDate";       // INTEGER (epoch millis, za ponavljajući)
-        public static final String COLUMN_INTERVAL     = "interval";      // INTEGER (npr. 2 dana / 3 nedelje)
-        public static final String COLUMN_UNIT         = "unit";          // TEXT (day / week)
-        public static final String COLUMN_DIFFICULTY_XP= "difficultyXp";  // INTEGER (XP za težinu)
-        public static final String COLUMN_IMPORTANCE_XP= "importanceXp";  // INTEGER (XP za bitnost)
-        public static final String COLUMN_TOTAL_XP     = "totalXp";       // INTEGER (ukupno XP)
-        public static final String COLUMN_COMPLETED    = "completed";     // INTEGER (0/1)
+        public static final String COLUMN_USER_ID       = "userId";        // LONG (lokalni ID korisnika)
+        public static final String COLUMN_CATEGORY_ID   = "categoryId";    // LONG (FK na kategoriju)
+        public static final String COLUMN_NAME          = "name";          // TEXT NOT NULL
+        public static final String COLUMN_DESCRIPTION   = "description";   // TEXT (opciono)
+
+        // Jednokratni zadaci
+        public static final String COLUMN_DATE_TIME     = "date";      // INTEGER (epoch millis)
+
+        // Ponavljajući zadaci
+        public static final String COLUMN_START_DATE_TIME = "startDate"; // INTEGER (epoch millis)
+        public static final String COLUMN_END_DATE_TIME   = "endDate";   // INTEGER (epoch millis)
+        public static final String COLUMN_INTERVAL        = "interval";      // INTEGER (npr. 2 dana / 3 nedelje)
+        public static final String COLUMN_UNIT            = "unit";          // TEXT (day / week)
+
+        // XP vrednosti
+        public static final String COLUMN_DIFFICULTY_XP = "difficultyXp";  // INTEGER (XP za težinu)
+        public static final String COLUMN_IMPORTANCE_XP = "importanceXp";  // INTEGER (XP za bitnost)
+        public static final String COLUMN_TOTAL_XP      = "totalXp";       // INTEGER (ukupno XP)
+
+        // Status (ACTIVE, PAUSED, COMPLETED, CANCELED)
+        public static final String COLUMN_STATUS        = "status";        // TEXT NOT NULL
 
         public static final String CREATE_TABLE =
                 "CREATE TABLE " + TABLE_NAME + " (" +
                         _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        COLUMN_USER_ID      + " INTEGER NOT NULL, " +
-                        COLUMN_CATEGORY_ID  + " INTEGER NOT NULL, " +
-                        COLUMN_NAME         + " TEXT NOT NULL, " +
-                        COLUMN_DESCRIPTION  + " TEXT, " +
-                        COLUMN_DATE         + " INTEGER, " +
-                        COLUMN_START_DATE   + " INTEGER, " +
-                        COLUMN_END_DATE     + " INTEGER, " +
-                        COLUMN_INTERVAL     + " INTEGER, " +
-                        COLUMN_UNIT         + " TEXT, " +
-                        COLUMN_DIFFICULTY_XP+ " INTEGER NOT NULL, " +
-                        COLUMN_IMPORTANCE_XP+ " INTEGER NOT NULL, " +
-                        COLUMN_TOTAL_XP     + " INTEGER NOT NULL, " +
-                        COLUMN_COMPLETED    + " INTEGER NOT NULL DEFAULT 0" +
+                        COLUMN_USER_ID        + " INTEGER NOT NULL, " +
+                        COLUMN_CATEGORY_ID    + " INTEGER NOT NULL, " +
+                        COLUMN_NAME           + " TEXT NOT NULL, " +
+                        COLUMN_DESCRIPTION    + " TEXT, " +
+                        COLUMN_DATE_TIME      + " INTEGER, " +
+                        COLUMN_START_DATE_TIME+ " INTEGER, " +
+                        COLUMN_END_DATE_TIME  + " INTEGER, " +
+                        COLUMN_INTERVAL       + " INTEGER, " +
+                        COLUMN_UNIT           + " TEXT, " +
+                        COLUMN_DIFFICULTY_XP  + " INTEGER NOT NULL, " +
+                        COLUMN_IMPORTANCE_XP  + " INTEGER NOT NULL, " +
+                        COLUMN_TOTAL_XP       + " INTEGER NOT NULL, " +
+                        COLUMN_STATUS         + " TEXT NOT NULL DEFAULT 'ACTIVE'" +
                         ");";
     }
+
+
+    public static final class UserXpLogEntry implements BaseColumns {
+        public static final String TABLE_NAME = "USER_XP_LOG";
+
+        public static final String COLUMN_USER_ID      = "userId";       // LONG (FK User)
+        public static final String COLUMN_TASK_ID      = "taskId";       // LONG (FK Task)
+        public static final String COLUMN_OCCURRENCE_ID= "occurrenceId"; // LONG (FK TaskOccurrence) može biti NULL
+        public static final String COLUMN_XP_GAINED    = "xpGained";     // INTEGER
+        public static final String COLUMN_COMPLETED_AT = "completedAt";  // INTEGER (epoch millis)
+
+        public static final String CREATE_TABLE =
+                "CREATE TABLE " + TABLE_NAME + " (" +
+                        _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        COLUMN_USER_ID       + " INTEGER NOT NULL, " +
+                        COLUMN_TASK_ID       + " INTEGER NOT NULL, " +
+                        COLUMN_OCCURRENCE_ID + " INTEGER, " +
+                        COLUMN_XP_GAINED     + " INTEGER NOT NULL, " +
+                        COLUMN_COMPLETED_AT  + " INTEGER NOT NULL" +
+                        ");";
+    }
+
+
 
 }
