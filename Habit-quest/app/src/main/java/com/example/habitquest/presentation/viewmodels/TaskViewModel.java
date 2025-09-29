@@ -7,11 +7,15 @@ import androidx.lifecycle.ViewModel;
 import com.example.habitquest.data.repositories.TaskRepository;
 import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.data.repositories.UserXpLogRepository;
+import com.example.habitquest.domain.model.DifficultyLevel;
+import com.example.habitquest.domain.model.ImportanceLevel;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
+import com.example.habitquest.domain.model.User;
 import com.example.habitquest.domain.model.UserXpLog;
 import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.utils.RepositoryCallback;
+import com.example.habitquest.utils.XpCalculator;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -105,20 +109,41 @@ public class TaskViewModel extends ViewModel {
         repository.update(firebaseUid, task, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
+                grantXpForTask(task, firebaseUid);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _taskCompleted.postValue(false);
+            }
+        });
+    }
+
+    private void grantXpForTask(Task task, String firebaseUid) {
+        userRepository.getUser(firebaseUid, new RepositoryCallback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                int userLevel = user.getLevel();
+
+                int earnedXp = XpCalculator.calculateTaskXp(
+                        task.getDifficultyXp(),
+                        task.getImportanceXp(),
+                        userLevel
+                );
+
                 UserXpLog log = new UserXpLog(
                         null,
                         task.getUserId(),
                         firebaseUid,
                         task.getId(),
                         null,
-                        task.getTotalXp(),
+                        earnedXp,
                         System.currentTimeMillis()
                 );
+
                 userXpLogRepository.insert(log, new RepositoryCallback<UserXpLog>() {
                     @Override
                     public void onSuccess(UserXpLog res) {
-                        _taskCompleted.postValue(true);
-                        // Sada izračunaj novi total XP i upiši ga u usera
                         userXpLogRepository.getTotalXp(task.getUserId(), new RepositoryCallback<Integer>() {
                             @Override
                             public void onSuccess(Integer totalXp) {
@@ -131,23 +156,18 @@ public class TaskViewModel extends ViewModel {
                                             public void onSuccess(Void ignored) {
                                                 _taskCompleted.postValue(true);
                                             }
-
                                             @Override
                                             public void onFailure(Exception e) {
-                                                _taskCompleted.postValue(true); // fallback
+                                                _taskCompleted.postValue(true);
                                             }
                                         });
                             }
-
-                            @Override
-                            public void onFailure(Exception e) {
+                            @Override public void onFailure(Exception e) {
                                 _taskCompleted.postValue(false);
                             }
                         });
                     }
-
-                    @Override
-                    public void onFailure(Exception e) {
+                    @Override public void onFailure(Exception e) {
                         _taskCompleted.postValue(false);
                     }
                 });
