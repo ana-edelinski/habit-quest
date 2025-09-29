@@ -22,10 +22,15 @@ import com.example.habitquest.R;
 import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.domain.model.Task;
+import com.example.habitquest.domain.model.TaskStatus;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class TaskDetailFragment extends Fragment {
 
@@ -55,9 +60,6 @@ public class TaskDetailFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_task_detail, container, false);
 
-        AppPreferences prefs = new AppPreferences(requireContext());
-        String firebaseUid = prefs.getFirebaseUid();
-        String localUserId = prefs.getUserId();
 
         TextView tvName = v.findViewById(R.id.tvTaskNameDetail);
         TextView tvDescription = v.findViewById(R.id.tvTaskDescription);
@@ -106,15 +108,22 @@ public class TaskDetailFragment extends Fragment {
         Button btnEdit = v.findViewById(R.id.btnEdit);
         Button btnDelete = v.findViewById(R.id.btnDelete);
 
+        if (task.getStatus() == TaskStatus.COMPLETED) {
+            btnDone.setVisibility(View.GONE);
+        } else {
+            btnDone.setVisibility(View.VISIBLE);
+        }
+
 
         btnDone.setOnClickListener(view1 -> {
             taskViewModel.completeTask(task);
+            btnDone.setVisibility(View.GONE);
         });
 
         taskViewModel.taskCompleted.observe(getViewLifecycleOwner(), success -> {
             if (success != null && success) {
                 Toast.makeText(requireContext(), "Task completed! +" + task.getTotalXp() + " XP", Toast.LENGTH_SHORT).show();
-                btnDone.setVisibility(View.GONE);
+
             }
         });
 
@@ -132,7 +141,7 @@ public class TaskDetailFragment extends Fragment {
             tvStatus.setText(task.getStatus().name());
 
             if (task.getDate() != null) {
-                tvDate.setText("One-time: " + task.getDate());
+                tvDate.setText("One-time: " + formatDateTime(task.getDate()));
             } else if (task.getInterval() != null) {
                 tvDate.setText("Every " + task.getInterval() + " " + task.getUnit());
             }
@@ -140,5 +149,12 @@ public class TaskDetailFragment extends Fragment {
 
 
         return v;
+    }
+
+    private String formatDateTime(Long millis) {
+        if (millis == null) return "";
+        Date date = new Date(millis);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+        return sdf.format(date);
     }
 }
