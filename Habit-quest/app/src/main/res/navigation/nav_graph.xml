@@ -39,6 +39,12 @@
         android:label="Task Detail"
         tools:layout="@layout/fragment_task_detail" />
 
+    <fragment
+        android:id="@+id/levelProgressFragment"
+        android:name="com.example.habitquest.presentation.fragments.LevelProgressFragment"
+        android:label="Level Progress"
+        tools:layout="@layout/fragment_level_progress" />
+
 
 
 </navigation>

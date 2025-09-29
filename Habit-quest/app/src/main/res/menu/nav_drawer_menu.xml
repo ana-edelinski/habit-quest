@@ -6,4 +6,7 @@
     <item
         android:id="@+id/taskListFragment"
         android:title="Tasks" />
+    <item
+        android:id="@+id/levelProgressFragment"
+        android:title="Level Progress" /> <!--  android:icon="@drawable/ic_progress" -->
 </menu>
