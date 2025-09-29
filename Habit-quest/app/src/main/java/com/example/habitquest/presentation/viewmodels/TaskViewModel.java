@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.habitquest.data.repositories.TaskRepository;
+import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.data.repositories.UserXpLogRepository;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
@@ -21,7 +22,7 @@ public class TaskViewModel extends ViewModel {
     private final AppPreferences prefs;
     private final TaskRepository repository;
     private final UserXpLogRepository userXpLogRepository;
-
+    private final UserRepository userRepository;
     private final MutableLiveData<List<Task>> _tasks = new MutableLiveData<>();
     public LiveData<List<Task>> tasks = _tasks;
 
@@ -103,19 +104,46 @@ public class TaskViewModel extends ViewModel {
             @Override
             public void onSuccess(Void result) {
                 UserXpLog log = new UserXpLog(
-                        null,                     // Firestore ID se setuje u remote
-                        task.getUserId(),         // lokalni userId
-                        firebaseUid,              // firebaseUid
-                        task.getId(),             // taskId (Firestore ID)
-                        null,                     // occurrenceId (ako ga bude)
-                        task.getTotalXp(),        // xpGained
-                        System.currentTimeMillis() // completedAt
+                        null,
+                        task.getUserId(),
+                        firebaseUid,
+                        task.getId(),
+                        null,
+                        task.getTotalXp(),
+                        System.currentTimeMillis()
                 );
                 userXpLogRepository.insert(log, new RepositoryCallback<UserXpLog>() {
                     @Override
                     public void onSuccess(UserXpLog res) {
                         _taskCompleted.postValue(true);
+                        // Sada izračunaj novi total XP i upiši ga u usera
+                        userXpLogRepository.getTotalXp(task.getUserId(), new RepositoryCallback<Integer>() {
+                            @Override
+                            public void onSuccess(Integer totalXp) {
+                                userRepository.updateUserXp(
+                                        task.getUserId(),
+                                        firebaseUid,
+                                        totalXp,
+                                        new RepositoryCallback<Void>() {
+                                            @Override
+                                            public void onSuccess(Void ignored) {
+                                                _taskCompleted.postValue(true);
+                                            }
+
+                                            @Override
+                                            public void onFailure(Exception e) {
+                                                _taskCompleted.postValue(true); // fallback
+                                            }
+                                        });
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                _taskCompleted.postValue(false);
+                            }
+                        });
                     }
+
                     @Override
                     public void onFailure(Exception e) {
                         _taskCompleted.postValue(false);

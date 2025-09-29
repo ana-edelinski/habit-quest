@@ -14,6 +14,8 @@ public final class AppContract {
         public static final String COLUMN_USERNAME = "username";
         public static final String COLUMN_PASSWORD = "password";
         public static final String COLUMN_AVATAR = "avatar";
+        public static final String COLUMN_TOTAL_XP = "totalXp";
+        public static final String COLUMN_LEVEL = "level";
 
 
         public static final String CREATE_TABLE =
@@ -22,7 +24,9 @@ public final class AppContract {
                         COLUMN_EMAIL + " TEXT, " +
                         COLUMN_USERNAME + " TEXT, " +
                         COLUMN_PASSWORD + " TEXT, " +
-                        COLUMN_AVATAR + " INTEGER DEFAULT 1)";
+                        COLUMN_AVATAR + " INTEGER DEFAULT 1, " +
+                        COLUMN_TOTAL_XP + " INTEGER DEFAULT 0, " +
+                        COLUMN_LEVEL + " INTEGER DEFAULT 0)";
 
     }
 
