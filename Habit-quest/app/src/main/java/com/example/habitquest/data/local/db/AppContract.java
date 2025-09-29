@@ -17,6 +17,7 @@ public final class AppContract {
         public static final String COLUMN_TOTAL_XP = "totalXp";
         public static final String COLUMN_LEVEL = "level";
         public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_PP = "pp";
 
 
         public static final String CREATE_TABLE =
@@ -28,7 +29,8 @@ public final class AppContract {
                         COLUMN_AVATAR + " INTEGER DEFAULT 1, " +
                         COLUMN_TOTAL_XP + " INTEGER DEFAULT 0, " +
                         COLUMN_LEVEL + " INTEGER DEFAULT 0, " +
-                        COLUMN_TITLE + " TEXT DEFAULT 'Beginner'" +
+                        COLUMN_TITLE + " TEXT DEFAULT 'Beginner', " +
+                        COLUMN_PP + " INTEGER DEFAULT 0" +
                         ")";
 
     }

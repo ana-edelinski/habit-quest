@@ -47,7 +47,7 @@ public class UserRemoteDataSource {
                                         firebaseUser.sendEmailVerification();
 
                                         String uid = firebaseUser.getUid();
-                                        User user = new User(null, email, username, avatar, 0, 0, "Beginner");
+                                        User user = new User(null, email, username, avatar, 0, 0, "Beginner", 0);
                                         db.collection(COLLECTION_NAME).document(uid).set(user)
                                                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                                                 .addOnFailureListener(callback::onFailure);
@@ -106,12 +106,13 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void updateUserXpAndLevel(String uid, int newXp, int newLevel, String title, RepositoryCallback<Void> callback) {
+    public void updateUserXpAndLevel(String uid, int newXp, int newLevel, String title, int pp, RepositoryCallback<Void> callback) {
         db.collection("users").document(uid)
                 .update(
                         "totalXp", newXp,
                         "level", newLevel,
-                        "title", title
+                        "title", title,
+                        "pp", pp
                 )
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);

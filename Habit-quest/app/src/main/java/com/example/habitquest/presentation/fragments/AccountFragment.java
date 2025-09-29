@@ -32,6 +32,8 @@ public class AccountFragment extends Fragment {
     private TextView txtXp;
     private TextView txtLevel;
     private TextView txtTitle;
+    private TextView txtPp;
+
 
 
     @Nullable
@@ -50,6 +52,7 @@ public class AccountFragment extends Fragment {
         txtXp = view.findViewById(R.id.tvXP);
         txtLevel = view.findViewById(R.id.tvLevel);
         txtTitle = view.findViewById(R.id.tvTitle);
+        txtPp = view.findViewById(R.id.tvPP);
         ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
 
         View btnSettings = view.findViewById(R.id.btnSettings);
@@ -66,6 +69,7 @@ public class AccountFragment extends Fragment {
                 txtUsername.setText(user.getUsername());
                 txtLevel.setText("Level " + user.getLevel());
                 txtTitle.setText(user.getTitle() != null ? user.getTitle() : "Beginner");
+                txtPp.setText("PP: " + user.getPp());
 
 
                 int resId;
