@@ -38,6 +38,9 @@ public class UsersLocalDataSource {
         values.put(AppContract.UserEntry.COLUMN_USERNAME, username);
         values.put(AppContract.UserEntry.COLUMN_PASSWORD, password);
         values.put(AppContract.UserEntry.COLUMN_AVATAR, avatar);
+        values.put(AppContract.UserEntry.COLUMN_TOTAL_XP, 0);
+        values.put(AppContract.UserEntry.COLUMN_LEVEL, 0);
+
         return db.insert(AppContract.UserEntry.TABLE_NAME, null, values);
     }
 

@@ -12,12 +12,16 @@ public class User implements Parcelable {
     //private String password;
     private int avatar; // samo indeks (1–5 za predefinisane slike)
     //private boolean isVerified;
+    private int totalXp;
+    private int level;
 
-    public User(Long id, String email, String username, int avatar) {
+    public User(Long id, String email, String username, int avatar, int totalXp, int level) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.avatar = avatar;
+        this.totalXp = totalXp;
+        this.level = level;
     }
 
     public User() {
@@ -29,6 +33,8 @@ public class User implements Parcelable {
         email = in.readString();
         username = in.readString();
         avatar = in.readInt();
+        totalXp = in.readInt();
+        level = in.readInt();
     }
 
     // GET / SET
@@ -44,12 +50,20 @@ public class User implements Parcelable {
     public int getAvatar() { return avatar; }
     public void setAvatar(int avatar) { this.avatar = avatar; }
 
+    public int getTotalXp() { return totalXp; }
+    public void setTotalXp(int totalXp) { this.totalXp = totalXp; }
+
+    public int getLevel() { return level; }
+    public void setLevel(int level) { this.level = level; }
+
     @Override
     public String toString() {
         return "User{" +
                 "email='" + email + '\'' +
                 ", username='" + username + '\'' +
                 ", avatar=" + avatar +
+                ", totalXp=" + totalXp +
+                ", level=" + level +
                 '}';
     }
 
@@ -61,10 +75,12 @@ public class User implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeLong(id != null ? id : -1); // ako je null, snimi -1
+        dest.writeLong(id != null ? id : -1);
         dest.writeString(email);
         dest.writeString(username);
         dest.writeInt(avatar);
+        dest.writeInt(totalXp);
+        dest.writeInt(level);
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
