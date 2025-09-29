@@ -14,6 +14,7 @@ import com.example.habitquest.data.local.db.SQLiteHelper;
 import com.example.habitquest.data.remote.UserRemoteDataSource;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.domain.repositoryinterfaces.IUserRepository;
+import com.example.habitquest.utils.LevelUtils;
 import com.example.habitquest.utils.RepositoryCallback;
 
 public class UserRepository implements IUserRepository {
@@ -78,18 +79,42 @@ public class UserRepository implements IUserRepository {
     }
 
     public void updateUserXp(long localUserId, String remoteUid, int newXp, RepositoryCallback<Void> cb) {
-        remoteDataSource.updateUserXp(remoteUid, newXp, new RepositoryCallback<Void>() {
+        int newLevel = LevelUtils.calculateLevelFromXp(newXp);
+
+        remoteDataSource.updateUserXpAndLevel(remoteUid, newXp, newLevel, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                localDataSource.updateUserXp(localUserId, newXp);
+                localDataSource.updateUserXpAndLevel(localUserId, newXp, newLevel);
                 cb.onSuccess(null);
             }
 
             @Override
             public void onFailure(Exception e) {
-                localDataSource.updateUserXp(localUserId, newXp);
+                localDataSource.updateUserXpAndLevel(localUserId, newXp, newLevel);
                 cb.onFailure(e);
             }
         });
     }
+
+    public void getUser(String remoteUid, RepositoryCallback<User> cb) {
+        remoteDataSource.getUser(remoteUid, new RepositoryCallback<User>() {
+            @Override
+            public void onSuccess(User remoteUser) {
+                // Optionally update local cache
+                Long localId = localDataSource.getUserIdByEmail(remoteUser.getEmail());
+                if (localId != null) {
+                    remoteUser.setId(localId);
+                }
+                cb.onSuccess(remoteUser);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                cb.onFailure(e);
+            }
+        });
+    }
+
+
+
 }

@@ -49,12 +49,10 @@ public class AccountFragment extends Fragment {
         ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
 
         View btnSettings = view.findViewById(R.id.btnSettings);
-
         btnSettings.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
             navController.navigate(R.id.changePasswordFragment);
         });
-
 
         AccountViewModelFactory factory = new AccountViewModelFactory(requireContext());
         viewModel = new ViewModelProvider(this, factory).get(AccountViewModel.class);
@@ -63,7 +61,6 @@ public class AccountFragment extends Fragment {
             if (user != null) {
                 txtUsername.setText(user.getUsername());
 
-                // Na osnovu indeksa učitavamo avatar
                 int resId;
                 switch (user.getAvatar()) {
                     case 1: resId = R.drawable.avatar1; break;
@@ -75,12 +72,11 @@ public class AccountFragment extends Fragment {
                 }
                 imgAvatar.setImageResource(resId);
 
-                //QR kod
+                // QR kod za uid
                 FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (firebaseUser != null) {
-                    String uid = firebaseUser.getUid();
                     try {
-                        String qrContent = uid;
+                        String qrContent = firebaseUser.getUid();
                         BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                         Bitmap bitmap = barcodeEncoder.encodeBitmap(
                                 qrContent,
@@ -93,17 +89,15 @@ public class AccountFragment extends Fragment {
                         e.printStackTrace();
                     }
                 }
-
             }
         });
-
-        AppPreferences prefs = new AppPreferences(requireContext());
-        long localUserId = Long.parseLong(prefs.getUserId());
-
-        viewModel.loadTotalXp(localUserId);
 
         viewModel.totalXp.observe(getViewLifecycleOwner(), totalXp -> {
             txtXp.setText("XP: " + totalXp);
         });
+
+        // sada pozivamo user repo (remote + local)
+        viewModel.loadUser();
     }
+
 }

@@ -106,10 +106,29 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void updateUserXp(String uid, int newXp, RepositoryCallback<Void> callback) {
+    public void updateUserXpAndLevel(String uid, int newXp, int newLevel, RepositoryCallback<Void> callback) {
         db.collection("users").document(uid)
-                .update("totalXp", newXp)
+                .update(
+                        "totalXp", newXp,
+                        "level", newLevel
+                )
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void getUser(String uid, RepositoryCallback<User> callback) {
+        db.collection("users").document(uid)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        User user = document.toObject(User.class);
+                        callback.onSuccess(user);
+                    } else {
+                        callback.onFailure(new Exception("User not found"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 }
