@@ -106,10 +106,10 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-
-
-
-
-
-
+    public void updateUserXp(String uid, int newXp, RepositoryCallback<Void> callback) {
+        db.collection("users").document(uid)
+                .update("totalXp", newXp)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
 }

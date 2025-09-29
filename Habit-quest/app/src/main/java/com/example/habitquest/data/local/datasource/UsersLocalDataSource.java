@@ -67,5 +67,17 @@ public class UsersLocalDataSource {
         return null;
     }
 
+    public void updateUserXp(long userId, int totalXp) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(AppContract.UserEntry.COLUMN_TOTAL_XP, totalXp);
+
+        db.update(AppContract.UserEntry.TABLE_NAME,
+                values,
+                AppContract.UserEntry._ID + "=?",
+                new String[]{String.valueOf(userId)});
+    }
+
+
 
 }

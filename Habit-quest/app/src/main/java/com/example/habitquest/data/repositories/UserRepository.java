@@ -77,6 +77,19 @@ public class UserRepository implements IUserRepository {
         remoteDataSource.changePassword(oldPassword, newPassword, callback);
     }
 
+    public void updateUserXp(long localUserId, String remoteUid, int newXp, RepositoryCallback<Void> cb) {
+        remoteDataSource.updateUserXp(remoteUid, newXp, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                localDataSource.updateUserXp(localUserId, newXp);
+                cb.onSuccess(null);
+            }
 
-
+            @Override
+            public void onFailure(Exception e) {
+                localDataSource.updateUserXp(localUserId, newXp);
+                cb.onFailure(e);
+            }
+        });
+    }
 }
