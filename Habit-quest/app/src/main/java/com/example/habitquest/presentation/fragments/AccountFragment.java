@@ -30,6 +30,7 @@ public class AccountFragment extends Fragment {
     private ImageView imgAvatar;
     private TextView txtUsername;
     private TextView txtXp;
+    private TextView txtLevel;
 
 
     @Nullable
@@ -46,8 +47,9 @@ public class AccountFragment extends Fragment {
         imgAvatar = view.findViewById(R.id.imgAvatar);
         txtUsername = view.findViewById(R.id.tvUsername);
         txtXp = view.findViewById(R.id.tvXP);
+        txtLevel = view.findViewById(R.id.tvLevel);
         ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
-        
+
         View btnSettings = view.findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
@@ -60,6 +62,7 @@ public class AccountFragment extends Fragment {
         viewModel.user.observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 txtUsername.setText(user.getUsername());
+                txtLevel.setText("Level " + user.getLevel());
 
                 int resId;
                 switch (user.getAvatar()) {
