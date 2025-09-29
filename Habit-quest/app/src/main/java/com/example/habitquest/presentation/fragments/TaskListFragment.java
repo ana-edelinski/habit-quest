@@ -16,6 +16,8 @@ import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.presentation.adapters.TaskPagerAdapter;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
+import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -42,8 +44,12 @@ public class TaskListFragment extends Fragment {
         ViewPager2 viewPager = view.findViewById(R.id.viewPager);
         FloatingActionButton fab = view.findViewById(R.id.fabAddTask);
 
-        TaskViewModel taskViewModel = new ViewModelProvider(requireActivity()).get(TaskViewModel.class);
-        CategoryViewModel categoryViewModel = new ViewModelProvider(requireActivity()).get(CategoryViewModel.class);
+        TaskViewModel taskViewModel = new ViewModelProvider(requireActivity(), new TaskViewModelFactory(requireContext())).get(TaskViewModel.class);
+        CategoryViewModel categoryViewModel =
+                new ViewModelProvider(
+                        requireActivity(),
+                        new CategoryViewModelFactory(requireContext())
+                ).get(CategoryViewModel.class);
 
         TaskPagerAdapter adapter = new TaskPagerAdapter(requireActivity());
         viewPager.setAdapter(adapter);

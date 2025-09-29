@@ -24,6 +24,8 @@ import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
+import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
 
 public class TaskDetailFragment extends Fragment {
 
@@ -64,10 +66,13 @@ public class TaskDetailFragment extends Fragment {
         TextView tvStatus = v.findViewById(R.id.tvTaskStatus);
 
         TaskViewModel taskViewModel =
-                new ViewModelProvider(requireActivity()).get(TaskViewModel.class);
+                new ViewModelProvider(requireActivity(), new TaskViewModelFactory(requireContext())).get(TaskViewModel.class);
 
         CategoryViewModel categoryViewModel =
-                new ViewModelProvider(requireActivity()).get(CategoryViewModel.class);
+                new ViewModelProvider(
+                        requireActivity(),
+                        new CategoryViewModelFactory(requireContext())
+                ).get(CategoryViewModel.class);
 
         categoryViewModel.categories.observe(getViewLifecycleOwner(), categories -> {
             for (Category c : categories) {

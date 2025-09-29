@@ -19,6 +19,8 @@ import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.presentation.adapters.TaskAdapter;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
+import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +44,12 @@ public class RecurringTasksFragment extends Fragment {
         recycler.setAdapter(adapter);
 
         // ViewModel init
-        viewModel = new ViewModelProvider(requireActivity()).get(TaskViewModel.class);
-        categoryViewModel = new ViewModelProvider(requireActivity()).get(CategoryViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), new TaskViewModelFactory(requireContext())).get(TaskViewModel.class);
+        CategoryViewModel categoryViewModel =
+                new ViewModelProvider(
+                        requireActivity(),
+                        new CategoryViewModelFactory(requireContext())
+                ).get(CategoryViewModel.class);
 
         // posmatranje taskova
         viewModel.tasks.observe(getViewLifecycleOwner(), tasks -> {

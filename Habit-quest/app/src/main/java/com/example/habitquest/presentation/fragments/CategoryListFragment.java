@@ -18,6 +18,7 @@ import com.example.habitquest.R;
 import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.presentation.adapters.CategoryAdapter;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class CategoryListFragment extends Fragment {
@@ -45,7 +46,11 @@ public class CategoryListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         // ViewModel
-        viewModel = new ViewModelProvider(this).get(CategoryViewModel.class);
+        viewModel =
+                new ViewModelProvider(
+                        requireActivity(),
+                        new CategoryViewModelFactory(requireContext())
+                ).get(CategoryViewModel.class);
 
         // posmatraj promene u listi
         viewModel.categories.observe(getViewLifecycleOwner(), categories -> {
