@@ -33,10 +33,12 @@ public class TaskViewModel extends ViewModel {
 
     public TaskViewModel(AppPreferences prefs,
                          TaskRepository repository,
-                         UserXpLogRepository userXpLogRepository) {
+                         UserXpLogRepository userXpLogRepository,
+                         UserRepository userRepository) {
         this.prefs = prefs;
         this.repository = repository;
         this.userXpLogRepository = userXpLogRepository;
+        this.userRepository = userRepository;
     }
 
     /** Start real-time listening for tasks */
