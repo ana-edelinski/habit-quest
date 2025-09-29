@@ -48,6 +48,18 @@ public class AccountFragment extends Fragment {
         txtXp = view.findViewById(R.id.tvXP);
         ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
 
+        //testiranje napredak kroz nivoe
+//        imgAvatar.setOnLongClickListener(v -> {
+//            AppPreferences prefs = new AppPreferences(requireContext());
+//            String remoteUid = prefs.getFirebaseUid();
+//            long localUserId = Long.parseLong(prefs.getUserId());
+//
+//            // Dodaj 200 XP
+//            viewModel.grantXpForTesting(localUserId, remoteUid, 200);
+//
+//            return true; // označi da je event potrošen
+//        });
+
         View btnSettings = view.findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);

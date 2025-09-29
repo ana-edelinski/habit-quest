@@ -49,4 +49,21 @@ public class AccountViewModel extends ViewModel {
             }
         });
     }
+
+    //test: napredak kroz nivoe
+//    public void grantXpForTesting(long localUserId, String remoteUid, int xpToAdd) {
+//        Integer currentXp = _totalXp.getValue();
+//        int newXp = (currentXp != null ? currentXp : 0) + xpToAdd;
+//        userRepository.updateUserXp(localUserId, remoteUid, newXp, new RepositoryCallback<Void>() {
+//            @Override
+//            public void onSuccess(Void result) {
+//                _totalXp.postValue(newXp);
+//            }
+//            @Override
+//            public void onFailure(Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
+//    }
+
 }
