@@ -14,14 +14,16 @@ public class User implements Parcelable {
     //private boolean isVerified;
     private int totalXp;
     private int level;
+    private String title;
 
-    public User(Long id, String email, String username, int avatar, int totalXp, int level) {
+    public User(Long id, String email, String username, int avatar, int totalXp, int level, String title) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.avatar = avatar;
         this.totalXp = totalXp;
         this.level = level;
+        this.title = title;
     }
 
     public User() {
@@ -35,6 +37,7 @@ public class User implements Parcelable {
         avatar = in.readInt();
         totalXp = in.readInt();
         level = in.readInt();
+        title = in.readString();
     }
 
     // GET / SET
@@ -55,6 +58,9 @@ public class User implements Parcelable {
 
     public int getLevel() { return level; }
     public void setLevel(int level) { this.level = level; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
     @Override
     public String toString() {

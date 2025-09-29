@@ -40,6 +40,7 @@ public class UsersLocalDataSource {
         values.put(AppContract.UserEntry.COLUMN_AVATAR, avatar);
         values.put(AppContract.UserEntry.COLUMN_TOTAL_XP, 0);
         values.put(AppContract.UserEntry.COLUMN_LEVEL, 0);
+        values.put(AppContract.UserEntry.COLUMN_TITLE, "Beginner");
 
         return db.insert(AppContract.UserEntry.TABLE_NAME, null, values);
     }
@@ -67,15 +68,17 @@ public class UsersLocalDataSource {
         return null;
     }
 
-    public void updateUserXpAndLevel(long userId, int totalXp, int level) {
+    public void updateUserXpAndLevel(long userId, int totalXp, int level, String title) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(AppContract.UserEntry.COLUMN_TOTAL_XP, totalXp);
         values.put(AppContract.UserEntry.COLUMN_LEVEL, level);
+        values.put(AppContract.UserEntry.COLUMN_TITLE, title);
 
         db.update(AppContract.UserEntry.TABLE_NAME,
                 values,
                 AppContract.UserEntry._ID + "=?",
                 new String[]{String.valueOf(userId)});
     }
+
 }
