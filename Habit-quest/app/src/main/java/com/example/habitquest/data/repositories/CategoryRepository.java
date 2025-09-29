@@ -22,7 +22,7 @@ public class CategoryRepository implements ICategoryRepository {
     }
 
     @Override
-    public void getAllOnce(String firebaseUid, String localUserId, RepositoryCallback<List<Category>> cb) {
+    public void getAllOnce(String firebaseUid, Long localUserId, RepositoryCallback<List<Category>> cb) {
         remote.fetchAll(firebaseUid, new RepositoryCallback<List<Category>>() {
             @Override public void onSuccess(List<Category> remoteList) {
                 local.replaceAll(localUserId, remoteList); // cache u SQLite
@@ -33,18 +33,11 @@ public class CategoryRepository implements ICategoryRepository {
     }
 
     @Override
-    public Closeable listenAll(String firebaseUid, String localUserId, CategoriesListener listener) {
+    public Closeable listenAll(String firebaseUid, Long localUserId, CategoriesListener listener) {
         return remote.listenAll(firebaseUid, new CategoryRemoteDataSource.RemoteListener() {
             @Override public void onChanged(List<Category> list) {
-                Log.d("LISTEN_ALL", "firebaseUid=" + firebaseUid + " localUserId=" + localUserId + " categories=" + list.size());
-                local.replaceAll(localUserId, list);
-                Log.d("LISTEN_ALL", "Local cache updated");
 
                 local.replaceAll(localUserId, list);
-
-                Log.d("LISTEN_ALL", "firebaseUid=" + firebaseUid + " localUserId=" + localUserId + " categories=" + list.size());
-                local.replaceAll(localUserId, list);
-                Log.d("LISTEN_ALL", "Local cache updated");
 
                 listener.onChanged(list);
             }
@@ -53,8 +46,8 @@ public class CategoryRepository implements ICategoryRepository {
     }
 
     @Override
-    public void create(String firebaseUid, String localUserId, String name, String colorHex, RepositoryCallback<Category> cb) {
-        long localUserIdLong = Long.parseLong(localUserId);
+    public void create(String firebaseUid, Long localUserId, String name, String colorHex, RepositoryCallback<Category> cb) {
+
 
         remote.isColorTaken(firebaseUid, colorHex, new RepositoryCallback<Boolean>() {
             @Override public void onSuccess(Boolean taken) {
@@ -64,7 +57,7 @@ public class CategoryRepository implements ICategoryRepository {
                 }
                 remote.create(firebaseUid, name, colorHex, new RepositoryCallback<Category>() {
                     @Override public void onSuccess(Category created) {
-                        local.upsert(localUserIdLong, created);
+                        local.upsert(localUserId, created);
                         cb.onSuccess(created);
                     }
                     @Override public void onFailure(Exception e) { cb.onFailure(e); }
@@ -86,7 +79,8 @@ public class CategoryRepository implements ICategoryRepository {
     }
 
     @Override
-    public void delete(String firebaseUid, String localUserId, Object categoryId, RepositoryCallback<Void> cb) {
+    public void delete(String firebaseUid, Long localUserId, String categoryId, RepositoryCallback<Void> cb) {
+
         remote.hasActiveTasks(firebaseUid, categoryId, new RepositoryCallback<Boolean>() {
             @Override public void onSuccess(Boolean exists) {
                 if (Boolean.TRUE.equals(exists)) {
@@ -112,4 +106,7 @@ public class CategoryRepository implements ICategoryRepository {
             @Override public void onFailure(Exception e) { cb.onFailure(e); }
         });
     }
+
+
+
 }

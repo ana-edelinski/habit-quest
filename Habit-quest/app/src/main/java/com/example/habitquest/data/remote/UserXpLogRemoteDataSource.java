@@ -1,8 +1,8 @@
 package com.example.habitquest.data.remote;
 
-
 import com.example.habitquest.domain.model.UserXpLog;
 import com.example.habitquest.utils.RepositoryCallback;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -17,13 +17,18 @@ public class UserXpLogRemoteDataSource {
         db = FirebaseFirestore.getInstance();
     }
 
+    /** Kreiranje novog loga sa Firestore documentId */
     public void insert(UserXpLog log, RepositoryCallback<UserXpLog> cb) {
-        db.collection(COLLECTION_NAME)
-                .add(log)
-                .addOnSuccessListener(ref -> cb.onSuccess(log))
+        DocumentReference docRef = db.collection(COLLECTION_NAME).document();
+        String newId = docRef.getId();
+        log.setId(newId);
+
+        docRef.set(log)
+                .addOnSuccessListener(v -> cb.onSuccess(log))
                 .addOnFailureListener(cb::onFailure);
     }
 
+    /** Čitanje svih logova korisnika */
     public void fetchAll(long userId, RepositoryCallback<List<UserXpLog>> cb) {
         db.collection(COLLECTION_NAME)
                 .whereEqualTo("userId", userId)
@@ -32,6 +37,7 @@ public class UserXpLogRemoteDataSource {
                     List<UserXpLog> logs = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : query) {
                         UserXpLog log = doc.toObject(UserXpLog.class);
+                        log.setId(doc.getId()); // setuj Firestore documentId
                         logs.add(log);
                     }
                     cb.onSuccess(logs);
@@ -39,6 +45,7 @@ public class UserXpLogRemoteDataSource {
                 .addOnFailureListener(cb::onFailure);
     }
 
+    /** Brisanje svih logova korisnika */
     public void deleteAllForUser(long userId, RepositoryCallback<Void> cb) {
         db.collection(COLLECTION_NAME)
                 .whereEqualTo("userId", userId)
@@ -52,4 +59,3 @@ public class UserXpLogRemoteDataSource {
                 .addOnFailureListener(cb::onFailure);
     }
 }
-

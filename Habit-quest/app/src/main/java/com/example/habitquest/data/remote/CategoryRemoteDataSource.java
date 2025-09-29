@@ -5,13 +5,13 @@ import androidx.annotation.NonNull;
 import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +31,8 @@ public class CategoryRemoteDataSource {
                     for (DocumentSnapshot d : snap.getDocuments()) {
                         Category c = d.toObject(Category.class);
                         if (c != null) {
-                            // Ako u dokumentu nema polja id, preuzmi ga iz docId
-                            if (c.getId() == null) {
-                                try { c.setId(Long.parseLong(d.getId())); } catch (Exception ignored) {}
-                            }
+                            // uvek postavi Firestore documentId
+                            c.setId(d.getId());
                             out.add(c);
                         }
                     }
@@ -54,16 +52,14 @@ public class CategoryRemoteDataSource {
                     for (DocumentSnapshot d : snap.getDocuments()) {
                         Category c = d.toObject(Category.class);
                         if (c != null) {
-                            if (c.getId() == null) {
-                                try { c.setId(Long.parseLong(d.getId())); } catch (Exception ignored) {}
-                            }
+                            c.setId(d.getId());
                             out.add(c);
                         }
                     }
                     listener.onChanged(out);
                 });
 
-        return () -> reg.remove();
+        return reg::remove;
     }
 
     /** Provera da li je boja već zauzeta. */
@@ -81,19 +77,20 @@ public class CategoryRemoteDataSource {
     public void create(@NonNull String firebaseUid, @NonNull String name, @NonNull String colorHex,
                        @NonNull RepositoryCallback<Category> cb) {
         long now = System.currentTimeMillis();
-        long newId = now; // docId
+
+        DocumentReference docRef = cats(firebaseUid).document();
+        String newId = docRef.getId();
 
         Category c = new Category(
-                newId,
-                0L, // local userId nije bitan za Firestore
+                newId,      // Firestore documentId
+                0L,         // local userId nije bitan za Firestore
                 name.trim(),
                 colorHex.toUpperCase(),
                 now,
                 now
         );
 
-        cats(firebaseUid).document(String.valueOf(newId))
-                .set(c)
+        docRef.set(c)
                 .addOnSuccessListener(v -> cb.onSuccess(c))
                 .addOnFailureListener(cb::onFailure);
     }
@@ -107,21 +104,17 @@ public class CategoryRemoteDataSource {
         long now = System.currentTimeMillis();
         category.setUpdatedAt(now);
 
-        String docId = String.valueOf(category.getId());
-
-        cats(firebaseUid).document(docId)
+        cats(firebaseUid).document(category.getId())
                 .set(category)
                 .addOnSuccessListener(v -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onFailure);
     }
 
     /** Da li postoje aktivni taskovi koji koriste ovu kategoriju. */
-    public void hasActiveTasks(@NonNull String firebaseUid, @NonNull Object categoryId,
+    public void hasActiveTasks(@NonNull String firebaseUid, @NonNull String categoryId,
                                @NonNull RepositoryCallback<Boolean> cb) {
-        long catId = parseId(categoryId);
-
         tasks(firebaseUid)
-                .whereEqualTo("categoryId", catId)
+                .whereEqualTo("categoryId", categoryId)
                 .whereEqualTo("active", true)
                 .limit(1)
                 .get()
@@ -130,9 +123,8 @@ public class CategoryRemoteDataSource {
     }
 
     /** Brisanje kategorije. */
-    public void delete(@NonNull String firebaseUid, @NonNull Object categoryId, @NonNull RepositoryCallback<Void> cb) {
-        String docId = String.valueOf(parseId(categoryId));
-        cats(firebaseUid).document(docId)
+    public void delete(@NonNull String firebaseUid, @NonNull String categoryId, @NonNull RepositoryCallback<Void> cb) {
+        cats(firebaseUid).document(categoryId)
                 .delete()
                 .addOnSuccessListener(v -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onFailure);
@@ -151,14 +143,5 @@ public class CategoryRemoteDataSource {
 
     private CollectionReference tasks(String firebaseUid) {
         return db.collection("users").document(firebaseUid).collection("tasks");
-    }
-
-    private static long parseId(Object idObj) {
-        if (idObj instanceof Long) return (Long) idObj;
-        if (idObj instanceof Integer) return ((Integer) idObj).longValue();
-        if (idObj instanceof String) {
-            try { return Long.parseLong((String) idObj); } catch (Exception ignored) {}
-        }
-        throw new IllegalArgumentException("Unsupported id type: " + idObj);
     }
 }

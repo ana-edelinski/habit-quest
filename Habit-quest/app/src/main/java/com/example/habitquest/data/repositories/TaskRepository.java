@@ -9,8 +9,6 @@ import com.example.habitquest.domain.repositoryinterfaces.ITaskRepository;
 import com.example.habitquest.utils.RepositoryCallback;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TaskRepository implements ITaskRepository {
@@ -27,12 +25,20 @@ public class TaskRepository implements ITaskRepository {
         remote.fetchAll(firebaseUid, new RepositoryCallback<List<Task>>() {
             @Override
             public void onSuccess(List<Task> result) {
+                // 1. očisti sve stare taskove za ovog usera
+                local.deleteAllByUser(localUserId);
+
+                // 2. ubaci nove sa Firestore-a
                 for (Task t : result) {
+                    t.setUserId(localUserId);
                     local.upsert(t);
                 }
                 cb.onSuccess(result);
             }
-            @Override public void onFailure(Exception e) { cb.onFailure(e); }
+
+            @Override public void onFailure(Exception e) {
+                cb.onFailure(e);
+            }
         });
     }
 
@@ -41,10 +47,13 @@ public class TaskRepository implements ITaskRepository {
         return remote.listenAll(firebaseUid, new TaskRemoteDataSource.RemoteListener() {
             @Override
             public void onChanged(List<Task> list) {
-                // syncuj lokalno
+                // 1. očisti sve stare taskove za ovog usera
+                local.deleteAllByUser(localUserId);
+
+                // 2. ubaci nove sa Firestore-a
                 for (Task t : list) {
                     if (t.getUserId() == null) {
-                        t.setUserId(localUserId); // fallback na lokalnog usera
+                        t.setUserId(localUserId);
                     }
                     local.upsert(t);
                 }
@@ -63,10 +72,16 @@ public class TaskRepository implements ITaskRepository {
         remote.create(firebaseUid, task, new RepositoryCallback<Task>() {
             @Override
             public void onSuccess(Task result) {
+                if (result.getUserId() == null) {
+                    result.setUserId(task.getUserId());
+                }
                 local.upsert(result);
                 cb.onSuccess(result);
             }
-            @Override public void onFailure(Exception e) { cb.onFailure(e); }
+
+            @Override public void onFailure(Exception e) {
+                cb.onFailure(e);
+            }
         });
     }
 
@@ -78,19 +93,25 @@ public class TaskRepository implements ITaskRepository {
                 local.upsert(task);
                 cb.onSuccess(null);
             }
-            @Override public void onFailure(Exception e) { cb.onFailure(e); }
+
+            @Override public void onFailure(Exception e) {
+                cb.onFailure(e);
+            }
         });
     }
 
     @Override
-    public void delete(String firebaseUid, long taskId, long localUserId, RepositoryCallback<Void> cb) {
+    public void delete(String firebaseUid, String taskId, long localUserId, RepositoryCallback<Void> cb) {
         remote.delete(firebaseUid, taskId, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void ignored) {
                 local.delete(taskId, localUserId);
                 cb.onSuccess(null);
             }
-            @Override public void onFailure(Exception e) { cb.onFailure(e); }
+
+            @Override public void onFailure(Exception e) {
+                cb.onFailure(e);
+            }
         });
     }
 }

@@ -22,8 +22,7 @@ public class CategoriesLocalDataSource {
     }
 
     /** Zameni sve kategorije tog korisnika novom listom (korisno kada stigne snapshot sa remote-a). */
-    public void replaceAll(String userIdStr, List<Category> list) {
-        long userId = parseUserIdOrThrow(userIdStr);
+    public void replaceAll(long userId, List<Category> list) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.beginTransaction();
         try {
@@ -33,12 +32,11 @@ public class CategoriesLocalDataSource {
 
             if (list != null) {
                 for (Category c : list) {
-                    // osiguraj userId i normalizuj boju radi UNIQUE(userId, colorHex)
                     c.setUserId(userId);
                     if (c.getColorHex() != null) {
                         c.setColorHex(c.getColorHex().toUpperCase());
                     }
-                    insertWithId(db, c);
+                    insertOrReplace(db, c);
                 }
             }
 
@@ -48,45 +46,38 @@ public class CategoriesLocalDataSource {
         }
     }
 
-    /** Upsert: ako nema _id → insert; ako ima → update (po _id i userId). Vraća rowId. */
-    public long upsert(Long userId, Category c) {
+    /** Upsert po firestoreId + userId. */
+    public long upsert(long userId, Category c) {
         c.setUserId(userId);
         if (c.getColorHex() != null) c.setColorHex(c.getColorHex().toUpperCase());
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        if (c.getId() == null || c.getId() == 0L) {
-            return insertInternal(db, c);
-        } else {
-            ContentValues values = toValues(c, /*includeId*/ false);
-            int affected = db.update(
-                    CategoryEntry.TABLE_NAME,
-                    values,
-                    CategoryEntry._ID + "=? AND " + CategoryEntry.COLUMN_USER_ID + "=?",
-                    new String[]{ String.valueOf(c.getId()), String.valueOf(userId) }
-            );
-            if (affected == 0) {
-                // Ako iz nekog razloga nema reda (npr. sync race), uradi insert
-                return insertWithId(db, c);
-            }
-            return c.getId();
+        ContentValues values = toValues(c);
+
+        int affected = db.update(
+                CategoryEntry.TABLE_NAME,
+                values,
+                CategoryEntry.COLUMN_FIRESTORE_ID + "=? AND " + CategoryEntry.COLUMN_USER_ID + "=?",
+                new String[]{ c.getId(), String.valueOf(userId) }
+        );
+        if (affected == 0) {
+            return insertOrReplace(db, c);
         }
+        return affected;
     }
 
-    /** Brisanje po _id i userId (bezbednije); vraća broj pogođenih redova. */
-    public int delete(String userIdStr, Object categoryId) {
-        long userId = parseUserIdOrThrow(userIdStr);
-        long id = parseId(categoryId);
+    /** Brisanje po firestoreId i userId; vraća broj pogođenih redova. */
+    public int delete(long userId, String firestoreId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         return db.delete(
                 CategoryEntry.TABLE_NAME,
-                CategoryEntry._ID + "=? AND " + CategoryEntry.COLUMN_USER_ID + "=?",
-                new String[]{ String.valueOf(id), String.valueOf(userId) }
+                CategoryEntry.COLUMN_FIRESTORE_ID + "=? AND " + CategoryEntry.COLUMN_USER_ID + "=?",
+                new String[]{ firestoreId, String.valueOf(userId) }
         );
     }
 
-    /** Sve kategorije korisnika (korisno za prikaz iz lokalnog keša). */
-    public List<Category> getAllByUser(String userIdStr) {
-        long userId = parseUserIdOrThrow(userIdStr);
+    /** Sve kategorije korisnika (iz lokalnog keša). */
+    public List<Category> getAllByUser(long userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cur = db.query(
                 CategoryEntry.TABLE_NAME,
@@ -105,9 +96,8 @@ public class CategoriesLocalDataSource {
         }
     }
 
-    /** Da li je boja zauzeta za datog korisnika; excludeId je opcioni (za EDIT formu). */
-    public boolean isColorTaken(String userIdStr, String colorHex, Long excludeIdOrNull) {
-        long userId = parseUserIdOrThrow(userIdStr);
+    /** Da li je boja zauzeta za datog korisnika; excludeFirestoreId je opcioni (za EDIT formu). */
+    public boolean isColorTaken(long userId, String colorHex, String excludeFirestoreId) {
         String normalized = colorHex != null ? colorHex.toUpperCase() : null;
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -116,9 +106,9 @@ public class CategoriesLocalDataSource {
         args.add(String.valueOf(userId));
         args.add(normalized);
 
-        if (excludeIdOrNull != null) {
-            sel += " AND " + CategoryEntry._ID + "!=?";
-            args.add(String.valueOf(excludeIdOrNull));
+        if (excludeFirestoreId != null) {
+            sel += " AND " + CategoryEntry.COLUMN_FIRESTORE_ID + "!=?";
+            args.add(excludeFirestoreId);
         }
 
         Cursor c = db.query(CategoryEntry.TABLE_NAME,
@@ -134,30 +124,14 @@ public class CategoriesLocalDataSource {
 
     // ----------------- helpers -----------------
 
-    private long insertInternal(SQLiteDatabase db, Category c) {
-        ContentValues v = toValues(c, /*includeId*/ false); // _id je AUTOINCREMENT
-        long rowId = db.insert(CategoryEntry.TABLE_NAME, null, v);
-        if (c.getId() == null || c.getId() == 0L) c.setId(rowId);
-        return rowId;
+    private long insertOrReplace(SQLiteDatabase db, Category c) {
+        ContentValues v = toValues(c);
+        return db.insert(CategoryEntry.TABLE_NAME, null, v);
     }
 
-    private long insertWithId(SQLiteDatabase db, Category c) {
-        ContentValues v = toValues(c, /*includeId*/ true); // upiši tačno ovaj ID
-        long rowId = db.insert(CategoryEntry.TABLE_NAME, null, v);
-        // ako si upisala ID, ostaje isti; možeš i da vratiš c.getId()
-        return (rowId > 0) ? (c.getId() != null ? c.getId() : rowId) : rowId;
-    }
-
-    private long insertAuto(SQLiteDatabase db, Category c) {
-        ContentValues v = toValues(c, /*includeId*/ false);
-        long rowId = db.insert(CategoryEntry.TABLE_NAME, null, v);
-        if (c.getId() == null || c.getId() == 0L) c.setId(rowId);
-        return rowId;
-    }
-
-    private static ContentValues toValues(Category c, boolean includeId) {
+    private static ContentValues toValues(Category c) {
         ContentValues v = new ContentValues();
-        if (includeId && c.getId() != null) v.put(CategoryEntry._ID, c.getId());
+        if (c.getId() != null) v.put(CategoryEntry.COLUMN_FIRESTORE_ID, c.getId()); // Firestore ID
         v.put(CategoryEntry.COLUMN_USER_ID,   c.getUserId());
         v.put(CategoryEntry.COLUMN_NAME,      c.getName());
         v.put(CategoryEntry.COLUMN_COLOR_HEX, c.getColorHex());
@@ -168,29 +142,12 @@ public class CategoriesLocalDataSource {
 
     private static Category fromCursor(Cursor cur) {
         Category c = new Category();
-        c.setId(cur.getLong(cur.getColumnIndexOrThrow(CategoryEntry._ID)));
+        c.setId(cur.getString(cur.getColumnIndexOrThrow(CategoryEntry.COLUMN_FIRESTORE_ID))); // Firestore ID
         c.setUserId(cur.getLong(cur.getColumnIndexOrThrow(CategoryEntry.COLUMN_USER_ID)));
         c.setName(cur.getString(cur.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME)));
         c.setColorHex(cur.getString(cur.getColumnIndexOrThrow(CategoryEntry.COLUMN_COLOR_HEX)));
         c.setCreatedAt(cur.getLong(cur.getColumnIndexOrThrow(CategoryEntry.COLUMN_CREATED_AT)));
         c.setUpdatedAt(cur.getLong(cur.getColumnIndexOrThrow(CategoryEntry.COLUMN_UPDATED_AT)));
         return c;
-    }
-
-    private static long parseUserIdOrThrow(String userIdStr) {
-        try {
-            return Long.parseLong(userIdStr);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Local DB expects numeric userId, got: " + userIdStr, e);
-        }
-    }
-
-    private static long parseId(Object idObj) {
-        if (idObj instanceof Long) return (Long) idObj;
-        if (idObj instanceof Integer) return ((Integer) idObj).longValue();
-        if (idObj instanceof String) {
-            try { return Long.parseLong((String) idObj); } catch (Exception ignored) {}
-        }
-        throw new IllegalArgumentException("Unsupported id type: " + idObj);
     }
 }

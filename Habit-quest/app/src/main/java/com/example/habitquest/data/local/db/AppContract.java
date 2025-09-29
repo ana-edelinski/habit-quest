@@ -28,6 +28,7 @@ public final class AppContract {
 
     public static final class CategoryEntry implements BaseColumns {
         public static final String TABLE_NAME = "CATEGORIES";
+        public static final String COLUMN_FIRESTORE_ID    = "firestoreId";     // TEXT (ID dokumenta u Firestore-u)
         public static final String COLUMN_USER_ID   = "userId";     // LONG (ako ti je uid String, promeni u TEXT)
         public static final String COLUMN_NAME      = "name";       // TEXT NOT NULL
         public static final String COLUMN_COLOR_HEX = "colorHex";   // TEXT NOT NULL, format #RRGGBB
@@ -38,6 +39,7 @@ public final class AppContract {
                 "CREATE TABLE " + CategoryEntry.TABLE_NAME + " (" +
                         CategoryEntry._ID               + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         CategoryEntry.COLUMN_USER_ID    + " INTEGER NOT NULL, " +
+                        CategoryEntry.COLUMN_FIRESTORE_ID    + " TEXT UNIQUE, " +
                         CategoryEntry.COLUMN_NAME       + " TEXT NOT NULL, " +
                         CategoryEntry.COLUMN_COLOR_HEX  + " TEXT NOT NULL, " +
                         CategoryEntry.COLUMN_CREATED_AT + " INTEGER NOT NULL, " +
@@ -52,7 +54,8 @@ public final class AppContract {
         public static final String TABLE_NAME = "TASKS";
 
         public static final String COLUMN_USER_ID       = "userId";        // LONG (lokalni ID korisnika)
-        public static final String COLUMN_CATEGORY_ID   = "categoryId";    // LONG (FK na kategoriju)
+        public static final String COLUMN_FIRESTORE_ID    = "firestoreId";     // TEXT (ID dokumenta u Firestore-u)
+        public static final String COLUMN_CATEGORY_ID   = "categoryId";    // TEXT (FK na kategoriju)
         public static final String COLUMN_NAME          = "name";          // TEXT NOT NULL
         public static final String COLUMN_DESCRIPTION   = "description";   // TEXT (opciono)
 
@@ -77,7 +80,8 @@ public final class AppContract {
                 "CREATE TABLE " + TABLE_NAME + " (" +
                         _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         COLUMN_USER_ID        + " INTEGER NOT NULL, " +
-                        COLUMN_CATEGORY_ID    + " INTEGER NOT NULL, " +
+                        COLUMN_FIRESTORE_ID    + " TEXT UNIQUE, " +
+                        COLUMN_CATEGORY_ID    + " TEXT NOT NULL, " +
                         COLUMN_NAME           + " TEXT NOT NULL, " +
                         COLUMN_DESCRIPTION    + " TEXT, " +
                         COLUMN_DATE_TIME      + " INTEGER, " +
@@ -95,10 +99,12 @@ public final class AppContract {
 
     public static final class UserXpLogEntry implements BaseColumns {
         public static final String TABLE_NAME = "USER_XP_LOG";
+        public static final String COLUMN_FIRESTORE_ID    = "firestoreId";     // TEXT (ID dokumenta u Firestore-u)
 
         public static final String COLUMN_USER_ID      = "userId";       // LONG (FK User)
-        public static final String COLUMN_TASK_ID      = "taskId";       // LONG (FK Task)
-        public static final String COLUMN_OCCURRENCE_ID= "occurrenceId"; // LONG (FK TaskOccurrence) može biti NULL
+        public static final String COLUMN_TASK_ID      = "taskId";       // String (FK Task)
+
+        public static final String COLUMN_OCCURRENCE_ID= "occurrenceId"; // String (FK TaskOccurrence) može biti NULL
         public static final String COLUMN_XP_GAINED    = "xpGained";     // INTEGER
         public static final String COLUMN_COMPLETED_AT = "completedAt";  // INTEGER (epoch millis)
 
@@ -106,8 +112,9 @@ public final class AppContract {
                 "CREATE TABLE " + TABLE_NAME + " (" +
                         _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         COLUMN_USER_ID       + " INTEGER NOT NULL, " +
-                        COLUMN_TASK_ID       + " INTEGER NOT NULL, " +
-                        COLUMN_OCCURRENCE_ID + " INTEGER, " +
+                        COLUMN_FIRESTORE_ID    + " TEXT UNIQUE, " +
+                        COLUMN_TASK_ID       + " TEXT NOT NULL, " +
+                        COLUMN_OCCURRENCE_ID + " TEXT, " +
                         COLUMN_XP_GAINED     + " INTEGER NOT NULL, " +
                         COLUMN_COMPLETED_AT  + " INTEGER NOT NULL" +
                         ");";

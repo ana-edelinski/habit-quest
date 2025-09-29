@@ -67,6 +67,9 @@ public class UserXpLogLocalDataSource {
 
     private ContentValues toContentValues(UserXpLog log) {
         ContentValues values = new ContentValues();
+        if (log.getId() != null) {
+            values.put(AppContract.UserXpLogEntry.COLUMN_FIRESTORE_ID, log.getId()); // Firestore docId
+        }
         values.put(AppContract.UserXpLogEntry.COLUMN_USER_ID, log.getUserId());
         values.put(AppContract.UserXpLogEntry.COLUMN_TASK_ID, log.getTaskId());
         values.put(AppContract.UserXpLogEntry.COLUMN_OCCURRENCE_ID, log.getOccurrenceId());
@@ -77,9 +80,10 @@ public class UserXpLogLocalDataSource {
 
     private UserXpLog fromCursor(Cursor cursor) {
         UserXpLog log = new UserXpLog();
+        log.setId(cursor.getString(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_FIRESTORE_ID))); // Firestore ID
         log.setUserId(cursor.getLong(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_USER_ID)));
-        log.setTaskId(cursor.getLong(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_TASK_ID)));
-        log.setOccurrenceId(cursor.getLong(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_OCCURRENCE_ID)));
+        log.setTaskId(cursor.getString(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_TASK_ID)));
+        log.setOccurrenceId(cursor.getString(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_OCCURRENCE_ID)));
         log.setXpGained(cursor.getInt(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_XP_GAINED)));
         log.setCompletedAt(cursor.getLong(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_COMPLETED_AT)));
         return log;

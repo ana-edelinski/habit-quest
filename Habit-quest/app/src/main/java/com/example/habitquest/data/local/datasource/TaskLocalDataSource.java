@@ -21,27 +21,25 @@ public class TaskLocalDataSource {
 
     public long insert(Task task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = toValues(task, true);
-        long id = db.insert("TASKS", null, values);
-        task.setId(id);
-        return id;
+        ContentValues values = toValues(task);
+        return db.insert("TASKS", null, values);
     }
 
     public long upsert(Task task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = toValues(task, true);
-        int rows = db.update("TASKS", values, "_id=? AND userId=?",
-                new String[]{String.valueOf(task.getId()), String.valueOf(task.getUserId())});
+        ContentValues values = toValues(task);
+        int rows = db.update("TASKS", values, "firestoreId=? AND userId=?",
+                new String[]{task.getId(), String.valueOf(task.getUserId())});
         if (rows == 0) {
             return insert(task);
         }
-        return task.getId();
+        return rows;
     }
 
-    public int delete(long taskId, long userId) {
+    public int delete(String firestoreId, long userId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        return db.delete("TASKS", "_id=? AND userId=?",
-                new String[]{String.valueOf(taskId), String.valueOf(userId)});
+        return db.delete("TASKS", "firestoreId=? AND userId=?",
+                new String[]{firestoreId, String.valueOf(userId)});
     }
 
     public List<Task> getAllByUser(long userId) {
@@ -56,9 +54,14 @@ public class TaskLocalDataSource {
         return tasks;
     }
 
-    private static ContentValues toValues(Task t, boolean includeId) {
+    public int deleteAllByUser(long userId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        return db.delete("TASKS", "userId=?", new String[]{String.valueOf(userId)});
+    }
+
+    private static ContentValues toValues(Task t) {
         ContentValues v = new ContentValues();
-        if (includeId && t.getId() != null) v.put("_id", t.getId());
+        if (t.getId() != null) v.put("firestoreId", t.getId()); // Firestore documentId
         v.put("userId", t.getUserId());
         v.put("categoryId", t.getCategoryId());
         v.put("name", t.getName());
@@ -72,18 +75,18 @@ public class TaskLocalDataSource {
         v.put("importanceXp", t.getImportanceXp());
         v.put("totalXp", t.getTotalXp());
         if (t.getStatus() != null) {
-            v.put("status", t.getStatus().name()); // npr. "ACTIVE", "PAUSED", ...
+            v.put("status", t.getStatus().name());
         } else {
-            v.put("status", TaskStatus.ACTIVE.name()); // default
+            v.put("status", TaskStatus.ACTIVE.name());
         }
         return v;
     }
 
     private static Task fromCursor(Cursor c) {
         Task t = new Task();
-        t.setId(c.getLong(c.getColumnIndexOrThrow("_id")));
+        t.setId(c.getString(c.getColumnIndexOrThrow("firestoreId"))); // Firestore ID
         t.setUserId(c.getLong(c.getColumnIndexOrThrow("userId")));
-        t.setCategoryId(c.getLong(c.getColumnIndexOrThrow("categoryId")));
+        t.setCategoryId(c.getString(c.getColumnIndexOrThrow("categoryId")));
         t.setName(c.getString(c.getColumnIndexOrThrow("name")));
         t.setDescription(c.getString(c.getColumnIndexOrThrow("description")));
         t.setDate(c.getLong(c.getColumnIndexOrThrow("date")));
@@ -95,12 +98,10 @@ public class TaskLocalDataSource {
         t.setImportanceXp(c.getInt(c.getColumnIndexOrThrow("importanceXp")));
         t.setTotalXp(c.getInt(c.getColumnIndexOrThrow("totalXp")));
         String statusStr = c.getString(c.getColumnIndexOrThrow("status"));
-        TaskStatus status = TaskStatus.ACTIVE; // default
+        TaskStatus status = TaskStatus.ACTIVE;
         try {
             status = TaskStatus.valueOf(statusStr);
-        } catch (Exception e) {
-            // ostaje default
-        }
+        } catch (Exception ignored) {}
         t.setStatus(status);
         return t;
     }

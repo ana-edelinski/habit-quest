@@ -54,10 +54,9 @@ public class TaskListFragment extends Fragment {
 
         AppPreferences prefs = new AppPreferences(requireContext());
         String firebaseUid = prefs.getFirebaseUid();
-        String localUserId = prefs.getUserId();
 
         // 🔑 Pokreće učitavanje kategorija
-        categoryViewModel.startListening(firebaseUid, localUserId);
+        categoryViewModel.startListening();
 
 
 
@@ -72,7 +71,7 @@ public class TaskListFragment extends Fragment {
 
             AddTaskDialogFragment dialog = AddTaskDialogFragment.newInstance(cats);
             dialog.setOnTaskCreatedListener(task -> {
-                taskViewModel.createTask(firebaseUid, task);
+                taskViewModel.createTask(task);
             });
             dialog.show(getParentFragmentManager(), "AddTaskDialog");
         });

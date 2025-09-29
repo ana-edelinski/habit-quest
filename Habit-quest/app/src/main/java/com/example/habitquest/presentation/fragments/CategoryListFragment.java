@@ -52,10 +52,8 @@ public class CategoryListFragment extends Fragment {
             adapter.setCategories(categories);
         });
 
-        AppPreferences prefs = new AppPreferences(requireContext());
-        String firebaseUid = prefs.getFirebaseUid();
-        String localUserId = prefs.getUserId();
-        viewModel.startListening(firebaseUid, localUserId);
+
+        viewModel.startListening();
 
         fabAdd.setOnClickListener(v -> {
             showAddCategoryDialog();
@@ -76,11 +74,7 @@ public class CategoryListFragment extends Fragment {
                     String color = editColor.getText().toString().trim();
 
                     if (!name.isEmpty() && !color.isEmpty()) {
-                        AppPreferences prefs = new AppPreferences(requireContext());
-                        String firebaseUid = prefs.getFirebaseUid();
-                        String localUserId = prefs.getUserId();
-
-                        viewModel.createCategory(firebaseUid, localUserId, name, color);
+                        viewModel.createCategory(name, color);
                     }
                 })
                 .setNegativeButton("Cancel", null)

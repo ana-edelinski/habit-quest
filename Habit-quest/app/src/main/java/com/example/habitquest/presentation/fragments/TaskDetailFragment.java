@@ -72,7 +72,7 @@ public class TaskDetailFragment extends Fragment {
         categoryViewModel.categories.observe(getViewLifecycleOwner(), categories -> {
             for (Category c : categories) {
                 if (c.getId() != null && task.getCategoryId() != null &&
-                        c.getId().longValue() == task.getCategoryId().longValue()) {
+                        c.getId().equals(task.getCategoryId())) {
 
                     TextView tvCategory = v.findViewById(R.id.tvCategoryDetail);
                     tvCategory.setText(c.getName());
@@ -103,7 +103,7 @@ public class TaskDetailFragment extends Fragment {
 
 
         btnDone.setOnClickListener(view1 -> {
-            taskViewModel.completeTask(firebaseUid, task);
+            taskViewModel.completeTask(task);
         });
 
         taskViewModel.taskCompleted.observe(getViewLifecycleOwner(), success -> {

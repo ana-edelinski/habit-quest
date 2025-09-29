@@ -1,7 +1,7 @@
 package com.example.habitquest.domain.model;
 
 public class Category {
-    private Long id;
+    private String id;
     private  Long userId;
     private String name;
     private String colorHex;
@@ -10,7 +10,7 @@ public class Category {
 
     public Category() {}
 
-    public Category(Long id,Long userId, String name, String colorHex, Long createdAt, Long updatedAt) {
+    public Category(String id,Long userId, String name, String colorHex, Long createdAt, Long updatedAt) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -19,8 +19,8 @@ public class Category {
         this.updatedAt = updatedAt;
     }
 
-    public Long getId() {return id;}
-    public void setId(Long id) {this.id = id;}
+    public String getId() {return id;}
+    public void setId(String id) {this.id = id;}
 
     public Long getUserId() {
         return userId;

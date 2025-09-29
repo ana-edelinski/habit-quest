@@ -5,12 +5,12 @@ import androidx.annotation.NonNull;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.SetOptions;
-
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -31,8 +31,8 @@ public class TaskRemoteDataSource {
                     List<Task> out = new ArrayList<>();
                     for (DocumentSnapshot d : snap.getDocuments()) {
                         Task t = d.toObject(Task.class);
-                        if (t != null && t.getId() == null) {
-                            try { t.setId(Long.parseLong(d.getId())); } catch (Exception ignored) {}
+                        if (t != null) {
+                            t.setId(d.getId()); // koristimo Firestore documentId
                         }
                         out.add(t);
                     }
@@ -42,10 +42,12 @@ public class TaskRemoteDataSource {
     }
 
     public void create(@NonNull String firebaseUid, @NonNull Task task, @NonNull RepositoryCallback<Task> cb) {
-        long newId = System.currentTimeMillis();
+        // Firestore sam generiše ID
+        DocumentReference docRef = tasks(firebaseUid).document();
+        String newId = docRef.getId();
         task.setId(newId);
-        tasks(firebaseUid).document(String.valueOf(newId))
-                .set(task)
+
+        docRef.set(task)
                 .addOnSuccessListener(v -> cb.onSuccess(task))
                 .addOnFailureListener(cb::onFailure);
     }
@@ -55,14 +57,14 @@ public class TaskRemoteDataSource {
             cb.onFailure(new IllegalArgumentException("Task id is null"));
             return;
         }
-        tasks(firebaseUid).document(String.valueOf(task.getId()))
+        tasks(firebaseUid).document(task.getId())
                 .set(task, SetOptions.merge())
                 .addOnSuccessListener(v -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onFailure);
     }
 
-    public void delete(@NonNull String firebaseUid, @NonNull Object taskId, @NonNull RepositoryCallback<Void> cb) {
-        tasks(firebaseUid).document(String.valueOf(taskId))
+    public void delete(@NonNull String firebaseUid, @NonNull String taskId, @NonNull RepositoryCallback<Void> cb) {
+        tasks(firebaseUid).document(taskId)
                 .delete()
                 .addOnSuccessListener(v -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onFailure);
@@ -83,8 +85,8 @@ public class TaskRemoteDataSource {
                     List<Task> out = new ArrayList<>();
                     for (DocumentSnapshot d : snap.getDocuments()) {
                         Task t = d.toObject(Task.class);
-                        if (t != null && t.getId() == null) {
-                            try { t.setId(Long.parseLong(d.getId())); } catch (Exception ignored) {}
+                        if (t != null) {
+                            t.setId(d.getId()); // uvek postavljamo Firestore documentId
                         }
                         out.add(t);
                     }
@@ -92,14 +94,8 @@ public class TaskRemoteDataSource {
                 });
 
         // vrati Closeable koji prekida listener
-        return new Closeable() {
-            @Override
-            public void close() {
-                reg.remove();
-            }
-        };
+        return reg::remove;
     }
-
 
     // interfejs za eventove
     public interface RemoteListener {
@@ -107,4 +103,3 @@ public class TaskRemoteDataSource {
         void onError(Exception e);
     }
 }
-

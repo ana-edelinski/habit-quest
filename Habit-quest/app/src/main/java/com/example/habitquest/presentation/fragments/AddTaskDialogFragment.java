@@ -27,8 +27,8 @@ import java.util.List;
 public class AddTaskDialogFragment extends DialogFragment {
 
     public static class CategoryItem implements Serializable {
-        public long id; public String name;
-        public CategoryItem(long id, String name){ this.id=id; this.name=name; }
+        public String id; public String name;
+        public CategoryItem(String id, String name){ this.id=id; this.name=name; }
         @Override public String toString(){ return name; }
     }
 

@@ -70,21 +70,9 @@ public class RecurringTasksFragment extends Fragment {
                     .navigate(R.id.taskDetailFragment, args);
         });
 
-        // povuci uid + local id iz sesije
-        AppPreferences prefs = new AppPreferences(requireContext());
-        String firebaseUid = prefs.getFirebaseUid();
-        String localUserIdStr = prefs.getUserId();
 
-        long localUserId = -1;
-        if (localUserIdStr != null && !localUserIdStr.isEmpty()) {
-            try {
-                localUserId = Long.parseLong(localUserIdStr);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
 
-        viewModel.startListening(firebaseUid, localUserId);
+        viewModel.startListening();
 
         return v;
     }

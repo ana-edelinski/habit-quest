@@ -72,10 +72,8 @@ public class OneTimeTasksFragment extends Fragment {
         });
 
 
-        AppPreferences prefs = new AppPreferences(requireContext());
-        String firebaseUid = prefs.getFirebaseUid();
-        String localUserId = prefs.getUserId();
-        viewModel.startListening(firebaseUid, Long.parseLong(localUserId));
+
+        viewModel.startListening();
 
         return v;
     }

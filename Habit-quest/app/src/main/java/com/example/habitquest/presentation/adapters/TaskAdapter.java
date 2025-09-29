@@ -68,7 +68,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         Category category = null;
         for (Category c : categories) {
             if (c.getId() != null && t.getCategoryId() != null
-                    && c.getId().longValue() == t.getCategoryId().longValue()) {
+                   && c.getId().equals(t.getCategoryId())) {
                 category = c;
                 break;
             }

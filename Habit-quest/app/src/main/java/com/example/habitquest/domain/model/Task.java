@@ -4,10 +4,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Task implements Parcelable {
-    private Long id;
+    private String id;
     private Long userId;        // lokalni user ID (SQLite)
     private String firebaseUid; // za Firestore
-    private Long categoryId;
+    private String categoryId;
 
     private String name;
     private String description;
@@ -30,7 +30,7 @@ public class Task implements Parcelable {
 
     public Task() { }
 
-    public Task(Long id, Long userId, String firebaseUid, Long categoryId,
+    public Task(String id, Long userId, String firebaseUid, String categoryId,
                 String name, String description, Long date,
                 Long startDate, Long endDate, Integer interval, String unit,
                 int difficultyXp, int importanceXp, int totalXp, TaskStatus status) {
@@ -53,10 +53,10 @@ public class Task implements Parcelable {
 
 
     protected Task(Parcel in) {
-        id = in.readByte() == 0 ? null : in.readLong();
+        id = in.readByte() == 0 ? null : in.readString();
         userId = in.readByte() == 0 ? null : in.readLong();
         firebaseUid = in.readString();
-        categoryId = in.readByte() == 0 ? null : in.readLong();
+        categoryId = in.readByte() == 0 ? null : in.readString();
         name = in.readString();
         description = in.readString();
         date = in.readByte() == 0 ? null : in.readLong();
@@ -77,7 +77,7 @@ public class Task implements Parcelable {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(id);
+            dest.writeString(id);
         }
 
         if (userId == null) {
@@ -93,7 +93,7 @@ public class Task implements Parcelable {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(categoryId);
+            dest.writeString(categoryId);
         }
 
         dest.writeString(name);
@@ -191,11 +191,11 @@ public class Task implements Parcelable {
         this.name = name;
     }
 
-    public Long getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(Long categoryId) {
+    public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
     }
 
@@ -215,11 +215,11 @@ public class Task implements Parcelable {
         this.userId = userId;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

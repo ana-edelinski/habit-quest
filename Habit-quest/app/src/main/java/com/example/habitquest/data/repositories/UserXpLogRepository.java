@@ -40,6 +40,10 @@ public class UserXpLogRepository implements IUserXpLogRepository {
         remote.fetchAll(userId, new RepositoryCallback<List<UserXpLog>>() {
             @Override
             public void onSuccess(List<UserXpLog> result) {
+                // prvo očisti lokalne logove
+                local.deleteAllForUser(userId);
+
+                // pa upiši sveže sa remote
                 for (UserXpLog log : result) {
                     local.upsert(log);
                 }
@@ -51,6 +55,7 @@ public class UserXpLogRepository implements IUserXpLogRepository {
             }
         });
     }
+
 
     @Override
     public void deleteAllForUser(long userId, RepositoryCallback<Void> cb) {
