@@ -126,6 +126,11 @@ public class TaskDetailFragment extends Fragment {
         btnDone.setOnClickListener(view1 -> {
             taskViewModel.completeTask(task);
             btnDone.setVisibility(View.GONE);
+            btnPause.setVisibility(View.GONE);
+            btnEdit.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.GONE);
+            btnCancel.setVisibility(View.GONE);
+
         });
 
         taskViewModel.taskCompleted.observe(getViewLifecycleOwner(), success -> {
