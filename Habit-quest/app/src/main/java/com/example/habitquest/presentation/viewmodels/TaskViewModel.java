@@ -180,6 +180,24 @@ public class TaskViewModel extends ViewModel {
         });
     }
 
+    public void cancelTask(Task task) {
+        String firebaseUid = prefs.getFirebaseUid();
+
+        task.setStatus(TaskStatus.CANCELED);
+
+        repository.update(firebaseUid, task, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // Možeš dodati LiveData event ako želiš da UI zna da je zadatak otkazan
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // error handling – npr. Toast poruka u UI
+            }
+        });
+    }
+
     @Override
     protected void onCleared() {
         super.onCleared();

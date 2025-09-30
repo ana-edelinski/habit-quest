@@ -19,7 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.habitquest.R;
-import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
@@ -27,9 +26,12 @@ import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
+import androidx.appcompat.app.AlertDialog;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class TaskDetailFragment extends Fragment {
@@ -108,13 +110,19 @@ public class TaskDetailFragment extends Fragment {
         Button btnEdit = v.findViewById(R.id.btnEdit);
         Button btnDelete = v.findViewById(R.id.btnDelete);
 
-        if (task.getStatus() == TaskStatus.COMPLETED) {
+        if (task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.NOT_DONE) {
             btnDone.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.GONE);
+            btnEdit.setVisibility(View.GONE);
+            btnCancel.setVisibility(View.GONE);
         } else {
             btnDone.setVisibility(View.VISIBLE);
+            btnDelete.setVisibility(View.VISIBLE);
+            btnEdit.setVisibility(View.VISIBLE);
+            btnCancel.setVisibility(View.VISIBLE);
         }
 
-
+        //kompletiranje zadatka
         btnDone.setOnClickListener(view1 -> {
             taskViewModel.completeTask(task);
             btnDone.setVisibility(View.GONE);
@@ -126,6 +134,78 @@ public class TaskDetailFragment extends Fragment {
 
             }
         });
+
+        //otkazivanje zadatka
+        btnCancel.setOnClickListener(view1 -> {
+            taskViewModel.cancelTask(task);
+
+            // Sakrij sva dugmad jer je task sada otkazan
+            btnDone.setVisibility(View.GONE);
+            btnCancel.setVisibility(View.GONE);
+            btnPause.setVisibility(View.GONE);
+            btnEdit.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.GONE);
+
+            Toast.makeText(requireContext(), "Task canceled", Toast.LENGTH_SHORT).show();
+        });
+
+        //brisanje zadatka
+        btnDelete.setOnClickListener(view1 -> {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Task")
+                    .setMessage("Are you sure you want to delete this task?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        taskViewModel.deleteTask(task.getId());
+                        Toast.makeText(requireContext(), "Task successfully deleted", Toast.LENGTH_SHORT).show();
+                        requireActivity().getSupportFragmentManager().popBackStack(); // vrati se na listu
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                    .show();
+        });
+
+        //edit zadatka
+        btnEdit.setOnClickListener(view1 -> {
+            // 1. Pretvori kategorije u CategoryItem listu
+            ArrayList<AddTaskDialogFragment.CategoryItem> catItems = new ArrayList<>();
+            List<Category> currentCats = categoryViewModel.categories.getValue();
+            if (currentCats != null) {
+                for (Category c : currentCats) {
+                    catItems.add(new AddTaskDialogFragment.CategoryItem(c.getId(), c.getName()));
+                }
+            }
+
+            // 2. Otvori dijalog u "edit mode" (prosleđuješ i task)
+            AddTaskDialogFragment dialog = AddTaskDialogFragment.newInstance(catItems, task);
+            dialog.setOnTaskSavedListener(new AddTaskDialogFragment.OnTaskSavedListener() {
+                @Override
+                public void onTaskCreated(Task task) {
+                }
+
+                @Override
+                public void onTaskUpdated(Task updatedTask) {
+                    taskViewModel.updateTask(updatedTask);
+                    Toast.makeText(requireContext(), "Task updated", Toast.LENGTH_SHORT).show();
+
+                    // osveži UI odmah
+                    tvName.setText(updatedTask.getName());
+                    tvDescription.setText(updatedTask.getDescription());
+                    tvXp.setText("+" + updatedTask.getTotalXp() + " XP");
+                    tvStatus.setText(updatedTask.getStatus().name());
+                    if (updatedTask.getDate() != null) {
+                        tvDate.setText("One-time: " + formatDateTime(updatedTask.getDate()));
+                    } else if (updatedTask.getInterval() != null) {
+                        tvDate.setText("Every " + updatedTask.getInterval() + " " + updatedTask.getUnit());
+                    }
+                }
+            });
+            dialog.show(getParentFragmentManager(), "editTaskDialog");
+        });
+
+
+
+
+
+
 
 
         if (task.getInterval() != null && task.getUnit() != null) {

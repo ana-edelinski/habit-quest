@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.habitquest.R;
 import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.domain.model.Category;
+import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.presentation.adapters.TaskPagerAdapter;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
@@ -59,7 +60,6 @@ public class TaskListFragment extends Fragment {
         ).attach();
 
         AppPreferences prefs = new AppPreferences(requireContext());
-        String firebaseUid = prefs.getFirebaseUid();
 
         // 🔑 Pokreće učitavanje kategorija
         categoryViewModel.startListening();
@@ -75,9 +75,17 @@ public class TaskListFragment extends Fragment {
                 }
             }
 
-            AddTaskDialogFragment dialog = AddTaskDialogFragment.newInstance(cats);
-            dialog.setOnTaskCreatedListener(task -> {
-                taskViewModel.createTask(task);
+            AddTaskDialogFragment dialog = AddTaskDialogFragment.newInstance(cats, null);
+            dialog.setOnTaskSavedListener(new AddTaskDialogFragment.OnTaskSavedListener() {
+                @Override
+                public void onTaskCreated(Task task) {
+                    taskViewModel.createTask(task);
+                }
+
+                @Override
+                public void onTaskUpdated(Task task) {
+
+                }
             });
             dialog.show(getParentFragmentManager(), "AddTaskDialog");
         });

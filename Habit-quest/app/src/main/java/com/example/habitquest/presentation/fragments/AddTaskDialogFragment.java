@@ -20,31 +20,45 @@ import com.example.habitquest.domain.model.DifficultyLevel;
 import com.example.habitquest.domain.model.ImportanceLevel;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AddTaskDialogFragment extends DialogFragment {
 
     public static class CategoryItem implements Serializable {
-        public String id; public String name;
+        public String id;
+        public String name;
         public CategoryItem(String id, String name){ this.id=id; this.name=name; }
         @Override public String toString(){ return name; }
     }
 
-    public interface OnTaskCreatedListener { void onTaskCreated(Task task); }
+    public interface OnTaskSavedListener {
+        void onTaskCreated(Task task);
+        void onTaskUpdated(Task task);
+    }
 
     private static final String ARG_CATEGORIES = "ARG_CATEGORIES";
-    private OnTaskCreatedListener listener;
+    private static final String ARG_TASK = "ARG_TASK";
 
-    public static AddTaskDialogFragment newInstance(ArrayList<CategoryItem> categories) {
+    private OnTaskSavedListener listener;
+    private Task editingTask; // null → add, != null → edit
+
+    public static AddTaskDialogFragment newInstance(ArrayList<CategoryItem> categories, @Nullable Task taskToEdit) {
         AddTaskDialogFragment f = new AddTaskDialogFragment();
         Bundle b = new Bundle();
         b.putSerializable(ARG_CATEGORIES, categories);
+        if (taskToEdit != null) {
+            b.putParcelable(ARG_TASK, taskToEdit);
+        }
         f.setArguments(b);
         return f;
     }
-    public void setOnTaskCreatedListener(OnTaskCreatedListener l){ this.listener = l; }
+
+    public void setOnTaskSavedListener(OnTaskSavedListener l){ this.listener = l; }
 
     // UI
     private EditText etName, etDescription, etInterval;
@@ -80,13 +94,16 @@ public class AddTaskDialogFragment extends DialogFragment {
         spDifficulty = v.findViewById(R.id.spDifficulty);
         spImportance = v.findViewById(R.id.spImportance);
 
-        // categories
+        // arguments
         ArrayList<CategoryItem> categories = (ArrayList<CategoryItem>) getArguments().getSerializable(ARG_CATEGORIES);
+        editingTask = (Task) getArguments().getParcelable(ARG_TASK);
+
+        // categories spinner
         ArrayAdapter<CategoryItem> catAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, categories);
         catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCategory.setAdapter(catAdapter);
 
-        // unit
+        // unit spinner
         ArrayAdapter<String> unitAdapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item,
                 new String[]{"day","week","month","year"});
@@ -119,13 +136,101 @@ public class AddTaskDialogFragment extends DialogFragment {
         btnPickEndDate.setOnClickListener(v15 -> showDatePicker(endCal, btnPickEndDate));
         btnPickEndTime.setOnClickListener(v16 -> showTimePicker(endCal, btnPickEndTime));
 
+        // --- ako editujemo task, pre-popuni polja ---
+        if (editingTask != null) {
+            etName.setText(editingTask.getName());
+            etDescription.setText(editingTask.getDescription());
+
+            // kategorija → setuj i disable
+            for (int i = 0; i < spCategory.getCount(); i++) {
+                CategoryItem item = (CategoryItem) spCategory.getItemAtPosition(i);
+                if (item.id.equals(editingTask.getCategoryId())) {
+                    spCategory.setSelection(i);
+                    break;
+                }
+            }
+            spCategory.setEnabled(false);
+
+            // type → setuj i disable
+            if (editingTask.getDate() != null) {
+                rgType.check(R.id.rbOneTime);
+                v.findViewById(R.id.rbRecurring).setEnabled(false);
+                boxOneTime.setVisibility(View.VISIBLE);
+                boxRecurring.setVisibility(View.GONE);
+            } else {
+                rgType.check(R.id.rbRecurring);
+                v.findViewById(R.id.rbOneTime).setEnabled(false);
+                boxOneTime.setVisibility(View.GONE);
+                boxRecurring.setVisibility(View.VISIBLE);
+            }
+
+            // xp
+            for (int i = 0; i < DifficultyLevel.values().length; i++) {
+                if (DifficultyLevel.values()[i].xp == editingTask.getDifficultyXp()) {
+                    spDifficulty.setSelection(i);
+                    break;
+                }
+            }
+            for (int i = 0; i < ImportanceLevel.values().length; i++) {
+                if (ImportanceLevel.values()[i].xp == editingTask.getImportanceXp()) {
+                    spImportance.setSelection(i);
+                    break;
+                }
+            }
+
+            // vreme
+            if (editingTask.getDate() != null) {
+                // One-time task → popuni oneTimeCal i dugmad
+                oneTimeCal.setTimeInMillis(editingTask.getDate());
+                btnPickDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                        .format(new Date(editingTask.getDate())));
+                btnPickTime.setText(new SimpleDateFormat("HH:mm", Locale.getDefault())
+                        .format(new Date(editingTask.getDate())));
+            } else {
+                // Recurring task → popuni start/end kalendare i dugmad
+                if (editingTask.getStartDate() != null) {
+                    startCal.setTimeInMillis(editingTask.getStartDate());
+                    btnPickStartDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                            .format(new Date(editingTask.getStartDate())));
+                    btnPickStartTime.setText(new SimpleDateFormat("HH:mm", Locale.getDefault())
+                            .format(new Date(editingTask.getStartDate())));
+                }
+
+                if (editingTask.getEndDate() != null) {
+                    endCal.setTimeInMillis(editingTask.getEndDate());
+                    btnPickEndDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                            .format(new Date(editingTask.getEndDate())));
+                    btnPickEndTime.setText(new SimpleDateFormat("HH:mm", Locale.getDefault())
+                            .format(new Date(editingTask.getEndDate())));
+                }
+            }
+
+        }
+
+        // build dialog
         AlertDialog.Builder b = new AlertDialog.Builder(getActivity())
-                .setTitle("Add new task")
+                .setTitle(editingTask == null ? "Add new task" : "Edit task")
                 .setView(v)
                 .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton("Create", (d, w) -> {
+                .setPositiveButton(editingTask == null ? "Create" : "Save changes", (d, w) -> {
                     Task t = buildTaskFromInputs(categories);
-                    if (t != null && listener != null) listener.onTaskCreated(t);
+                    if (t != null && listener != null) {
+                        if (editingTask == null) {
+                            listener.onTaskCreated(t);
+                        } else {
+                            t.setId(editingTask.getId()); // zadrži isti Firestore ID
+                            t.setCategoryId(editingTask.getCategoryId());
+                            if (editingTask.getDate() != null) {
+                                t.setStartDate(null);
+                                t.setEndDate(null);
+                                t.setInterval(null);
+                                t.setUnit(null);
+                            } else {
+                                t.setDate(null);
+                            }
+                            listener.onTaskUpdated(t);
+                        }
+                    }
                 });
 
         return b.create();
@@ -133,14 +238,21 @@ public class AddTaskDialogFragment extends DialogFragment {
 
     private void showDatePicker(Calendar cal, Button target) {
         new DatePickerDialog(requireContext(),
-                (view, y, m, day) -> { cal.set(Calendar.YEAR,y); cal.set(Calendar.MONTH,m); cal.set(Calendar.DAY_OF_MONTH,day);
+                (view, y, m, day) -> {
+                    cal.set(Calendar.YEAR,y);
+                    cal.set(Calendar.MONTH,m);
+                    cal.set(Calendar.DAY_OF_MONTH,day);
                     target.setText(String.format("%02d.%02d.%04d", day, m+1, y));
                 },
                 cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
     }
+
     private void showTimePicker(Calendar cal, Button target) {
         new TimePickerDialog(requireContext(),
-                (view, h, min) -> { cal.set(Calendar.HOUR_OF_DAY,h); cal.set(Calendar.MINUTE,min); cal.set(Calendar.SECOND,0);
+                (view, h, min) -> {
+                    cal.set(Calendar.HOUR_OF_DAY,h);
+                    cal.set(Calendar.MINUTE,min);
+                    cal.set(Calendar.SECOND,0);
                     target.setText(String.format("%02d:%02d", h, min));
                 },
                 cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show();
@@ -168,22 +280,36 @@ public class AddTaskDialogFragment extends DialogFragment {
         t.setStatus(TaskStatus.ACTIVE); // default
 
         if (isOneTime) {
-            // koristi postojeća polja: date (epoch millis)
+            long now = System.currentTimeMillis();
+            if (oneTimeCal.getTimeInMillis() < now) {
+                Toast.makeText(getContext(),"Cannot set task in the past",Toast.LENGTH_SHORT).show();
+                return null;
+            }
             t.setDate(oneTimeCal.getTimeInMillis());
             t.setStartDate(null);
             t.setEndDate(null);
             t.setInterval(null);
             t.setUnit(null);
         } else {
-            // recurring
             String intervalStr = etInterval.getText().toString().trim();
-            if (intervalStr.isEmpty()) { Toast.makeText(getContext(),"Interval is required",Toast.LENGTH_SHORT).show(); return null; }
+            if (intervalStr.isEmpty()) {
+                Toast.makeText(getContext(),"Interval is required",Toast.LENGTH_SHORT).show();
+                return null;
+            }
             int interval = Integer.parseInt(intervalStr);
             String unit = (String) spUnit.getSelectedItem();
 
             long startMs = startCal.getTimeInMillis();
             long endMs = endCal.getTimeInMillis();
-            if (endMs <= startMs) { Toast.makeText(getContext(),"End must be after start",Toast.LENGTH_SHORT).show(); return null; }
+            long now = System.currentTimeMillis();
+            if (startMs < now) {
+                Toast.makeText(getContext(),"Start date must be in the future",Toast.LENGTH_SHORT).show();
+                return null;
+            }
+            if (endMs <= startMs) {
+                Toast.makeText(getContext(),"End must be after start",Toast.LENGTH_SHORT).show();
+                return null;
+            }
 
             t.setDate(null);
             t.setStartDate(startMs);
@@ -194,4 +320,5 @@ public class AddTaskDialogFragment extends DialogFragment {
         return t;
     }
 }
+
 
