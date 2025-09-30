@@ -43,6 +43,9 @@ public class TaskViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _taskCompleted = new MutableLiveData<>();
     public LiveData<Boolean> taskCompleted = _taskCompleted;
 
+    private final MutableLiveData<String> _taskCompletedId = new MutableLiveData<>();
+    public LiveData<String> taskCompletedId = _taskCompletedId;
+
     private Closeable listenerHandle;
 
     public TaskViewModel(AppPreferences prefs,
@@ -120,11 +123,12 @@ public class TaskViewModel extends ViewModel {
             @Override
             public void onSuccess(Void result) {
                 grantXpForTask(task, firebaseUid);
+                _taskCompletedId.postValue(task.getId());
             }
 
             @Override
             public void onFailure(Exception e) {
-                _taskCompleted.postValue(false);
+                _taskCompletedId.postValue(null);
             }
         });
     }

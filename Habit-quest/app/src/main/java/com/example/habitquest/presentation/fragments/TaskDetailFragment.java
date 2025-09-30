@@ -133,8 +133,8 @@ public class TaskDetailFragment extends Fragment {
         });
 
         // posmatranje završetka taska
-        taskViewModel.taskCompleted.observe(getViewLifecycleOwner(), success -> {
-            if (success != null && success) {
+        taskViewModel.taskCompletedId.observe(getViewLifecycleOwner(), completedId -> {
+            if (completedId != null && completedId.equals(task.getId())) {
                 Toast.makeText(requireContext(),
                         "Task completed! +" + task.getTotalXp() + " XP",
                         Toast.LENGTH_SHORT).show();
