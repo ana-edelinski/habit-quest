@@ -37,7 +37,11 @@
         android:id="@+id/taskDetailFragment"
         android:name="com.example.habitquest.presentation.fragments.TaskDetailFragment"
         android:label="Task Detail"
-        tools:layout="@layout/fragment_task_detail" />
+        tools:layout="@layout/fragment_task_detail">
+        <action
+            android:id="@+id/action_taskDetailFragment_to_levelProgressFragment"
+            app:destination="@id/levelProgressFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/levelProgressFragment"

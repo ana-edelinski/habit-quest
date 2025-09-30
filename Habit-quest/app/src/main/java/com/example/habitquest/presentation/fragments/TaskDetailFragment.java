@@ -1,5 +1,6 @@
 package com.example.habitquest.presentation.fragments;
 
+import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.habitquest.R;
 import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.domain.model.Task;
@@ -27,6 +29,7 @@ import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
 import androidx.appcompat.app.AlertDialog;
+import androidx.navigation.fragment.NavHostFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,7 +46,7 @@ public class TaskDetailFragment extends Fragment {
     public static TaskDetailFragment newInstance(Task task) {
         TaskDetailFragment fragment = new TaskDetailFragment();
         Bundle args = new Bundle();
-        args.putParcelable(ARG_TASK, task); // Task treba da implementira Serializable ili Parcelable
+        args.putParcelable(ARG_TASK, task);
         fragment.setArguments(args);
         return fragment;
     }
@@ -62,7 +65,6 @@ public class TaskDetailFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_task_detail, container, false);
 
-
         TextView tvName = v.findViewById(R.id.tvTaskNameDetail);
         TextView tvDescription = v.findViewById(R.id.tvTaskDescription);
         TextView tvDate = v.findViewById(R.id.tvTaskDate);
@@ -70,7 +72,8 @@ public class TaskDetailFragment extends Fragment {
         TextView tvStatus = v.findViewById(R.id.tvTaskStatus);
 
         TaskViewModel taskViewModel =
-                new ViewModelProvider(requireActivity(), new TaskViewModelFactory(requireContext())).get(TaskViewModel.class);
+                new ViewModelProvider(requireActivity(), new TaskViewModelFactory(requireContext()))
+                        .get(TaskViewModel.class);
 
         CategoryViewModel categoryViewModel =
                 new ViewModelProvider(
@@ -86,7 +89,6 @@ public class TaskDetailFragment extends Fragment {
                     TextView tvCategory = v.findViewById(R.id.tvCategoryDetail);
                     tvCategory.setText(c.getName());
 
-                    // oboji kružić
                     Drawable circle = ContextCompat.getDrawable(requireContext(), R.drawable.ic_circle);
                     if (circle != null) {
                         circle = DrawableCompat.wrap(circle.mutate());
@@ -101,8 +103,6 @@ public class TaskDetailFragment extends Fragment {
                 }
             }
         });
-
-
 
         Button btnDone = v.findViewById(R.id.btnMarkDone);
         Button btnCancel = v.findViewById(R.id.btnCancel);
@@ -122,7 +122,7 @@ public class TaskDetailFragment extends Fragment {
             btnCancel.setVisibility(View.VISIBLE);
         }
 
-        //kompletiranje zadatka
+        // kompletiranje zadatka
         btnDone.setOnClickListener(view1 -> {
             taskViewModel.completeTask(task);
             btnDone.setVisibility(View.GONE);
@@ -130,21 +130,32 @@ public class TaskDetailFragment extends Fragment {
             btnEdit.setVisibility(View.GONE);
             btnDelete.setVisibility(View.GONE);
             btnCancel.setVisibility(View.GONE);
-
         });
 
+        // posmatranje završetka taska
         taskViewModel.taskCompleted.observe(getViewLifecycleOwner(), success -> {
             if (success != null && success) {
-                Toast.makeText(requireContext(), "Task completed! +" + task.getTotalXp() + " XP", Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(requireContext(),
+                        "Task completed! +" + task.getTotalXp() + " XP",
+                        Toast.LENGTH_SHORT).show();
             }
         });
 
-        //otkazivanje zadatka
+        // posmatranje LevelUp eventa
+        taskViewModel.levelUpEvent.observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                showLevelUpDialog(
+                        user.getTotalXp(),
+                        user.getPp(),
+                        user.getLevel()
+                );
+            }
+        });
+
+        // otkazivanje zadatka
         btnCancel.setOnClickListener(view1 -> {
             taskViewModel.cancelTask(task);
 
-            // Sakrij sva dugmad jer je task sada otkazan
             btnDone.setVisibility(View.GONE);
             btnCancel.setVisibility(View.GONE);
             btnPause.setVisibility(View.GONE);
@@ -154,7 +165,7 @@ public class TaskDetailFragment extends Fragment {
             Toast.makeText(requireContext(), "Task canceled", Toast.LENGTH_SHORT).show();
         });
 
-        //brisanje zadatka
+        // brisanje zadatka
         btnDelete.setOnClickListener(view1 -> {
             new AlertDialog.Builder(requireContext())
                     .setTitle("Delete Task")
@@ -162,15 +173,14 @@ public class TaskDetailFragment extends Fragment {
                     .setPositiveButton("Yes", (dialog, which) -> {
                         taskViewModel.deleteTask(task.getId());
                         Toast.makeText(requireContext(), "Task successfully deleted", Toast.LENGTH_SHORT).show();
-                        requireActivity().getSupportFragmentManager().popBackStack(); // vrati se na listu
+                        requireActivity().getSupportFragmentManager().popBackStack();
                     })
                     .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                     .show();
         });
 
-        //edit zadatka
+        // edit zadatka
         btnEdit.setOnClickListener(view1 -> {
-            // 1. Pretvori kategorije u CategoryItem listu
             ArrayList<AddTaskDialogFragment.CategoryItem> catItems = new ArrayList<>();
             List<Category> currentCats = categoryViewModel.categories.getValue();
             if (currentCats != null) {
@@ -179,19 +189,16 @@ public class TaskDetailFragment extends Fragment {
                 }
             }
 
-            // 2. Otvori dijalog u "edit mode" (prosleđuješ i task)
             AddTaskDialogFragment dialog = AddTaskDialogFragment.newInstance(catItems, task);
             dialog.setOnTaskSavedListener(new AddTaskDialogFragment.OnTaskSavedListener() {
                 @Override
-                public void onTaskCreated(Task task) {
-                }
+                public void onTaskCreated(Task task) { }
 
                 @Override
                 public void onTaskUpdated(Task updatedTask) {
                     taskViewModel.updateTask(updatedTask);
                     Toast.makeText(requireContext(), "Task updated", Toast.LENGTH_SHORT).show();
 
-                    // osveži UI odmah
                     tvName.setText(updatedTask.getName());
                     tvDescription.setText(updatedTask.getDescription());
                     tvXp.setText("+" + updatedTask.getTotalXp() + " XP");
@@ -205,13 +212,6 @@ public class TaskDetailFragment extends Fragment {
             });
             dialog.show(getParentFragmentManager(), "editTaskDialog");
         });
-
-
-
-
-
-
-
 
         if (task.getInterval() != null && task.getUnit() != null) {
             btnPause.setVisibility(View.VISIBLE);
@@ -232,7 +232,6 @@ public class TaskDetailFragment extends Fragment {
             }
         }
 
-
         return v;
     }
 
@@ -242,4 +241,30 @@ public class TaskDetailFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
         return sdf.format(date);
     }
+
+    private void showLevelUpDialog(int newXp, int newPp, int level) {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.setContentView(R.layout.dialog_level_up);
+
+        TextView tvMessage = dialog.findViewById(R.id.tvMessage);
+        tvMessage.setText("🎉 Congratulations! 🎉\n\n" +
+                "You’ve reached new level: " + level +
+                "\nXP: " + newXp +
+                "\nPP: " + newPp);
+
+        LottieAnimationView lottie = dialog.findViewById(R.id.lottieConfetti);
+        if (lottie != null) {
+            lottie.playAnimation();
+        }
+
+        Button btnOk = dialog.findViewById(R.id.btnOk);
+        btnOk.setOnClickListener(v -> {
+            dialog.dismiss();
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_taskDetailFragment_to_levelProgressFragment);
+        });
+
+        dialog.show();
+    }
+
 }

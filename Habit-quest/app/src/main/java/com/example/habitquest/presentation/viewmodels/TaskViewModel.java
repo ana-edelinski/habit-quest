@@ -14,6 +14,8 @@ import com.example.habitquest.domain.model.TaskStatus;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.domain.model.UserXpLog;
 import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.utils.LevelUtils;
+import com.example.habitquest.utils.ProgressPointsUtils;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.example.habitquest.utils.XpCalculator;
 
@@ -29,6 +31,14 @@ public class TaskViewModel extends ViewModel {
     private final UserRepository userRepository;
     private final MutableLiveData<List<Task>> _tasks = new MutableLiveData<>();
     public LiveData<List<Task>> tasks = _tasks;
+
+    private final MutableLiveData<User> _user = new MutableLiveData<>();
+    public LiveData<User> getUser() {
+        return _user;
+    }
+
+    private final MutableLiveData<User> _levelUpEvent = new MutableLiveData<>();
+    public LiveData<User> levelUpEvent = _levelUpEvent;
 
     private final MutableLiveData<Boolean> _taskCompleted = new MutableLiveData<>();
     public LiveData<Boolean> taskCompleted = _taskCompleted;
@@ -123,54 +133,7 @@ public class TaskViewModel extends ViewModel {
         userRepository.getUser(firebaseUid, new RepositoryCallback<User>() {
             @Override
             public void onSuccess(User user) {
-                int userLevel = user.getLevel();
-
-                int earnedXp = XpCalculator.calculateTaskXp(
-                        task.getDifficultyXp(),
-                        task.getImportanceXp(),
-                        userLevel
-                );
-
-                UserXpLog log = new UserXpLog(
-                        null,
-                        task.getUserId(),
-                        firebaseUid,
-                        task.getId(),
-                        null,
-                        earnedXp,
-                        System.currentTimeMillis()
-                );
-
-                userXpLogRepository.insert(log, new RepositoryCallback<UserXpLog>() {
-                    @Override
-                    public void onSuccess(UserXpLog res) {
-                        userXpLogRepository.getTotalXp(task.getUserId(), new RepositoryCallback<Integer>() {
-                            @Override
-                            public void onSuccess(Integer totalXp) {
-                                userRepository.updateUserXp(
-                                        task.getUserId(),
-                                        firebaseUid,
-                                        totalXp,
-                                        new RepositoryCallback<Void>() {
-                                            @Override
-                                            public void onSuccess(Void ignored) {
-                                                _taskCompleted.postValue(true);
-                                            }
-                                            @Override
-                                            public void onFailure(Exception e) {
-                                                _taskCompleted.postValue(true);
-                                            }
-                                        });
-                            }
-                            @Override public void onFailure(Exception e) {
-                                _taskCompleted.postValue(false);
-                            }
-                        });
-                    }
-                    @Override public void onFailure(Exception e) {
-                        _taskCompleted.postValue(false);
-                    }
-                });
+                handleUserFetched(user, task, firebaseUid);
             }
 
             @Override
@@ -178,6 +141,85 @@ public class TaskViewModel extends ViewModel {
                 _taskCompleted.postValue(false);
             }
         });
+    }
+
+    private void handleUserFetched(User user, Task task, String firebaseUid) {
+        int userLevel = user.getLevel();
+
+        int earnedXp = XpCalculator.calculateTaskXp(
+                task.getDifficultyXp(),
+                task.getImportanceXp(),
+                userLevel
+        );
+
+        UserXpLog log = new UserXpLog(
+                null,
+                task.getUserId(),
+                firebaseUid,
+                task.getId(),
+                null,
+                earnedXp,
+                System.currentTimeMillis()
+        );
+
+        insertXpLogAndUpdateUser(log, user, task, firebaseUid);
+    }
+
+    private void insertXpLogAndUpdateUser(UserXpLog log, User user, Task task, String firebaseUid) {
+        userXpLogRepository.insert(log, new RepositoryCallback<UserXpLog>() {
+            @Override
+            public void onSuccess(UserXpLog res) {
+                fetchTotalXpAndUpdateUser(user, task, firebaseUid);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _taskCompleted.postValue(false);
+            }
+        });
+    }
+
+    private void fetchTotalXpAndUpdateUser(User user, Task task, String firebaseUid) {
+        userXpLogRepository.getTotalXp(task.getUserId(), new RepositoryCallback<Integer>() {
+            @Override
+            public void onSuccess(Integer totalXp) {
+                updateUserXpAndCheckLevelUp(user, task, firebaseUid, totalXp);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _taskCompleted.postValue(false);
+            }
+        });
+    }
+
+    private void updateUserXpAndCheckLevelUp(User user, Task task, String firebaseUid, int totalXp) {
+        userRepository.updateUserXp(task.getUserId(), firebaseUid, totalXp, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void ignored) {
+                checkLevelUp(user, totalXp);
+                _taskCompleted.postValue(true);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _taskCompleted.postValue(true);
+            }
+        });
+    }
+
+    private void checkLevelUp(User user, int totalXp) {
+        int newLevel = LevelUtils.calculateLevelFromXp(totalXp);
+
+        if (newLevel > user.getLevel()) {
+            int totalPp = ProgressPointsUtils.getTotalPPForLevel(newLevel);
+
+            user.setLevel(newLevel);
+            user.setPp(totalPp);
+            user.setTotalXp(totalXp);
+
+            _levelUpEvent.postValue(user);
+        }
     }
 
     public void cancelTask(Task task) {
@@ -204,5 +246,19 @@ public class TaskViewModel extends ViewModel {
         if (listenerHandle != null) {
             try { listenerHandle.close(); } catch (IOException ignored) {}
         }
+    }
+
+    public void loadUser(String firebaseUid) {
+        userRepository.getUser(firebaseUid, new RepositoryCallback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                _user.postValue(user);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _user.postValue(null);
+            }
+        });
     }
 }
