@@ -97,10 +97,15 @@ public class CategoryViewModel extends ViewModel {
 
                     @Override
                     public void onFailure(Exception e) {
-                        _message.postValue("Error deleting category: " + e.getMessage());
+                        if (e instanceof IllegalStateException) {
+                            _message.postValue(e.getMessage()); // "Cannot delete category: active tasks exist"
+                        } else {
+                            _message.postValue("Error deleting category: " + e.getMessage());
+                        }
                     }
                 });
     }
+
 
     public void updateCategory(Category category) {
         repository.isColorAvailable(prefs.getFirebaseUid(), category.getColorHex(),

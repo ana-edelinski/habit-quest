@@ -115,7 +115,7 @@ public class CategoryRemoteDataSource {
                                @NonNull RepositoryCallback<Boolean> cb) {
         tasks(firebaseUid)
                 .whereEqualTo("categoryId", categoryId)
-                .whereEqualTo("active", true)
+                .whereEqualTo("status", "ACTIVE")
                 .limit(1)
                 .get()
                 .addOnSuccessListener(q -> cb.onSuccess(!q.isEmpty()))
