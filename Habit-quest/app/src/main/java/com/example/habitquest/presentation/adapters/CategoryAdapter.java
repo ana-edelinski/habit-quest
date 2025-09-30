@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,6 +26,16 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         notifyDataSetChanged();
     }
 
+    public interface CategoryClickListener {
+        void onEditClick(Category category);
+        void onDeleteClick(Category category);
+    }
+
+    private CategoryClickListener listener;
+    public void setListener(CategoryClickListener listener) {
+        this.listener = listener;
+    }
+
     @NonNull
     @Override
     //naduva category_item
@@ -39,6 +50,14 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         Category category = categories.get(position);
         holder.bind(category);
+
+
+        holder.btnEdit.setOnClickListener(v -> {
+            if (listener != null) listener.onEditClick(category);
+        });
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) listener.onDeleteClick(category);
+        });
     }
 
     @Override
@@ -49,11 +68,15 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
         private final View viewColor;
         private final TextView tvName;
+        private final ImageButton btnEdit;
+        private final ImageButton btnDelete;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
             viewColor = itemView.findViewById(R.id.viewColor);
             tvName = itemView.findViewById(R.id.tvName);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
 
         public void bind(Category category) {
