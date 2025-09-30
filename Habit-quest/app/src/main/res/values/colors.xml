@@ -16,4 +16,12 @@
     <color name="greenShadeMedium">#56C596</color>
     <color name="greenShadeDark">#064E3B</color>
 
+    <color name="grayDark">#666666</color>
+    <color name="grayLight">#DDDDDD</color>
+    <array name="xp_progress_colors">
+        <item>@color/greenShadeDark</item>
+        <item>@color/greenShadeMedium</item>
+        <item>@color/greenShadeLight</item>
+    </array>
+
 </resources>

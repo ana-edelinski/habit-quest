@@ -48,6 +48,10 @@ public class LevelProgressFragment extends Fragment {
                 tvTitle.setText(user.getTitle());
                 tvLevel.setText("Level " + user.getLevel());
 
+                ivTitleIcon.setImageResource(
+                        com.example.habitquest.utils.TitleIconUtils.getIconForLevel(user.getLevel())
+                );
+
                 // XP bar
                 int currentXp = user.getTotalXp();
                 int currentLevel = user.getLevel();
@@ -66,7 +70,6 @@ public class LevelProgressFragment extends Fragment {
             }
         });
 
-        // 🚀 Ovde učitavamo baš ulogovanog korisnika
         viewModel.loadUser();
 
         return view;

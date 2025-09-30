@@ -27,5 +27,9 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="change_password">Change Password</string>
 
+    <string name="level_title">Level title</string>
+    <string name="experience">Experience</string>
+    <string name="points">Points</string>
+    <string name="coins">Coins</string>
 
 </resources>
