@@ -36,4 +36,7 @@
     <string name="store">Store</string>
     <string name="profile">Profile</string>
 
+    <string name="clothing">CLOTHING</string>
+    <string name="potions">POTIONS</string>
+
 </resources>

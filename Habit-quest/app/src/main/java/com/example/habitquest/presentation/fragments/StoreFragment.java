@@ -3,64 +3,48 @@ package com.example.habitquest.presentation.fragments;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.habitquest.R;
+import com.example.habitquest.domain.model.EquipmentType;
+import com.example.habitquest.domain.model.ShopData;
+import com.example.habitquest.presentation.adapters.ShopAdapter;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link StoreFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class StoreFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public StoreFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment StoreFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static StoreFragment newInstance(String param1, String param2) {
-        StoreFragment fragment = new StoreFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    private ShopAdapter potionsAdapter;
+    private ShopAdapter clothingAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_store, container, false);
+        View v = inflater.inflate(R.layout.fragment_store, container, false);
+
+        // Potions
+        RecyclerView rvPotions = v.findViewById(R.id.rvPotions);
+        GridLayoutManager potionsLayout = new GridLayoutManager(getContext(), 2);
+        potionsLayout.setAutoMeasureEnabled(true);
+        rvPotions.setLayoutManager(potionsLayout);
+        rvPotions.setNestedScrollingEnabled(false);
+        potionsAdapter = new ShopAdapter();
+        rvPotions.setAdapter(potionsAdapter);
+        potionsAdapter.setItems(ShopData.getByType(EquipmentType.POTION));
+
+        // Clothing
+        RecyclerView rvClothing = v.findViewById(R.id.rvClothing);
+        GridLayoutManager clothingLayout = new GridLayoutManager(getContext(), 2);
+        clothingLayout.setAutoMeasureEnabled(true);
+        rvClothing.setLayoutManager(clothingLayout);
+        rvClothing.setNestedScrollingEnabled(false);
+        clothingAdapter = new ShopAdapter();
+        rvClothing.setAdapter(clothingAdapter);
+        clothingAdapter.setItems(ShopData.getByType(EquipmentType.CLOTHING));
+
+        return v;
     }
 }
