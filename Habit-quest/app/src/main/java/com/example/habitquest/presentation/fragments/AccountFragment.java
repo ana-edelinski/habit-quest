@@ -30,6 +30,10 @@ public class AccountFragment extends Fragment {
     private ImageView imgAvatar;
     private TextView txtUsername;
     private TextView txtXp;
+    private TextView txtLevel;
+    private TextView txtTitle;
+    private TextView txtPp;
+
 
 
     @Nullable
@@ -46,19 +50,10 @@ public class AccountFragment extends Fragment {
         imgAvatar = view.findViewById(R.id.imgAvatar);
         txtUsername = view.findViewById(R.id.tvUsername);
         txtXp = view.findViewById(R.id.tvXP);
+        txtLevel = view.findViewById(R.id.tvLevel);
+        txtTitle = view.findViewById(R.id.tvTitle);
+        txtPp = view.findViewById(R.id.tvPP);
         ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
-
-        //testiranje napredak kroz nivoe
-//        imgAvatar.setOnLongClickListener(v -> {
-//            AppPreferences prefs = new AppPreferences(requireContext());
-//            String remoteUid = prefs.getFirebaseUid();
-//            long localUserId = Long.parseLong(prefs.getUserId());
-//
-//            // Dodaj 200 XP
-//            viewModel.grantXpForTesting(localUserId, remoteUid, 200);
-//
-//            return true; // označi da je event potrošen
-//        });
 
         View btnSettings = view.findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(v -> {
@@ -72,6 +67,10 @@ public class AccountFragment extends Fragment {
         viewModel.user.observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 txtUsername.setText(user.getUsername());
+                txtLevel.setText("Level " + user.getLevel());
+                txtTitle.setText(user.getTitle() != null ? user.getTitle() : "Beginner");
+                txtPp.setText("PP: " + user.getPp());
+
 
                 int resId;
                 switch (user.getAvatar()) {

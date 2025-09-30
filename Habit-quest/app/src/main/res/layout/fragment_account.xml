@@ -54,7 +54,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
-                android:text="Level 1"
                 android:textSize="16sp"
                 app:layout_constraintStart_toEndOf="@id/imgAvatar"
                 app:layout_constraintTop_toBottomOf="@id/tvUsername" />
@@ -65,7 +64,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:text="Titula"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 app:layout_constraintStart_toEndOf="@id/imgAvatar"
@@ -87,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="XP: 120" />
+                    android:text="XP: " />
 
                 <TextView
                     android:id="@+id/tvCoins"
@@ -95,7 +93,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="Coins: 50" />
+                    android:text="Coins: " />
 
                 <TextView
                     android:id="@+id/tvPP"
@@ -103,7 +101,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="PP: 10" />
+                    android:text="PP: " />
             </LinearLayout>
 
             <!-- Badges -->

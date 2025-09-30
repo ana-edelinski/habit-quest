@@ -15,7 +15,9 @@ import com.example.habitquest.data.remote.UserRemoteDataSource;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.domain.repositoryinterfaces.IUserRepository;
 import com.example.habitquest.utils.LevelUtils;
+import com.example.habitquest.utils.ProgressPointsUtils;
 import com.example.habitquest.utils.RepositoryCallback;
+import com.example.habitquest.utils.TitleUtils;
 
 public class UserRepository implements IUserRepository {
 
@@ -80,21 +82,25 @@ public class UserRepository implements IUserRepository {
 
     public void updateUserXp(long localUserId, String remoteUid, int newXp, RepositoryCallback<Void> cb) {
         int newLevel = LevelUtils.calculateLevelFromXp(newXp);
+        String newTitle = TitleUtils.getTitleForLevel(newLevel);
+        int newPp = ProgressPointsUtils.getTotalPPForLevel(newLevel);
 
-        remoteDataSource.updateUserXpAndLevel(remoteUid, newXp, newLevel, new RepositoryCallback<Void>() {
+        remoteDataSource.updateUserXpAndLevel(remoteUid, newXp, newLevel, newTitle, newPp, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                localDataSource.updateUserXpAndLevel(localUserId, newXp, newLevel);
+                localDataSource.updateUserXpAndLevel(localUserId, newXp, newLevel, newTitle, newPp);
                 cb.onSuccess(null);
             }
 
             @Override
             public void onFailure(Exception e) {
-                localDataSource.updateUserXpAndLevel(localUserId, newXp, newLevel);
+                localDataSource.updateUserXpAndLevel(localUserId, newXp, newLevel, newTitle, newPp);
                 cb.onFailure(e);
             }
         });
     }
+
+
 
     public void getUser(String remoteUid, RepositoryCallback<User> cb) {
         remoteDataSource.getUser(remoteUid, new RepositoryCallback<User>() {

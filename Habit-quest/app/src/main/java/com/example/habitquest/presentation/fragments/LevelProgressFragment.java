@@ -10,8 +10,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.habitquest.R;
+import com.example.habitquest.presentation.viewmodels.AccountViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.AccountViewModelFactory;
+import com.example.habitquest.utils.LevelUtils;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 public class LevelProgressFragment extends Fragment {
@@ -19,6 +23,7 @@ public class LevelProgressFragment extends Fragment {
     private TextView tvTitle, tvLevel, tvXP, tvPoints, tvCoins;
     private ImageView ivTitleIcon;
     private LinearProgressIndicator progressXP;
+    private AccountViewModel viewModel;
 
     @Nullable
     @Override
@@ -35,14 +40,34 @@ public class LevelProgressFragment extends Fragment {
         ivTitleIcon = view.findViewById(R.id.ivTitleIcon);
         progressXP = view.findViewById(R.id.progressXP);
 
-        // TODO: kasnije setovati stvarne vrednosti iz baze
-        tvTitle.setText("Novice Explorer");
-        tvLevel.setText("Level 5");
-        tvXP.setText("1200 / 2000 XP");
-        tvPoints.setText("Points: 300");
-        tvCoins.setText("Coins: 50");
-        progressXP.setMax(2000);
-        progressXP.setProgress(1200);
+        AccountViewModelFactory factory = new AccountViewModelFactory(requireContext());
+        viewModel = new ViewModelProvider(this, factory).get(AccountViewModel.class);
+
+        viewModel.user.observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                tvTitle.setText(user.getTitle());
+                tvLevel.setText("Level " + user.getLevel());
+
+                // XP bar
+                int currentXp = user.getTotalXp();
+                int currentLevel = user.getLevel();
+                int xpForCurrentLevel = LevelUtils.getXpThresholdForLevel(currentLevel);
+                int xpForNextLevel = LevelUtils.getXpThresholdForLevel(currentLevel + 1);
+
+                int progress = currentXp - xpForCurrentLevel;
+                int max = xpForNextLevel - xpForCurrentLevel;
+
+                progressXP.setMax(max);
+                progressXP.setProgress(progress);
+                tvXP.setText(user.getTotalXp() + " / " + xpForNextLevel + " XP");
+
+                tvPoints.setText("Points: " + user.getPp());
+                tvCoins.setText("Coins: " + ""); // user.getCoins()
+            }
+        });
+
+        // 🚀 Ovde učitavamo baš ulogovanog korisnika
+        viewModel.loadUser();
 
         return view;
     }
