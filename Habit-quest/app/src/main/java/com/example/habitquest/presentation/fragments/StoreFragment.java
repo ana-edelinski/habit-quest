@@ -3,6 +3,7 @@ package com.example.habitquest.presentation.fragments;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,14 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.habitquest.R;
-import com.example.habitquest.domain.model.EquipmentType;
-import com.example.habitquest.domain.model.ShopData;
 import com.example.habitquest.presentation.adapters.ShopAdapter;
+import com.example.habitquest.presentation.viewmodels.ShopViewModel;
 
 public class StoreFragment extends Fragment {
 
     private ShopAdapter potionsAdapter;
     private ShopAdapter clothingAdapter;
+    private ShopViewModel viewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,7 +34,6 @@ public class StoreFragment extends Fragment {
         rvPotions.setNestedScrollingEnabled(false);
         potionsAdapter = new ShopAdapter();
         rvPotions.setAdapter(potionsAdapter);
-        potionsAdapter.setItems(ShopData.getByType(EquipmentType.POTION));
 
         // Clothing
         RecyclerView rvClothing = v.findViewById(R.id.rvClothing);
@@ -43,7 +43,18 @@ public class StoreFragment extends Fragment {
         rvClothing.setNestedScrollingEnabled(false);
         clothingAdapter = new ShopAdapter();
         rvClothing.setAdapter(clothingAdapter);
-        clothingAdapter.setItems(ShopData.getByType(EquipmentType.CLOTHING));
+
+        // ViewModel
+        viewModel = new ViewModelProvider(this).get(ShopViewModel.class);
+
+        // Observers
+        viewModel.getPotions().observe(getViewLifecycleOwner(), items -> {
+            potionsAdapter.setItems(items);
+        });
+
+        viewModel.getClothing().observe(getViewLifecycleOwner(), items -> {
+            clothingAdapter.setItems(items);
+        });
 
         return v;
     }
