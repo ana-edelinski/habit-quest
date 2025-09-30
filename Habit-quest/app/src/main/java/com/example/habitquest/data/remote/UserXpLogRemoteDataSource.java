@@ -29,9 +29,9 @@ public class UserXpLogRemoteDataSource {
     }
 
     /** Čitanje svih logova korisnika */
-    public void fetchAll(long userId, RepositoryCallback<List<UserXpLog>> cb) {
+    public void fetchAll(String firebaseUid, RepositoryCallback<List<UserXpLog>> cb) {
         db.collection(COLLECTION_NAME)
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("firebaseUid", firebaseUid)
                 .get()
                 .addOnSuccessListener(query -> {
                     List<UserXpLog> logs = new ArrayList<>();
@@ -46,9 +46,9 @@ public class UserXpLogRemoteDataSource {
     }
 
     /** Brisanje svih logova korisnika */
-    public void deleteAllForUser(long userId, RepositoryCallback<Void> cb) {
+    public void deleteAllForUser(String firebaseUid, RepositoryCallback<Void> cb) {
         db.collection(COLLECTION_NAME)
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("firebaseUid", firebaseUid)
                 .get()
                 .addOnSuccessListener(query -> {
                     for (QueryDocumentSnapshot doc : query) {

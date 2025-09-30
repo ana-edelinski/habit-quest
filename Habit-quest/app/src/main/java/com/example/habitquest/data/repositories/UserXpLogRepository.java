@@ -36,8 +36,8 @@ public class UserXpLogRepository implements IUserXpLogRepository {
     }
 
     @Override
-    public void fetchAll(long userId, RepositoryCallback<List<UserXpLog>> cb) {
-        remote.fetchAll(userId, new RepositoryCallback<List<UserXpLog>>() {
+    public void fetchAll(long userId,String firebaseUid, RepositoryCallback<List<UserXpLog>> cb) {
+        remote.fetchAll(firebaseUid, new RepositoryCallback<List<UserXpLog>>() {
             @Override
             public void onSuccess(List<UserXpLog> result) {
                 // prvo očisti lokalne logove
@@ -58,8 +58,8 @@ public class UserXpLogRepository implements IUserXpLogRepository {
 
 
     @Override
-    public void deleteAllForUser(long userId, RepositoryCallback<Void> cb) {
-        remote.deleteAllForUser(userId, new RepositoryCallback<Void>() {
+    public void deleteAllForUser(long userId, String firebaseUid, RepositoryCallback<Void> cb) {
+        remote.deleteAllForUser(firebaseUid, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void ignored) {
                 local.deleteAllForUser(userId);
@@ -74,11 +74,12 @@ public class UserXpLogRepository implements IUserXpLogRepository {
 
 
     @Override
-    public void getTotalXp(long userId, RepositoryCallback<Integer> cb) {
+    public void getTotalXp(long userId, String firebaseUid, RepositoryCallback<Integer> cb) {
         // Probaj remote
-        remote.fetchAll(userId, new RepositoryCallback<List<UserXpLog>>() {
+        remote.fetchAll(firebaseUid, new RepositoryCallback<List<UserXpLog>>() {
             @Override
             public void onSuccess(List<UserXpLog> result) {
+                local.deleteAllForUser(userId);
                 // upiši sve logove lokalno
                 for (UserXpLog log : result) {
                     local.upsert(log);

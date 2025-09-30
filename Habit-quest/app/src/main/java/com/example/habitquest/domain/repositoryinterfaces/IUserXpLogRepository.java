@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface IUserXpLogRepository {
     void insert(UserXpLog log, RepositoryCallback<UserXpLog> cb);
-    void fetchAll(long userId, RepositoryCallback<List<UserXpLog>> cb);
-    void deleteAllForUser(long userId, RepositoryCallback<Void> cb);
-    public void getTotalXp(long userId, RepositoryCallback<Integer> cb);
+    void fetchAll(long userId, String firebaseUid, RepositoryCallback<List<UserXpLog>> cb);
+    void deleteAllForUser(long userId, String firebaseUid, RepositoryCallback<Void> cb);
+    public void getTotalXp(long userId, String firebaseUid, RepositoryCallback<Integer> cb);
 }
 

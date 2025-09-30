@@ -180,7 +180,7 @@ public class TaskViewModel extends ViewModel {
     }
 
     private void fetchTotalXpAndUpdateUser(User user, Task task, String firebaseUid) {
-        userXpLogRepository.getTotalXp(task.getUserId(), new RepositoryCallback<Integer>() {
+        userXpLogRepository.getTotalXp(task.getUserId(), prefs.getFirebaseUid(), new RepositoryCallback<Integer>() {
             @Override
             public void onSuccess(Integer totalXp) {
                 updateUserXpAndCheckLevelUp(user, task, firebaseUid, totalXp);
