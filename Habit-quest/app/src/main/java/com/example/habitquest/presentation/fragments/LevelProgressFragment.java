@@ -25,6 +25,7 @@ public class LevelProgressFragment extends Fragment {
     private LinearProgressIndicator progressXP;
     private AccountViewModel viewModel;
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -32,8 +33,12 @@ public class LevelProgressFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_level_progress, container, false);
 
-        tvTitle = view.findViewById(R.id.tvTitle);
-        tvLevel = view.findViewById(R.id.tvLevel);
+        View includeView = view.findViewById(R.id.includeLevelCard);
+
+        tvTitle = includeView.findViewById(R.id.tvTitle);
+        tvLevel = includeView.findViewById(R.id.tvLevel);
+        ivTitleIcon = includeView.findViewById(R.id.ivTitleIcon);
+
         tvXP = view.findViewById(R.id.tvXP);
         tvPoints = view.findViewById(R.id.tvPoints);
         tvCoins = view.findViewById(R.id.tvCoins);
