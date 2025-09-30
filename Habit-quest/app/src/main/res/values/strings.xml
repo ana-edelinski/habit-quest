@@ -32,4 +32,8 @@
     <string name="points">Points</string>
     <string name="coins">Coins</string>
 
+    <string name="home">Home</string>
+    <string name="store">Store</string>
+    <string name="profile">Profile</string>
+
 </resources>
