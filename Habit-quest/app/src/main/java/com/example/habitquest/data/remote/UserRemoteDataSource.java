@@ -31,33 +31,54 @@ public class UserRemoteDataSource {
     }
 
     public void registerUser(String email, String password, String username, int avatar,
-                                           RepositoryCallback<Void> callback) {
-        db.collection(COLLECTION_NAME)
-                .whereEqualTo("username", username)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (!querySnapshot.isEmpty()) {
-                        callback.onFailure(new Exception("Username is already taken"));
-                    } else {
-                        FirebaseAuth auth = FirebaseAuth.getInstance();
-                        auth.createUserWithEmailAndPassword(email, password)
-                                .addOnSuccessListener(authResult -> {
-                                    FirebaseUser firebaseUser = auth.getCurrentUser();
-                                    if (firebaseUser != null) {
-                                        firebaseUser.sendEmailVerification();
+                             RepositoryCallback<Void> callback) {
 
-                                        String uid = firebaseUser.getUid();
-                                        User user = new User(null, email, username, avatar, 0, 0, "Beginner", 0);
-                                        db.collection(COLLECTION_NAME).document(uid).set(user)
-                                                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
-                                                .addOnFailureListener(callback::onFailure);
-                                    }
-                                })
-                                .addOnFailureListener(callback::onFailure);
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser firebaseUser = auth.getCurrentUser();
+
+                    if (firebaseUser == null) {
+                        callback.onFailure(new Exception("User creation failed"));
+                        return;
                     }
+
+                    String uid = firebaseUser.getUid();
+
+                    db.collection("users")
+                            .whereEqualTo("username", username)
+                            .get()
+                            .addOnSuccessListener(querySnapshot -> {
+                                if (!querySnapshot.isEmpty()) {
+                                    firebaseUser.delete();
+                                    callback.onFailure(new Exception("Username is already taken"));
+                                } else {
+                                    firebaseUser.sendEmailVerification();
+
+                                    User user = new User(null, email, username, avatar,
+                                            0, 0, "Beginner", 0);
+
+                                    db.collection("users")
+                                            .document(uid)
+                                            .set(user)
+                                            .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                                            .addOnFailureListener(e -> {
+                                                firebaseUser.delete();
+                                                callback.onFailure(e);
+                                            });
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                firebaseUser.delete();
+                                callback.onFailure(e);
+                            });
+
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
     public void loginUser(String email, String password, RepositoryCallback<User> callback) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
