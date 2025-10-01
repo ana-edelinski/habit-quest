@@ -33,8 +33,7 @@ public class AccountFragment extends Fragment {
     private TextView txtLevel;
     private TextView txtTitle;
     private TextView txtPp;
-
-
+    private TextView txtCoins;
 
     @Nullable
     @Override
@@ -53,6 +52,7 @@ public class AccountFragment extends Fragment {
         txtLevel = view.findViewById(R.id.tvLevel);
         txtTitle = view.findViewById(R.id.tvTitle);
         txtPp = view.findViewById(R.id.tvPP);
+        txtCoins = view.findViewById(R.id.tvCoins);
         ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
 
         View btnSettings = view.findViewById(R.id.btnSettings);
@@ -70,7 +70,7 @@ public class AccountFragment extends Fragment {
                 txtLevel.setText("Level " + user.getLevel());
                 txtTitle.setText(user.getTitle() != null ? user.getTitle() : "Beginner");
                 txtPp.setText("PP: " + user.getPp());
-
+                txtCoins.setText("Coins: " + user.getCoins());
 
                 int resId;
                 switch (user.getAvatar()) {
