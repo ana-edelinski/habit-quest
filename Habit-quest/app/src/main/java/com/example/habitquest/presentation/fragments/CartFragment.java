@@ -7,6 +7,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -75,6 +77,8 @@ public class CartFragment extends Fragment {
                 @Override
                 public void onSuccess(Void result) {
                     Toast.makeText(getContext(), "Purchase successful!", Toast.LENGTH_SHORT).show();
+                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+                    navController.navigate(R.id.nav_equipment);
                 }
 
                 @Override
