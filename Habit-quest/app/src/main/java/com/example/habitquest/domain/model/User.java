@@ -5,6 +5,9 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User implements Parcelable {
     private Long id;
     private String email;
@@ -16,8 +19,10 @@ public class User implements Parcelable {
     private int level;
     private String title;
     private int pp;
+    private int coins;
+    private List<ShopItem> cart = new ArrayList<>();
 
-    public User(Long id, String email, String username, int avatar, int totalXp, int level, String title, int pp) {
+    public User(Long id, String email, String username, int avatar, int totalXp, int level, String title, int pp, int coins) {
         this.id = id;
         this.email = email;
         this.username = username;
@@ -26,9 +31,12 @@ public class User implements Parcelable {
         this.level = level;
         this.title = title;
         this.pp = pp;
-    }
+        this.coins = coins;
+        this.cart = new ArrayList<>();    }
 
     public User() {
+        this.cart = new ArrayList<>();
+        this.coins = 0;
     }
 
     // Konstruktor za citanje iz Parcel objekta
@@ -41,6 +49,9 @@ public class User implements Parcelable {
         level = in.readInt();
         title = in.readString();
         pp = in.readInt();
+        coins = in.readInt();
+        cart = new ArrayList<>();
+        in.readList(cart, ShopItem.class.getClassLoader());
     }
 
     // GET / SET
@@ -68,6 +79,12 @@ public class User implements Parcelable {
     public int getPp() { return pp; }
     public void setPp(int pp) { this.pp = pp; }
 
+    public int getCoins() { return coins; }
+    public void setCoins(int coins) { this.coins = coins; }
+
+    public List<ShopItem> getCart() { return cart; }
+    public void setCart(List<ShopItem> cart) { this.cart = cart; }
+
 
     @Override
     public String toString() {
@@ -94,6 +111,10 @@ public class User implements Parcelable {
         dest.writeInt(avatar);
         dest.writeInt(totalXp);
         dest.writeInt(level);
+        dest.writeString(title);
+        dest.writeInt(pp);
+        dest.writeInt(coins);
+        dest.writeList(cart);
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {

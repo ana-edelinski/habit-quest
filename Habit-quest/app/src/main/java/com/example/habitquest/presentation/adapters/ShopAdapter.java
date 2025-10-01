@@ -17,7 +17,23 @@ import java.util.List;
 
 public class ShopAdapter extends RecyclerView.Adapter<ShopAdapter.ShopViewHolder> {
 
+    public enum Mode { STORE, CART }
     private List<ShopItem> items = new ArrayList<>();
+    private OnItemClickListener listener;
+    private Mode mode;
+
+    public ShopAdapter(Mode mode) {
+        this.mode = mode;
+    }
+
+    public interface OnItemClickListener {
+        void onCartClick(ShopItem item);
+        void onRemoveClick(ShopItem item);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
 
     public void setItems(List<ShopItem> items) {
         this.items = items;
@@ -35,7 +51,7 @@ public class ShopAdapter extends RecyclerView.Adapter<ShopAdapter.ShopViewHolder
     @Override
     public void onBindViewHolder(@NonNull ShopViewHolder holder, int position) {
         ShopItem item = items.get(position);
-        holder.bind(item);
+        holder.bind(item, listener, mode);
     }
 
     @Override
@@ -44,22 +60,39 @@ public class ShopAdapter extends RecyclerView.Adapter<ShopAdapter.ShopViewHolder
     }
 
     static class ShopViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivItemImage, ivCart;
+        ImageView ivItemImage, ivCart, ivRemove;
         TextView tvPrice, tvName;
 
         public ShopViewHolder(@NonNull View itemView) {
             super(itemView);
             ivItemImage = itemView.findViewById(R.id.ivItemImage);
             ivCart = itemView.findViewById(R.id.ivCart);
+            ivRemove = itemView.findViewById(R.id.ivRemove);
             tvPrice = itemView.findViewById(R.id.tvPrice);
             tvName = itemView.findViewById(R.id.tvName);
         }
 
-        public void bind(ShopItem item) {
+        public void bind(ShopItem item, OnItemClickListener listener, Mode mode) {
             ivItemImage.setImageResource(item.getImageResId());
             tvPrice.setText(item.getPrice() + " 🪙");
             tvName.setText(item.getName());
-            // za sada korpa nema funkcionalnost
+
+            if (mode == Mode.STORE) {
+                ivCart.setVisibility(View.VISIBLE);
+                ivRemove.setVisibility(View.GONE);
+
+                ivCart.setOnClickListener(v -> {
+                    if (listener != null) listener.onCartClick(item);
+                });
+            } else if (mode == Mode.CART) {
+                ivCart.setVisibility(View.GONE);
+                ivRemove.setVisibility(View.VISIBLE);
+
+                ivRemove.setOnClickListener(v -> {
+                    if (listener != null) listener.onRemoveClick(item);
+                });
+            }
         }
+
     }
 }

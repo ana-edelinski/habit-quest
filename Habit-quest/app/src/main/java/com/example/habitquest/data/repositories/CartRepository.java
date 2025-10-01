@@ -1,0 +1,53 @@
+package com.example.habitquest.data.repositories;
+
+import com.example.habitquest.domain.model.ShopItem;
+import com.example.habitquest.domain.model.User;
+import com.example.habitquest.utils.RepositoryCallback;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.DocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class CartRepository {
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+    public void addItem(ShopItem item, RepositoryCallback<Void> callback) {
+        DocumentReference userRef = db.collection("users").document(uid);
+        userRef.update("cart", FieldValue.arrayUnion(item))
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void removeItem(ShopItem item, RepositoryCallback<Void> callback) {
+        DocumentReference userRef = db.collection("users").document(uid);
+        userRef.update("cart", FieldValue.arrayRemove(item))
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public ListenerRegistration observeCart(RepositoryCallback<List<ShopItem>> callback) {
+        DocumentReference userRef = db.collection("users").document(uid);
+        return userRef.addSnapshotListener((snapshot, e) -> {
+            if (e != null) {
+                callback.onFailure(e);
+                return;
+            }
+            if (snapshot != null && snapshot.exists()) {
+                User user = snapshot.toObject(User.class);
+                List<ShopItem> items = (user != null && user.getCart() != null)
+                        ? user.getCart()
+                        : new ArrayList<>();
+                callback.onSuccess(items);
+            }
+        });
+    }
+
+}

@@ -1,5 +1,7 @@
 package com.example.habitquest.domain.model;
 
+import java.util.Objects;
+
 public class ShopItem {
     private String name;
     private EquipmentType type;
@@ -7,6 +9,8 @@ public class ShopItem {
     private double bonus;
     private boolean active;
     private int imageResId;
+
+    public ShopItem() {}
 
     public ShopItem(String name, EquipmentType type, int price, double bonus, int imageResId) {
         this.name = name;
@@ -44,6 +48,21 @@ public class ShopItem {
 
     public void setImageResId(int imageResId) {
         this.imageResId = imageResId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ShopItem)) return false;
+        ShopItem item = (ShopItem) o;
+        return price == item.price &&
+                Objects.equals(name, item.name) &&
+                type == item.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type, price);
     }
 }
 

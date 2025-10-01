@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -15,9 +17,12 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.habitquest.R;
 import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.presentation.viewmodels.CartViewModel;
 import com.example.habitquest.presentation.viewmodels.LoginViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.LoginViewModelFactory;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
@@ -28,11 +33,13 @@ public class HomeActivity extends AppCompatActivity {
 
     private AppPreferences appPreferences;
     private LoginViewModel loginViewModel;
+    private CartViewModel cartViewModel;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private AppBarConfiguration appBarConfiguration;
     private NavController navController;
+    private BadgeDrawable cartBadge;
 
 
     @Override
@@ -59,11 +66,14 @@ public class HomeActivity extends AppCompatActivity {
         setupObservers();
         setupToolbar();
         setupBottomNavigation();
+
     }
 
     private void initViewModel() {
         LoginViewModelFactory factory = new LoginViewModelFactory(this);
         loginViewModel = new ViewModelProvider(this, factory).get(LoginViewModel.class);
+
+        cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
     }
 
     private void setupObservers() {
@@ -72,6 +82,12 @@ public class HomeActivity extends AppCompatActivity {
                 navigateToLogin();
             }
         });
+
+        cartViewModel.getCartItems().observe(this, items -> {
+            int count = (items != null) ? items.size() : 0;
+            updateCartBadge(count);
+        });
+
     }
 
     private void navigateToLogin() {
@@ -106,6 +122,21 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_app_bar_menu, menu);
+
+        MenuItem cartItem = menu.findItem(R.id.action_cart);
+        View actionView = cartItem.getActionView(); // ako koristiš custom layout
+        // Ako ne koristiš custom layout, može direktno na menuItem id:
+
+        BadgeDrawable badge = BadgeDrawable.create(this);
+        badge.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
+        badge.setBadgeTextColor(ContextCompat.getColor(this, R.color.white));
+        badge.setNumber(0); // inicijalno 0
+
+        BadgeUtils.attachBadgeDrawable(badge, findViewById(R.id.topAppBar), R.id.action_cart);
+
+        // sačuvaj badge kao polje klase da ga možeš kasnije update-ovati
+        this.cartBadge = badge;
+
         return true;
     }
 
@@ -124,11 +155,21 @@ public class HomeActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     public boolean onSupportNavigateUp() {
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    public void updateCartBadge(int count) {
+        if (cartBadge == null) return;
+
+        if (count > 0) {
+            cartBadge.setVisible(true);
+            cartBadge.setNumber(count);
+        } else {
+            cartBadge.setVisible(false);
+        }
     }
 
 }
