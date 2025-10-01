@@ -8,6 +8,7 @@ import android.view.View;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -23,6 +24,7 @@ import com.example.habitquest.presentation.viewmodels.factories.LoginViewModelFa
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.BadgeUtils;
+import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
@@ -119,22 +121,21 @@ public class HomeActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
     }
 
+    @OptIn(markerClass = ExperimentalBadgeUtils.class)
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_app_bar_menu, menu);
 
         MenuItem cartItem = menu.findItem(R.id.action_cart);
-        View actionView = cartItem.getActionView(); // ako koristiš custom layout
-        // Ako ne koristiš custom layout, može direktno na menuItem id:
+        View actionView = cartItem.getActionView();
 
         BadgeDrawable badge = BadgeDrawable.create(this);
         badge.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
         badge.setBadgeTextColor(ContextCompat.getColor(this, R.color.white));
-        badge.setNumber(0); // inicijalno 0
+        badge.setNumber(0);
 
         BadgeUtils.attachBadgeDrawable(badge, findViewById(R.id.topAppBar), R.id.action_cart);
 
-        // sačuvaj badge kao polje klase da ga možeš kasnije update-ovati
         this.cartBadge = badge;
 
         return true;

@@ -74,4 +74,10 @@
         android:label="Cart"
         tools:layout="@layout/fragment_cart" />
 
+    <fragment
+        android:id="@+id/nav_equipment"
+        android:name="com.example.habitquest.presentation.fragments.EquipmentFragment"
+        android:label="Equipment"
+        tools:layout="@layout/fragment_equipment" />
+
 </navigation>
