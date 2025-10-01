@@ -16,6 +16,7 @@ import com.example.habitquest.R;
 import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.presentation.activities.HomeActivity;
 import com.example.habitquest.presentation.adapters.ShopAdapter;
+import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
 import com.example.habitquest.presentation.viewmodels.ShopViewModel;
 
@@ -24,6 +25,8 @@ public class StoreFragment extends Fragment {
     private ShopAdapter potionsAdapter;
     private ShopAdapter clothingAdapter;
     private ShopViewModel viewModel;
+    private CartViewModel cartViewModel;
+    private AccountViewModel accountViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,7 +53,14 @@ public class StoreFragment extends Fragment {
 
         // ViewModels
         viewModel = new ViewModelProvider(this).get(ShopViewModel.class);
-        CartViewModel cartViewModel = new ViewModelProvider(requireActivity()).get(CartViewModel.class);
+        cartViewModel = new ViewModelProvider(requireActivity()).get(CartViewModel.class);
+        accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
+
+        accountViewModel.user.observe(getViewLifecycleOwner(), currentUser -> {
+            if (currentUser != null) {
+                viewModel.loadShopItems(currentUser);
+            }
+        });
 
         // Observers
         viewModel.getPotions().observe(getViewLifecycleOwner(), items -> {

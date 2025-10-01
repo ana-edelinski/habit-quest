@@ -1,5 +1,6 @@
 package com.example.habitquest.data.repositories;
 
+import com.example.habitquest.domain.model.ShopData;
 import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.utils.RepositoryCallback;
@@ -50,6 +51,18 @@ public class CartRepository {
         });
     }
 
+    private int calculateBossReward(int level) {
+        if (level <= 0) {
+            return 200;
+        }
+        int reward = 200;
+        for (int i = 1; i < level; i++) {
+            reward = (int) Math.round(reward * 1.2);
+        }
+        return reward;
+    }
+
+
     public void buyItems(RepositoryCallback<Void> callback) {
         DocumentReference userRef = db.collection("users").document(uid);
 
@@ -60,8 +73,11 @@ public class CartRepository {
                     if (user == null) throw new RuntimeException("User not found");
 
                     List<ShopItem> cart = user.getCart();
+
                     int total = 0;
-                    for (ShopItem item : cart) total += item.getPrice();
+                    for (ShopItem item : cart) {
+                        total += item.getPrice();
+                    }
 
                     if (user.getCoins() < total) {
                         throw new RuntimeException("Not enough coins");
@@ -85,5 +101,14 @@ public class CartRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+
+    public List<ShopItem> getShopItemsForUser(User user) {
+        int previousBossReward = calculateBossReward(user.getLevel() - 1);
+        List<ShopItem> result = new ArrayList<>();
+        for (ShopItem base : ShopData.ITEMS) {
+            result.add(new ShopItem(base, previousBossReward));
+        }
+        return result;
+    }
 
 }
