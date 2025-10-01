@@ -68,4 +68,10 @@
         android:label="Occurrence details"
         tools:layout="@layout/fragment_occurrence_detail" />
 
+    <fragment
+        android:id="@+id/cartFragment"
+        android:name="com.example.habitquest.presentation.fragments.CartFragment"
+        android:label="Cart"
+        tools:layout="@layout/fragment_cart" />
+
 </navigation>

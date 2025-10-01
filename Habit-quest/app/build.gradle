@@ -45,6 +45,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-base:18.5.0'
     implementation libs.navigation.fragment
     implementation libs.navigation.ui
+    implementation libs.legacy.support.v4
+    implementation libs.lifecycle.livedata.ktx
+    implementation libs.lifecycle.viewmodel.ktx
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

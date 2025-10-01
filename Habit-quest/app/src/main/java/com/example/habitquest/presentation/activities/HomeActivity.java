@@ -111,12 +111,19 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_logout) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_cart) {
+            navController.navigate(R.id.cartFragment);
+            return true;
+        } else if (id == R.id.action_logout) {
             loginViewModel.logout();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
+
 
     @Override
     public boolean onSupportNavigateUp() {
