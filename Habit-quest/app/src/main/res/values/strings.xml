@@ -39,4 +39,7 @@
     <string name="clothing">CLOTHING</string>
     <string name="potions">POTIONS</string>
 
+    <string name="cart">Cart</string>
+    <string name="logout">Logout</string>
+
 </resources>
