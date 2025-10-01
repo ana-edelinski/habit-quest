@@ -93,12 +93,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Start date"/>
-                <Button
-                    android:id="@+id/btnPickStartTime"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Start time"/>
+
             </LinearLayout>
 
             <LinearLayout
@@ -112,12 +107,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="End date"/>
-                <Button
-                    android:id="@+id/btnPickEndTime"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="End time"/>
+
             </LinearLayout>
 
             <LinearLayout

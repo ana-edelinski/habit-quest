@@ -80,24 +80,35 @@ public class CategoryRepository implements ICategoryRepository {
 
     @Override
     public void delete(String firebaseUid, Long localUserId, String categoryId, RepositoryCallback<Void> cb) {
-
         remote.hasActiveTasks(firebaseUid, categoryId, new RepositoryCallback<Boolean>() {
-            @Override public void onSuccess(Boolean exists) {
+            @Override
+            public void onSuccess(Boolean exists) {
                 if (Boolean.TRUE.equals(exists)) {
-                    cb.onFailure(new IllegalStateException("Cannot delete: active tasks exist"));
+                    cb.onFailure(new IllegalStateException("Cannot delete category: active tasks exist"));
                     return;
                 }
+
                 remote.delete(firebaseUid, categoryId, new RepositoryCallback<Void>() {
-                    @Override public void onSuccess(Void ignored) {
+                    @Override
+                    public void onSuccess(Void ignored) {
                         local.delete(localUserId, categoryId);
                         cb.onSuccess(null);
                     }
-                    @Override public void onFailure(Exception e) { cb.onFailure(e); }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        cb.onFailure(e);
+                    }
                 });
             }
-            @Override public void onFailure(Exception e) { cb.onFailure(e); }
+
+            @Override
+            public void onFailure(Exception e) {
+                cb.onFailure(new Exception("Failed to check active tasks", e));
+            }
         });
     }
+
 
     @Override
     public void isColorAvailable(String firebaseUid, String colorHex, RepositoryCallback<Boolean> cb) {

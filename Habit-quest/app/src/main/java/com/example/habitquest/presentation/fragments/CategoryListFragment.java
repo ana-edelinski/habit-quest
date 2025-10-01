@@ -2,6 +2,7 @@ package com.example.habitquest.presentation.fragments;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -99,15 +100,13 @@ public class CategoryListFragment extends Fragment {
     private void showAddCategoryDialog() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_category, null);
 
+        // standard palette views
         View colorBlack = dialogView.findViewById(R.id.colorBlack);
         View colorWhite = dialogView.findViewById(R.id.colorWhite);
         View colorRed = dialogView.findViewById(R.id.colorRed);
         View colorGreen = dialogView.findViewById(R.id.colorGreen);
         View colorBlue = dialogView.findViewById(R.id.colorBlue);
         View colorYellow = dialogView.findViewById(R.id.colorYellow);
-
-
-
 
         EditText editName = dialogView.findViewById(R.id.editCategoryName);
         ColorPickerView colorPickerView = dialogView.findViewById(R.id.colorPickerView);
@@ -116,19 +115,26 @@ public class CategoryListFragment extends Fragment {
 
         final int[] selectedColor = {Color.WHITE};
 
-        // poveži slide barove
+        // poveži brightness slider
         colorPickerView.attachBrightnessSlider(brightnessSlide);
 
-        // slušaj promenu boje
+        // slušaj promenu boje iz pickera
         colorPickerView.setColorListener((ColorEnvelopeListener) (envelope, fromUser) -> {
             selectedColor[0] = envelope.getColor();
-            colorPreview.setBackgroundColor(selectedColor[0]);
+            Drawable bg = colorPreview.getBackground();
+            if (bg != null) {
+                bg.setTint(selectedColor[0]);
+            }
         });
 
+        // listener za paletu
         View.OnClickListener paletteClick = v -> {
             int color = ((ColorDrawable) v.getBackground()).getColor();
             selectedColor[0] = color;
-            colorPreview.setBackgroundColor(color);
+            Drawable bg = colorPreview.getBackground();
+            if (bg != null) {
+                bg.setTint(color);
+            }
         };
 
         colorBlack.setOnClickListener(paletteClick);
@@ -173,19 +179,35 @@ public class CategoryListFragment extends Fragment {
         View colorYellow = dialogView.findViewById(R.id.colorYellow);
 
         editName.setText(category.getName());
-        final int[] selectedColor = { Color.parseColor(category.getColorHex()) };
-        colorPreview.setBackgroundColor(selectedColor[0]);
 
+        final int[] selectedColor = { Color.parseColor(category.getColorHex()) };
+
+        // postavi inicijalnu boju u preview
+        Drawable bg = colorPreview.getBackground();
+        if (bg != null) {
+            bg.setTint(selectedColor[0]);
+        }
+
+        // poveži brightness slider
         colorPickerView.attachBrightnessSlider(brightnessSlide);
+
+        // slušaj promenu boje iz pickera
         colorPickerView.setColorListener((ColorEnvelopeListener) (envelope, fromUser) -> {
             selectedColor[0] = envelope.getColor();
-            colorPreview.setBackgroundColor(selectedColor[0]);
+            Drawable bgInner = colorPreview.getBackground();
+            if (bgInner != null) {
+                bgInner.setTint(selectedColor[0]);
+            }
         });
 
+        // listener za standardnu paletu
         View.OnClickListener paletteClick = v -> {
             int color = ((ColorDrawable) v.getBackground()).getColor();
             selectedColor[0] = color;
-            colorPreview.setBackgroundColor(color);
+            Drawable bgInner = colorPreview.getBackground();
+            if (bgInner != null) {
+                bgInner.setTint(color);
+            }
         };
 
         colorBlack.setOnClickListener(paletteClick);
@@ -194,7 +216,6 @@ public class CategoryListFragment extends Fragment {
         colorGreen.setOnClickListener(paletteClick);
         colorBlue.setOnClickListener(paletteClick);
         colorYellow.setOnClickListener(paletteClick);
-
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Edit Category")

@@ -24,12 +24,15 @@ import com.example.habitquest.R;
 import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
+import com.example.habitquest.presentation.adapters.OccurrenceAdapter;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
 import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,6 +73,9 @@ public class TaskDetailFragment extends Fragment {
         TextView tvDate = v.findViewById(R.id.tvTaskDate);
         TextView tvXp = v.findViewById(R.id.tvTaskXp);
         TextView tvStatus = v.findViewById(R.id.tvTaskStatus);
+        TextView tvStartEnd = v.findViewById(R.id.tvTaskStartEnd);
+
+
 
         TaskViewModel taskViewModel =
                 new ViewModelProvider(requireActivity(), new TaskViewModelFactory(requireContext()))
@@ -104,23 +110,69 @@ public class TaskDetailFragment extends Fragment {
             }
         });
 
+        RecyclerView rvOcc = v.findViewById(R.id.recyclerOccurrences);
+        rvOcc.setLayoutManager(new LinearLayoutManager(requireContext()));
+        OccurrenceAdapter occAdapter = new OccurrenceAdapter();
+        rvOcc.setAdapter(occAdapter);
+        occAdapter.setListener(occ -> {
+            Bundle args = new Bundle();
+            args.putParcelable("occurrence", occ);
+            args.putParcelable("task", task);
+
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.occurrenceDetailFragment, args);
+        });
+
+        if (task.isRecurring()) {
+            String start = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                    .format(new Date(task.getStartDate()));
+            String end = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                    .format(new Date(task.getEndDate()));
+
+            tvStartEnd.setText("From " + start + " to " + end);
+            tvStartEnd.setVisibility(View.VISIBLE);
+
+
+
+            taskViewModel.loadOccurrencesForTask(task.getId());
+            taskViewModel.occurrences.observe(getViewLifecycleOwner(), occs -> {
+                occAdapter.setItems(occs);
+            });
+        } else {
+            tvStartEnd.setVisibility(View.GONE);
+            rvOcc.setVisibility(View.GONE);
+        }
+
         Button btnDone = v.findViewById(R.id.btnMarkDone);
         Button btnCancel = v.findViewById(R.id.btnCancel);
         Button btnPause = v.findViewById(R.id.btnPause);
         Button btnEdit = v.findViewById(R.id.btnEdit);
         Button btnDelete = v.findViewById(R.id.btnDelete);
 
-        if (task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.NOT_DONE) {
+        if(task.isRecurring()){
             btnDone.setVisibility(View.GONE);
             btnDelete.setVisibility(View.GONE);
             btnEdit.setVisibility(View.GONE);
             btnCancel.setVisibility(View.GONE);
+            btnPause.setVisibility(View.VISIBLE);
+
         } else {
-            btnDone.setVisibility(View.VISIBLE);
-            btnDelete.setVisibility(View.VISIBLE);
-            btnEdit.setVisibility(View.VISIBLE);
-            btnCancel.setVisibility(View.VISIBLE);
+            btnPause.setVisibility(View.GONE);
+            if (task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.NOT_DONE) {
+                btnDone.setVisibility(View.GONE);
+                btnDelete.setVisibility(View.GONE);
+                btnEdit.setVisibility(View.GONE);
+                btnCancel.setVisibility(View.GONE);
+            } else {
+                btnDone.setVisibility(View.VISIBLE);
+                btnDelete.setVisibility(View.VISIBLE);
+                btnEdit.setVisibility(View.VISIBLE);
+                btnCancel.setVisibility(View.VISIBLE);
+            }
         }
+
+
+
 
         // kompletiranje zadatka
         btnDone.setOnClickListener(view1 -> {
@@ -171,7 +223,7 @@ public class TaskDetailFragment extends Fragment {
                     .setTitle("Delete Task")
                     .setMessage("Are you sure you want to delete this task?")
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        taskViewModel.deleteTask(task.getId());
+                        taskViewModel.deleteTask(task);
                         Toast.makeText(requireContext(), "Task successfully deleted", Toast.LENGTH_SHORT).show();
                         requireActivity().getSupportFragmentManager().popBackStack();
                     })
@@ -213,11 +265,7 @@ public class TaskDetailFragment extends Fragment {
             dialog.show(getParentFragmentManager(), "editTaskDialog");
         });
 
-        if (task.getInterval() != null && task.getUnit() != null) {
-            btnPause.setVisibility(View.VISIBLE);
-        } else {
-            btnPause.setVisibility(View.GONE);
-        }
+
 
         if (task != null) {
             tvName.setText(task.getName());
