@@ -10,11 +10,22 @@ import java.util.List;
 
 public class OccurrenceHelper {
 
+    private OccurrenceHelper() {}
+
     public static List<TaskOccurrence> generateOccurrences(Task task) {
         List<TaskOccurrence> occurrences = new ArrayList<>();
 
-        long current = task.getStartDate();
-        long end = task.getEndDate();
+        // 🔹 Normalizuj start na 00:00
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(task.getStartDate());
+        resetTime(cal);
+        long current = cal.getTimeInMillis();
+
+        // 🔹 Normalizuj end na 00:00
+        Calendar endCal = Calendar.getInstance();
+        endCal.setTimeInMillis(task.getEndDate());
+        resetTime(endCal);
+        long end = endCal.getTimeInMillis();
 
         while (current <= end) {
             TaskOccurrence occ = new TaskOccurrence();
@@ -23,25 +34,34 @@ public class OccurrenceHelper {
             occ.setDate(current);
             occurrences.add(occ);
 
-            // pomeri current na sledeću pojavu
-            switch (task.getUnit()) {
+            // pomeraj dalje
+            cal.setTimeInMillis(current);
+            switch (task.getUnit().toUpperCase()) {
                 case "DAY":
-                    current += task.getInterval() * 24L * 60L * 60L * 1000L;
+                    cal.add(Calendar.DAY_OF_MONTH, task.getInterval());
                     break;
                 case "WEEK":
-                    current += task.getInterval() * 7L * 24L * 60L * 60L * 1000L;
+                    cal.add(Calendar.WEEK_OF_YEAR, task.getInterval());
                     break;
                 case "MONTH":
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(current);
                     cal.add(Calendar.MONTH, task.getInterval());
-                    current = cal.getTimeInMillis();
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown unit: " + task.getUnit());
             }
+            // normalizuj vreme posle svakog pomeranja
+            resetTime(cal);
+            current = cal.getTimeInMillis();
         }
 
         return occurrences;
     }
+
+    private static void resetTime(Calendar cal) {
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+    }
 }
+

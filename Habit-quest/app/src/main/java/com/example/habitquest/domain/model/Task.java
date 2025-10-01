@@ -151,6 +151,21 @@ public class Task implements Parcelable {
         }
     };
 
+
+    public boolean isRecurring() {
+        boolean hasRecurringFields = startDate != null && endDate != null && interval != null && unit != null;
+        boolean hasOneTimeField = date != null;
+
+        if (hasRecurringFields && !hasOneTimeField) {
+            return true;
+        } else if (!hasRecurringFields && hasOneTimeField) {
+            return false;
+        } else {
+            throw new IllegalStateException("Task is not well-defined: either set one-time date OR recurring fields, not both.");
+        }
+    }
+
+
     public Long getEndDate() {
         return endDate;
     }

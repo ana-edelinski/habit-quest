@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp">
 
     <LinearLayout
@@ -22,15 +22,6 @@
             android:textStyle="bold"
             android:paddingBottom="8dp"/>
 
-        <!-- Opis -->
-        <TextView
-            android:id="@+id/tvTaskDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Description goes here"
-            android:textSize="16sp"
-            android:paddingBottom="12dp"/>
-
         <!-- Kategorija -->
         <TextView
             android:id="@+id/tvCategoryDetail"
@@ -42,23 +33,14 @@
             android:textStyle="bold"
             app:drawableStartCompat="@drawable/ic_circle"/>
 
-        <TextView
-            android:id="@+id/tvTaskStartEnd"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="From ... to ..."
-            android:textSize="16sp"
-            android:paddingBottom="12dp"/>
-
-        <!-- Datum ili ponavljanje -->
+        <!-- Datum occurrence-a -->
         <TextView
             android:id="@+id/tvTaskDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Date or repeat info"
+            android:text="12.10.2025"
             android:textSize="16sp"
             android:paddingBottom="12dp"/>
-
 
         <!-- XP -->
         <TextView
@@ -71,7 +53,14 @@
             android:textSize="16sp"
             android:paddingBottom="12dp"/>
 
-
+        <!-- Učestalost ponavljanja -->
+        <TextView
+            android:id="@+id/tvTaskRepeat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Every 2 days"
+            android:textSize="16sp"
+            android:paddingBottom="12dp"/>
 
         <!-- Status -->
         <TextView
@@ -90,7 +79,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:weightSum="3"
+            android:weightSum="2"
             android:paddingBottom="20dp">
 
             <Button
@@ -102,14 +91,6 @@
                 android:text="Mark Done"/>
 
             <Button
-                android:id="@+id/btnPause"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@android:color/white"
-                android:text="Pause"/>
-
-            <Button
                 android:id="@+id/btnCancel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -117,38 +98,5 @@
                 android:textColor="@android:color/white"
                 android:text="Cancel"/>
         </LinearLayout>
-
-        <!-- Edit & Delete -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:weightSum="2">
-
-            <Button
-                android:id="@+id/btnEdit"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@android:color/white"
-                android:text="Edit"/>
-
-            <Button
-                android:id="@+id/btnDelete"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@android:color/white"
-                android:text="Delete"/>
-        </LinearLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerOccurrences"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"/>
-
-
     </LinearLayout>
 </ScrollView>

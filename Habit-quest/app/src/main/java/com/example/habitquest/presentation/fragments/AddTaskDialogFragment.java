@@ -86,9 +86,7 @@ public class AddTaskDialogFragment extends DialogFragment {
         btnPickDate = v.findViewById(R.id.btnPickDate);
         btnPickTime = v.findViewById(R.id.btnPickTime);
         btnPickStartDate = v.findViewById(R.id.btnPickStartDate);
-        btnPickStartTime = v.findViewById(R.id.btnPickStartTime);
         btnPickEndDate = v.findViewById(R.id.btnPickEndDate);
-        btnPickEndTime = v.findViewById(R.id.btnPickEndTime);
         etInterval = v.findViewById(R.id.etInterval);
         spUnit = v.findViewById(R.id.spUnit);
         spDifficulty = v.findViewById(R.id.spDifficulty);
@@ -132,9 +130,7 @@ public class AddTaskDialogFragment extends DialogFragment {
         btnPickDate.setOnClickListener(v1 -> showDatePicker(oneTimeCal, btnPickDate));
         btnPickTime.setOnClickListener(v12 -> showTimePicker(oneTimeCal, btnPickTime));
         btnPickStartDate.setOnClickListener(v13 -> showDatePicker(startCal, btnPickStartDate));
-        btnPickStartTime.setOnClickListener(v14 -> showTimePicker(startCal, btnPickStartTime));
         btnPickEndDate.setOnClickListener(v15 -> showDatePicker(endCal, btnPickEndDate));
-        btnPickEndTime.setOnClickListener(v16 -> showTimePicker(endCal, btnPickEndTime));
 
         // --- ako editujemo task, pre-popuni polja ---
         if (editingTask != null) {
@@ -192,16 +188,14 @@ public class AddTaskDialogFragment extends DialogFragment {
                     startCal.setTimeInMillis(editingTask.getStartDate());
                     btnPickStartDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
                             .format(new Date(editingTask.getStartDate())));
-                    btnPickStartTime.setText(new SimpleDateFormat("HH:mm", Locale.getDefault())
-                            .format(new Date(editingTask.getStartDate())));
+
                 }
 
                 if (editingTask.getEndDate() != null) {
                     endCal.setTimeInMillis(editingTask.getEndDate());
                     btnPickEndDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
                             .format(new Date(editingTask.getEndDate())));
-                    btnPickEndTime.setText(new SimpleDateFormat("HH:mm", Locale.getDefault())
-                            .format(new Date(editingTask.getEndDate())));
+
                 }
             }
 

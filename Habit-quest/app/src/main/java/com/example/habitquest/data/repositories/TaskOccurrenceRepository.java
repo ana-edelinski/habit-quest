@@ -1,5 +1,7 @@
 package com.example.habitquest.data.repositories;
 
+import android.content.Context;
+
 import com.example.habitquest.data.remote.TaskOccurrenceRemoteDataSource;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskOccurrence;
@@ -15,8 +17,8 @@ public class TaskOccurrenceRepository implements ITaskOccurrenceRepository {
     private final TaskOccurrenceRemoteDataSource remote;
     // ⚠️ Opciono kasnije: private final TaskOccurrenceLocalDataSource local;
 
-    public TaskOccurrenceRepository(TaskOccurrenceRemoteDataSource remote /*, TaskOccurrenceLocalDataSource local */) {
-        this.remote = remote;
+    public TaskOccurrenceRepository(Context context) {
+        this.remote = new TaskOccurrenceRemoteDataSource();
         // this.local = local;
     }
 

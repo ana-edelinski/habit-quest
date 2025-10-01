@@ -1,0 +1,133 @@
+package com.example.habitquest.presentation.fragments;
+
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.habitquest.R;
+import com.example.habitquest.domain.model.Category;
+import com.example.habitquest.domain.model.Task;
+import com.example.habitquest.domain.model.TaskOccurrence;
+import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+public class OccurrenceDetailFragment extends Fragment {
+
+    private static final String ARG_OCCURRENCE = "occurrence";
+    private static final String ARG_TASK = "task";
+
+    private TaskOccurrence occurrence;
+    private Task task;
+
+    public static OccurrenceDetailFragment newInstance(TaskOccurrence occ, Task task) {
+        OccurrenceDetailFragment f = new OccurrenceDetailFragment();
+        Bundle b = new Bundle();
+        b.putParcelable(ARG_OCCURRENCE, occ);
+        b.putParcelable(ARG_TASK, task);
+        f.setArguments(b);
+        return f;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            occurrence = getArguments().getParcelable(ARG_OCCURRENCE);
+            task = getArguments().getParcelable(ARG_TASK);
+        }
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_occurrence_detail, container, false);
+
+        TextView tvName = v.findViewById(R.id.tvTaskNameDetail);
+        TextView tvCategory = v.findViewById(R.id.tvCategoryDetail);
+        TextView tvDate = v.findViewById(R.id.tvTaskDate);
+        TextView tvXp = v.findViewById(R.id.tvTaskXp);
+        TextView tvStatus = v.findViewById(R.id.tvTaskStatus);
+        TextView tvRepeat = v.findViewById(R.id.tvTaskRepeat);
+
+
+
+        Button btnDone = v.findViewById(R.id.btnMarkDone);
+        Button btnCancel = v.findViewById(R.id.btnCancel);
+
+        // postavi vrednosti
+        if (task != null && task.getInterval() != null && task.getUnit() != null) {
+            tvRepeat.setText("Every " + task.getInterval() + " " + task.getUnit());
+        } else {
+            tvRepeat.setVisibility(View.GONE);
+        }
+
+        if (task != null) {
+            tvName.setText(task.getName());
+            tvXp.setText("+" + task.getTotalXp() + " XP");
+        }
+
+        if (occurrence != null) {
+            String date = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                    .format(new Date(occurrence.getDate()));
+            tvDate.setText(date);
+            tvStatus.setText(occurrence.getStatus().name());
+        }
+
+        // kategorija (ako je task setovan)
+        if (task != null) {
+            // za ovo koristi CategoryViewModel ako ti je već vezan na Activity
+            CategoryViewModel categoryViewModel =
+                    new ViewModelProvider(requireActivity(), new CategoryViewModelFactory(requireContext()))
+                            .get(CategoryViewModel.class);
+
+            categoryViewModel.categories.observe(getViewLifecycleOwner(), categories -> {
+                for (Category c : categories) {
+                    if (c.getId().equals(task.getCategoryId())) {
+                        tvCategory.setText(c.getName());
+                        Drawable circle = ContextCompat.getDrawable(requireContext(), R.drawable.ic_circle);
+                        if (circle != null) {
+                            circle = DrawableCompat.wrap(circle.mutate());
+                            DrawableCompat.setTint(circle, Color.parseColor(c.getColorHex()));
+                            tvCategory.setCompoundDrawablesWithIntrinsicBounds(circle, null, null, null);
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
+        // dugmad
+        btnDone.setOnClickListener(view -> {
+            // ovde pozoveš ViewModel za completeOccurrence
+            Toast.makeText(requireContext(), "Occurrence marked as done!", Toast.LENGTH_SHORT).show();
+            requireActivity().getSupportFragmentManager().popBackStack();
+        });
+
+        btnCancel.setOnClickListener(view -> {
+            // ovde pozoveš ViewModel za cancelOccurrence
+            Toast.makeText(requireContext(), "Occurrence canceled!", Toast.LENGTH_SHORT).show();
+            requireActivity().getSupportFragmentManager().popBackStack();
+        });
+
+        return v;
+    }
+}

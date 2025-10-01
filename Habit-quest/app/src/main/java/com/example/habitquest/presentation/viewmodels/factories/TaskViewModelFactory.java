@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.habitquest.data.repositories.TaskOccurrenceRepository;
 import com.example.habitquest.data.repositories.TaskRepository;
 import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.data.repositories.UserXpLogRepository;
@@ -28,7 +29,8 @@ public class TaskViewModelFactory implements ViewModelProvider.Factory {
             TaskRepository taskRepo = new TaskRepository(context);
             UserXpLogRepository xpRepo = new UserXpLogRepository(context);
             UserRepository userRepo = new UserRepository(context);
-            return (T) new TaskViewModel(prefs, taskRepo, xpRepo, userRepo);
+            TaskOccurrenceRepository occurrenceRepo = new TaskOccurrenceRepository(context);
+            return (T) new TaskViewModel(prefs, taskRepo, xpRepo, userRepo, occurrenceRepo);
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

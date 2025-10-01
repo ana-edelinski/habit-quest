@@ -4,12 +4,14 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.habitquest.data.repositories.TaskOccurrenceRepository;
 import com.example.habitquest.data.repositories.TaskRepository;
 import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.data.repositories.UserXpLogRepository;
 import com.example.habitquest.domain.model.DifficultyLevel;
 import com.example.habitquest.domain.model.ImportanceLevel;
 import com.example.habitquest.domain.model.Task;
+import com.example.habitquest.domain.model.TaskOccurrence;
 import com.example.habitquest.domain.model.TaskStatus;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.domain.model.UserXpLog;
@@ -21,6 +23,7 @@ import com.example.habitquest.utils.XpCalculator;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class TaskViewModel extends ViewModel {
@@ -29,6 +32,8 @@ public class TaskViewModel extends ViewModel {
     private final TaskRepository repository;
     private final UserXpLogRepository userXpLogRepository;
     private final UserRepository userRepository;
+    private final TaskOccurrenceRepository occurrenceRepository;
+
     private final MutableLiveData<List<Task>> _tasks = new MutableLiveData<>();
     public LiveData<List<Task>> tasks = _tasks;
 
@@ -46,16 +51,21 @@ public class TaskViewModel extends ViewModel {
     private final MutableLiveData<String> _taskCompletedId = new MutableLiveData<>();
     public LiveData<String> taskCompletedId = _taskCompletedId;
 
+    private final MutableLiveData<List<TaskOccurrence>> _occurrences = new MutableLiveData<>();
+    public LiveData<List<TaskOccurrence>> occurrences = _occurrences;
+
     private Closeable listenerHandle;
 
     public TaskViewModel(AppPreferences prefs,
                          TaskRepository repository,
                          UserXpLogRepository userXpLogRepository,
-                         UserRepository userRepository) {
+                         UserRepository userRepository,
+                         TaskOccurrenceRepository occurrenceRepository) {
         this.prefs = prefs;
         this.repository = repository;
         this.userXpLogRepository = userXpLogRepository;
         this.userRepository = userRepository;
+        this.occurrenceRepository = occurrenceRepository;
     }
 
     /** Start real-time listening for tasks */
@@ -85,7 +95,21 @@ public class TaskViewModel extends ViewModel {
 
         repository.create(firebaseUid, task, new RepositoryCallback<Task>() {
             @Override
-            public void onSuccess(Task result) { }
+            public void onSuccess(Task result) {
+                if(result.isRecurring()) {
+                    occurrenceRepository.generateOccurrences(prefs.getFirebaseUid(), result, new RepositoryCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            // sve ok – occurrence kreirani
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            // možeš logovati grešku
+                        }
+                    });
+                }
+            }
             @Override
             public void onFailure(Exception e) { }
         });
@@ -96,19 +120,37 @@ public class TaskViewModel extends ViewModel {
 
         repository.update(firebaseUid, task, new RepositoryCallback<Void>() {
             @Override
-            public void onSuccess(Void result) { }
+            public void onSuccess(Void result) {
+                if (task.isRecurring()) {
+                    occurrenceRepository.updateOccurrences(prefs.getFirebaseUid(), task, new RepositoryCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) { }
+                        @Override
+                        public void onFailure(Exception e) { }
+                    });
+                }
+            }
             @Override
             public void onFailure(Exception e) { }
         });
     }
 
-    public void deleteTask(String taskId) {
+    public void deleteTask(Task task) {
         String firebaseUid = prefs.getFirebaseUid();
         long localUserId = Long.parseLong(prefs.getUserId());
 
-        repository.delete(firebaseUid, taskId, localUserId, new RepositoryCallback<Void>() {
+        repository.delete(firebaseUid, task.getId(), localUserId, new RepositoryCallback<Void>() {
             @Override
-            public void onSuccess(Void result) { }
+            public void onSuccess(Void result) {
+                if (task.isRecurring()) {
+                    occurrenceRepository.deleteOccurrences(firebaseUid, task, new RepositoryCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) { }
+                        @Override
+                        public void onFailure(Exception e) { }
+                    });
+                }
+            }
             @Override
             public void onFailure(Exception e) { }
         });
@@ -132,6 +174,38 @@ public class TaskViewModel extends ViewModel {
             }
         });
     }
+
+    public void completeOccurrence(Task task, TaskOccurrence occurrence) {
+        String firebaseUid = prefs.getFirebaseUid();
+
+        occurrenceRepository.completeOccurrence(firebaseUid, task.getId(), occurrence.getId(), new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                grantXpForTask(task, firebaseUid); // XP dodela kao i za one-time
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // error handling
+            }
+        });
+    }
+
+    public void loadOccurrencesForTask(String taskId) {
+        String firebaseUid = prefs.getFirebaseUid();
+        occurrenceRepository.fetchAllForTask(firebaseUid, taskId, new RepositoryCallback<List<TaskOccurrence>>() {
+            @Override
+            public void onSuccess(List<TaskOccurrence> result) {
+                _occurrences.postValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _occurrences.postValue(Collections.emptyList()); // ili null
+            }
+        });
+    }
+
 
     private void grantXpForTask(Task task, String firebaseUid) {
         userRepository.getUser(firebaseUid, new RepositoryCallback<User>() {
