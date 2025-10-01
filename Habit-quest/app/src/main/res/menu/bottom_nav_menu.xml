@@ -7,6 +7,11 @@
         android:title="@string/home" />
 
     <item
+        android:id="@+id/nav_equipment"
+        android:icon="@drawable/ic_equipment"
+        android:title="@string/equipment" />
+
+    <item
         android:id="@id/nav_store"
         android:icon="@drawable/ic_store"
         android:title="@string/store"/>
