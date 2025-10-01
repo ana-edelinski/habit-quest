@@ -1,5 +1,6 @@
 package com.example.habitquest.presentation.fragments;
 
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -129,11 +130,15 @@ public class CategoryListFragment extends Fragment {
 
         // listener za paletu
         View.OnClickListener paletteClick = v -> {
-            int color = ((ColorDrawable) v.getBackground()).getColor();
-            selectedColor[0] = color;
-            Drawable bg = colorPreview.getBackground();
-            if (bg != null) {
-                bg.setTint(color);
+            ColorStateList tint = v.getBackgroundTintList();
+            if (tint != null) {
+                int color = tint.getDefaultColor();
+                selectedColor[0] = color;
+
+                Drawable bg = colorPreview.getBackground();
+                if (bg != null) {
+                    bg.setTint(color);
+                }
             }
         };
 
