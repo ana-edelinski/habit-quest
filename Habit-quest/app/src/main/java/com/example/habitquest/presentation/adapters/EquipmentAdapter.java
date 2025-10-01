@@ -1,0 +1,75 @@
+package com.example.habitquest.presentation.adapters;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.habitquest.R;
+import com.example.habitquest.domain.model.ShopItem;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.EquipmentViewHolder> {
+
+    private List<ShopItem> items = new ArrayList<>();
+
+    public void setItems(List<ShopItem> items) {
+        // sortiramo tako da aktivirani idu prvi
+        Collections.sort(items, Comparator.comparing(ShopItem::isActive).reversed());
+        this.items = items;
+        notifyDataSetChanged();
+    }
+
+    @NonNull
+    @Override
+    public EquipmentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_equipment, parent, false);
+        return new EquipmentViewHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull EquipmentViewHolder holder, int position) {
+        holder.bind(items.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
+
+    static class EquipmentViewHolder extends RecyclerView.ViewHolder {
+        ImageView ivItemImage;
+        TextView tvName;
+        Button btnActivate;
+
+        public EquipmentViewHolder(@NonNull View itemView) {
+            super(itemView);
+            ivItemImage = itemView.findViewById(R.id.ivItemImage);
+            tvName = itemView.findViewById(R.id.tvName);
+            btnActivate = itemView.findViewById(R.id.btnActivate);
+        }
+
+        public void bind(ShopItem item) {
+            ivItemImage.setImageResource(item.getImageResId());
+            tvName.setText(item.getName());
+
+            if (item.isActive()) {
+                btnActivate.setText("Activated");
+                btnActivate.setEnabled(false);
+            } else {
+                btnActivate.setText("Activate");
+                btnActivate.setEnabled(true);
+            }
+        }
+    }
+}
