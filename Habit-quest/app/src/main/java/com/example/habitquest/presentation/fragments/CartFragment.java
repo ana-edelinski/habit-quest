@@ -15,11 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.habitquest.R;
 import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.presentation.adapters.ShopAdapter;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
+import com.example.habitquest.utils.RepositoryCallback;
 
 public class CartFragment extends Fragment {
 
@@ -69,7 +71,17 @@ public class CartFragment extends Fragment {
         });
 
         btnBuy.setOnClickListener(v -> {
-            // TODO: logika kupovine (skidanje coina, slanje u Firestore itd.)
+            cartViewModel.buyItems(new RepositoryCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    Toast.makeText(getContext(), "Purchase successful!", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 }

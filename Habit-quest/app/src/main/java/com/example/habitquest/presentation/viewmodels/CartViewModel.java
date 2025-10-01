@@ -72,4 +72,9 @@ public class CartViewModel extends ViewModel {
         super.onCleared();
         if (cartListener != null) cartListener.remove();
     }
+
+    public void buyItems(RepositoryCallback<Void> callback) {
+        repository.buyItems(callback);
+    }
+
 }

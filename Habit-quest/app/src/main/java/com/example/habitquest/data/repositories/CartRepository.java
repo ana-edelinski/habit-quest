@@ -50,4 +50,44 @@ public class CartRepository {
         });
     }
 
+    public void buyItems(RepositoryCallback<Void> callback) {
+        DocumentReference userRef = db.collection("users").document(uid);
+
+        db.runTransaction(transaction -> {
+                    DocumentSnapshot snapshot = transaction.get(userRef);
+
+                    User user = snapshot.toObject(User.class);
+                    if (user == null) throw new RuntimeException("User not found");
+
+                    List<ShopItem> cart = user.getCart();
+                    int total = 0;
+                    for (ShopItem item : cart) total += item.getPrice();
+
+                    if (user.getCoins() < total) {
+                        throw new RuntimeException("Not enough coins");
+                    }
+
+                    // Skinemo coine
+                    user.setCoins(user.getCoins() - total);
+
+                    // Dodamo u equipment (sve kao neaktivno)
+                    List<ShopItem> equipment = user.getEquipment() != null ? user.getEquipment() : new ArrayList<>();
+                    for (ShopItem si : cart) {
+                        si.setActive(false); // obavezno neaktivno
+                        equipment.add(si);
+                    }
+                    user.setEquipment(equipment);
+
+                    // Praznimo korpu
+                    user.setCart(new ArrayList<>());
+
+                    // update Firestore
+                    transaction.set(userRef, user);
+
+                    return null;
+                }).addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 }

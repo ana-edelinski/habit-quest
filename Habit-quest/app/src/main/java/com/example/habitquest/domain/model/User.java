@@ -21,6 +21,7 @@ public class User implements Parcelable {
     private int pp;
     private int coins;
     private List<ShopItem> cart = new ArrayList<>();
+    private List<ShopItem> equipment = new ArrayList<>();
 
     public User(Long id, String email, String username, int avatar, int totalXp, int level, String title, int pp, int coins) {
         this.id = id;
@@ -52,6 +53,8 @@ public class User implements Parcelable {
         coins = in.readInt();
         cart = new ArrayList<>();
         in.readList(cart, ShopItem.class.getClassLoader());
+        equipment = new ArrayList<>();
+        in.readList(equipment, ShopItem.class.getClassLoader());
     }
 
     // GET / SET
@@ -85,6 +88,8 @@ public class User implements Parcelable {
     public List<ShopItem> getCart() { return cart; }
     public void setCart(List<ShopItem> cart) { this.cart = cart; }
 
+    public List<ShopItem> getEquipment() { return equipment; }
+    public void setEquipment(List<ShopItem> equipment) { this.equipment = equipment; }
 
     @Override
     public String toString() {
@@ -115,6 +120,7 @@ public class User implements Parcelable {
         dest.writeInt(pp);
         dest.writeInt(coins);
         dest.writeList(cart);
+        dest.writeList(equipment);
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
