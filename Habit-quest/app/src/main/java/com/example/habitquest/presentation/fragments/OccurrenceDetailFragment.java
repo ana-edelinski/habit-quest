@@ -22,8 +22,11 @@ import com.example.habitquest.R;
 import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskOccurrence;
+import com.example.habitquest.domain.model.TaskStatus;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
+import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
+import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -73,6 +76,18 @@ public class OccurrenceDetailFragment extends Fragment {
         Button btnDone = v.findViewById(R.id.btnMarkDone);
         Button btnCancel = v.findViewById(R.id.btnCancel);
 
+        if(occurrence.getStatus() == TaskStatus.PAUSED){
+            btnDone.setVisibility(View.GONE);
+            btnCancel.setVisibility(View.GONE);
+        }
+
+        TaskViewModel taskViewModel =
+                new ViewModelProvider(requireActivity(), new TaskViewModelFactory(requireContext()))
+                        .get(TaskViewModel.class);
+
+
+
+
         // postavi vrednosti
         if (task != null && task.getInterval() != null && task.getUnit() != null) {
             tvRepeat.setText("Every " + task.getInterval() + " " + task.getUnit());
@@ -115,17 +130,39 @@ public class OccurrenceDetailFragment extends Fragment {
             });
         }
 
+
+
         // dugmad
         btnDone.setOnClickListener(view -> {
-            // ovde pozoveš ViewModel za completeOccurrence
-            Toast.makeText(requireContext(), "Occurrence marked as done!", Toast.LENGTH_SHORT).show();
-            requireActivity().getSupportFragmentManager().popBackStack();
+            if (task != null && occurrence != null) {
+                taskViewModel.completeOccurrence(task, occurrence);
+
+                int xp = task.getTotalXp(); // XP parent taska
+                Toast.makeText(requireContext(),
+                        "Occurrence completed! +" + xp + " XP",
+                        Toast.LENGTH_SHORT).show();
+
+                tvStatus.setText("COMPLETED");
+                btnDone.setVisibility(View.GONE);
+                btnCancel.setVisibility(View.GONE);
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
         });
 
+
         btnCancel.setOnClickListener(view -> {
-            // ovde pozoveš ViewModel za cancelOccurrence
-            Toast.makeText(requireContext(), "Occurrence canceled!", Toast.LENGTH_SHORT).show();
-            requireActivity().getSupportFragmentManager().popBackStack();
+            if (task != null && occurrence != null) {
+                taskViewModel.cancelOccurrence(task, occurrence);
+
+                Toast.makeText(requireContext(),
+                        "Occurrence canceled!",
+                        Toast.LENGTH_SHORT).show();
+
+                tvStatus.setText("CANCELED");
+                btnDone.setVisibility(View.GONE);
+                btnCancel.setVisibility(View.GONE);
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
         });
 
         return v;

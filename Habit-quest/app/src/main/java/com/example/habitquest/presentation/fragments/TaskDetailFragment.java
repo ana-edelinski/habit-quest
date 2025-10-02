@@ -164,7 +164,7 @@ public class TaskDetailFragment extends Fragment {
 
         } else {
             btnPause.setVisibility(View.GONE);
-            if (task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.NOT_DONE) {
+            if (task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.NOT_DONE || task.getStatus() == TaskStatus.CANCELED ) {
                 btnDone.setVisibility(View.GONE);
                 btnDelete.setVisibility(View.GONE);
                 btnEdit.setVisibility(View.GONE);

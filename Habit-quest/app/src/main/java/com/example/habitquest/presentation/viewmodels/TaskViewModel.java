@@ -171,7 +171,7 @@ public class TaskViewModel extends ViewModel {
         repository.update(firebaseUid, task, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                grantXpForTask(task, firebaseUid);
+                grantXpForTask(task, firebaseUid, null);
                 _taskCompletedId.postValue(task.getId());
             }
 
@@ -188,7 +188,22 @@ public class TaskViewModel extends ViewModel {
         occurrenceRepository.completeOccurrence(firebaseUid, task.getId(), occurrence.getId(), new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                grantXpForTask(task, firebaseUid); // XP dodela kao i za one-time
+                grantXpForTask(task, firebaseUid, occurrence.getId()); // XP dodela kao i za one-time
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // error handling
+            }
+        });
+    }
+    public void cancelOccurrence(Task task, TaskOccurrence occurrence) {
+        String firebaseUid = prefs.getFirebaseUid();
+
+        occurrenceRepository.cancelOccurrence(firebaseUid, task.getId(), occurrence.getId(), new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+
             }
 
             @Override
@@ -214,11 +229,12 @@ public class TaskViewModel extends ViewModel {
     }
 
 
-    private void grantXpForTask(Task task, String firebaseUid) {
+    private void grantXpForTask(Task task, String firebaseUid,String occurrenceId) {
+
         userRepository.getUser(firebaseUid, new RepositoryCallback<User>() {
             @Override
             public void onSuccess(User user) {
-                handleUserFetched(user, task, firebaseUid);
+                handleUserFetched(user, task, prefs.getFirebaseUid(), occurrenceId);
             }
 
             @Override
@@ -228,7 +244,7 @@ public class TaskViewModel extends ViewModel {
         });
     }
 
-    private void handleUserFetched(User user, Task task, String firebaseUid) {
+    private void handleUserFetched(User user, Task task, String firebaseUid, String occurrenceId) {
         int userLevel = user.getLevel();
 
         int earnedXp = XpCalculator.calculateTaskXp(
@@ -236,6 +252,7 @@ public class TaskViewModel extends ViewModel {
                 task.getImportanceXp(),
                 userLevel
         );
+
 
         UserXpLog log = new UserXpLog(
                 null,
@@ -247,10 +264,15 @@ public class TaskViewModel extends ViewModel {
                 System.currentTimeMillis()
         );
 
+        if(task.isRecurring()) {
+            log.setOccurrenceId(occurrenceId);
+        }
+        
         insertXpLogAndUpdateUser(log, user, task, firebaseUid);
     }
 
     private void insertXpLogAndUpdateUser(UserXpLog log, User user, Task task, String firebaseUid) {
+
         userXpLogRepository.insert(log, new RepositoryCallback<UserXpLog>() {
             @Override
             public void onSuccess(UserXpLog res) {
