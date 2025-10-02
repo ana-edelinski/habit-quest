@@ -7,9 +7,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.habitquest.R;
@@ -29,10 +31,15 @@ public class ShopFragment extends Fragment {
     private AccountViewModel accountViewModel;
     private User currentUser;
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_shop, container, false);
+
+        TextView tvLockedMessage = v.findViewById(R.id.tvLockedMessage);
+        TextView tvPotions = v.findViewById(R.id.tvPotions);
+        TextView tvClothing = v.findViewById(R.id.tvClothing);
 
         // Potions
         RecyclerView rvPotions = v.findViewById(R.id.rvPotions);
@@ -57,11 +64,29 @@ public class ShopFragment extends Fragment {
         cartViewModel = new ViewModelProvider(requireActivity()).get(CartViewModel.class);
         accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
-        // Učitaj usera i shop iteme
+        // Load User and Shop Items
         accountViewModel.user.observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
-                currentUser = user; // zapamti usera
-                viewModel.loadShopItems(user);
+                currentUser = user;
+
+                Log.d("TEST", "Bosses defeated: " + user.getBossesDefeated());
+                Log.d("TEST", "Previous boss reward: " + user.getPreviousBossReward());
+
+                if (user.getBossesDefeated() == 0) {
+                    rvPotions.setVisibility(View.GONE);
+                    rvClothing.setVisibility(View.GONE);
+                    tvPotions.setVisibility(View.GONE);
+                    tvClothing.setVisibility(View.GONE);
+                    tvLockedMessage.setVisibility(View.VISIBLE);
+                } else {
+                    rvPotions.setVisibility(View.VISIBLE);
+                    rvClothing.setVisibility(View.VISIBLE);
+                    tvPotions.setVisibility(View.VISIBLE);
+                    tvClothing.setVisibility(View.VISIBLE);
+                    tvLockedMessage.setVisibility(View.GONE);
+
+                    viewModel.loadShopItems(user);
+                }
             }
         });
 
@@ -98,7 +123,7 @@ public class ShopFragment extends Fragment {
 
             @Override
             public void onRemoveClick(ShopItem item) {
-                // u StoreFragment-u se ne koristi remove
+                // u ShopFragment-u se ne koristi remove
             }
         });
 

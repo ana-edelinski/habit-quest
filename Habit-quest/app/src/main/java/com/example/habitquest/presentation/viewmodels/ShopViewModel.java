@@ -9,6 +9,7 @@ import com.example.habitquest.domain.model.EquipmentType;
 import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.domain.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

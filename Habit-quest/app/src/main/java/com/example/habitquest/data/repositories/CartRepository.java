@@ -23,7 +23,7 @@ public class CartRepository {
     public void addItem(ShopItem item, User user, RepositoryCallback<Void> callback) {
         DocumentReference userRef = db.collection("users").document(uid);
 
-        int previousBossReward = calculateBossReward(user.getLevel() - 1);
+        int previousBossReward = user.getPreviousBossReward();
         ShopItem pricedItem = new ShopItem(item, previousBossReward);
 
         userRef.update("cart", FieldValue.arrayUnion(pricedItem))
@@ -55,18 +55,6 @@ public class CartRepository {
             }
         });
     }
-
-    private int calculateBossReward(int level) {
-        if (level <= 0) {
-            return 200;
-        }
-        int reward = 200;
-        for (int i = 1; i < level; i++) {
-            reward = (int) Math.round(reward * 1.2);
-        }
-        return reward;
-    }
-
 
     public void buyItems(RepositoryCallback<Void> callback) {
         DocumentReference userRef = db.collection("users").document(uid);
@@ -108,7 +96,7 @@ public class CartRepository {
 
 
     public List<ShopItem> getShopItemsForUser(User user) {
-        int previousBossReward = calculateBossReward(user.getLevel() - 1);
+        int previousBossReward = user.getPreviousBossReward(); // koristi polje iz User-a
         List<ShopItem> result = new ArrayList<>();
         for (ShopItem base : ShopData.ITEMS) {
             result.add(new ShopItem(base, previousBossReward));

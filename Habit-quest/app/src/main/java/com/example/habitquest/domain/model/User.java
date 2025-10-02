@@ -20,10 +20,11 @@ public class User implements Parcelable {
     private String title;
     private int pp;
     private int coins;
+    private int bossesDefeated;
     private List<ShopItem> cart = new ArrayList<>();
     private List<ShopItem> equipment = new ArrayList<>();
 
-    public User(Long id, String email, String username, int avatar, int totalXp, int level, String title, int pp, int coins) {
+    public User(Long id, String email, String username, int avatar, int totalXp, int level, String title, int pp, int coins, int bossesDefeated) {
         this.id = id;
         this.email = email;
         this.username = username;
@@ -33,13 +34,16 @@ public class User implements Parcelable {
         this.title = title;
         this.pp = pp;
         this.coins = coins;
-        this.cart = new ArrayList<>();    }
+        this.bossesDefeated = bossesDefeated;
+        this.cart = new ArrayList<>();
+    }
 
     public User() {
         this.cart = new ArrayList<>();
         this.equipment = new ArrayList<>();
         this.coins = 0;
         this.pp = 0;
+        this.bossesDefeated = 0;
     }
 
     // Konstruktor za citanje iz Parcel objekta
@@ -53,6 +57,7 @@ public class User implements Parcelable {
         title = in.readString();
         pp = in.readInt();
         coins = in.readInt();
+        bossesDefeated = in.readInt();
         cart = new ArrayList<>();
         in.readList(cart, ShopItem.class.getClassLoader());
         equipment = new ArrayList<>();
@@ -93,7 +98,8 @@ public class User implements Parcelable {
     public List<ShopItem> getEquipment() { return equipment; }
     public void setEquipment(List<ShopItem> equipment) { this.equipment = equipment; }
 
-
+    public int getBossesDefeated() { return bossesDefeated; }
+    public void setBossesDefeated(int bossesDefeated) { this.bossesDefeated = bossesDefeated; }
 
     @Override
     public String toString() {
@@ -126,6 +132,7 @@ public class User implements Parcelable {
         dest.writeInt(coins);
         dest.writeList(cart);
         dest.writeList(equipment);
+        dest.writeInt(bossesDefeated);
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -139,4 +146,17 @@ public class User implements Parcelable {
             return new User[size];
         }
     };
+
+    public int getPreviousBossReward() {
+        return calculateBossReward(bossesDefeated);
+    }
+
+    private int calculateBossReward(int defeatedCount) {
+        if (defeatedCount <= 0) return 0;
+        int reward = 200; // reward prvog bossa
+        for (int i = 1; i < defeatedCount; i++) {
+            reward = (int) Math.round(reward * 1.2);
+        }
+        return reward;
+    }
 }
