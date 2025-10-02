@@ -36,16 +36,41 @@ public class ShopItem {
         this.calculatedPrice = (int) (previousBossReward * base.priceFactor);
     }
 
-//    public int getPrice() {
-//        return calculatedPrice;
-//    }
-
 
     public String getName() { return name; }
     public EquipmentType getType() { return type; }
     public double getBonus() { return bonus; }
     public boolean isActive() { return active; }
     public boolean isPermanent() { return permanent; }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(EquipmentType type) {
+        this.type = type;
+    }
+
+    public double getPriceFactor() {
+        return priceFactor;
+    }
+
+    public void setPriceFactor(double priceFactor) {
+        this.priceFactor = priceFactor;
+    }
+
+    public void setBonus(double bonus) {
+        this.bonus = bonus;
+    }
+
+    public void setPermanent(boolean permanent) {
+        this.permanent = permanent;
+    }
+
+    public void setImageResId(int imageResId) {
+        this.imageResId = imageResId;
+    }
+
     public int getImageResId() { return imageResId; }
 
     public void setActive(boolean active) { this.active = active; }

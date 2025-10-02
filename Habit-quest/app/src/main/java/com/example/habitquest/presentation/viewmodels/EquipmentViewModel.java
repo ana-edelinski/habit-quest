@@ -1,5 +1,7 @@
 package com.example.habitquest.presentation.viewmodels;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -42,27 +44,34 @@ public class EquipmentViewModel extends ViewModel {
     }
 
     public void activateItem(ShopItem item, RepositoryCallback<Void> callback) {
+        Log.d("EQUIP", "activateItem START for " + item.getName());
+
         userRef.get().addOnSuccessListener(snapshot -> {
+            Log.d("EQUIP", "Got snapshot: " + snapshot.exists());
+
             User user = snapshot.toObject(User.class);
             if (user == null) {
+                Log.d("EQUIP", "User is NULL!");
                 callback.onFailure(new RuntimeException("User not found"));
                 return;
             }
 
+            Log.d("EQUIP", "User PP before calc = " + user.getPp());
+
             List<ShopItem> current = user.getEquipment();
             if (current == null) current = new ArrayList<>();
 
-            // nadji item
             for (int i = 0; i < current.size(); i++) {
                 if (current.get(i).getName().equals(item.getName())) {
                     current.get(i).setActive(true);
 
                     if (item.isPermanent()) {
-                        // trajni -> trajno povecaj PP
                         int newPp = (int) (user.getPp() * (1 + item.getBonus()));
+                        Log.d("EQUIP", "Permanent item bonus=" + item.getBonus() +
+                                ", newPP=" + newPp);
                         user.setPp(newPp);
                     } else {
-                        // jednokratni -> samo do sledece borbe
+                        Log.d("EQUIP", "Temporary item bonus=" + item.getBonus());
                         user.setTempBonus(item.getBonus());
                     }
                     break;
@@ -70,12 +79,19 @@ public class EquipmentViewModel extends ViewModel {
             }
 
             user.setEquipment(current);
-            equipment.setValue(new ArrayList<>(current));
 
-            // snimi sve promene
+            // log pre upisa
+            Log.d("EQUIP", "Saving user with PP=" + user.getPp());
+
             userRef.set(user)
-                    .addOnSuccessListener(aVoid -> callback.onSuccess(null))
-                    .addOnFailureListener(callback::onFailure);
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d("EQUIP", "User saved successfully with PP=" + user.getPp());
+                        callback.onSuccess(null);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("EQUIP", "Error saving user", e);
+                        callback.onFailure(e);
+                    });
         });
     }
 
