@@ -6,6 +6,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.habitquest.domain.model.ActiveEffects;
+import com.example.habitquest.domain.model.EquipmentType;
 import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.utils.RepositoryCallback;
@@ -44,55 +46,73 @@ public class EquipmentViewModel extends ViewModel {
     }
 
     public void activateItem(ShopItem item, RepositoryCallback<Void> callback) {
-        Log.d("EQUIP", "activateItem START for " + item.getName());
-
         userRef.get().addOnSuccessListener(snapshot -> {
-            Log.d("EQUIP", "Got snapshot: " + snapshot.exists());
-
             User user = snapshot.toObject(User.class);
             if (user == null) {
-                Log.d("EQUIP", "User is NULL!");
                 callback.onFailure(new RuntimeException("User not found"));
                 return;
             }
 
-            Log.d("EQUIP", "User PP before calc = " + user.getPp());
+            DocumentReference effectsRef = userRef.collection("effects").document("active");
+            effectsRef.get().addOnSuccessListener(effectSnap -> {
+                final ActiveEffects effects = effectSnap.toObject(ActiveEffects.class) != null
+                        ? effectSnap.toObject(ActiveEffects.class)
+                        : new ActiveEffects();
 
-            List<ShopItem> current = user.getEquipment();
-            if (current == null) current = new ArrayList<>();
+                activateInUserEquipment(user, item);
 
-            for (int i = 0; i < current.size(); i++) {
-                if (current.get(i).getName().equals(item.getName())) {
-                    current.get(i).setActive(true);
-
-                    if (item.isPermanent()) {
-                        int newPp = (int) (user.getPp() * (1 + item.getBonus()));
-                        Log.d("EQUIP", "Permanent item bonus=" + item.getBonus() +
-                                ", newPP=" + newPp);
-                        user.setPp(newPp);
-                    } else {
-                        Log.d("EQUIP", "Temporary item bonus=" + item.getBonus());
-                        user.setTempBonus(item.getBonus());
-                    }
-                    break;
+                if (item.isPermanent()) {
+                    handlePermanentBoost(user, effects, item, callback, effectsRef);
+                } else {
+                    handleTemporaryBoost(user, effects, item, callback, effectsRef);
                 }
-            }
-
-            user.setEquipment(current);
-
-            // log pre upisa
-            Log.d("EQUIP", "Saving user with PP=" + user.getPp());
-
-            userRef.set(user)
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d("EQUIP", "User saved successfully with PP=" + user.getPp());
-                        callback.onSuccess(null);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("EQUIP", "Error saving user", e);
-                        callback.onFailure(e);
-                    });
+            });
         });
     }
 
+    private void activateInUserEquipment(User user, ShopItem item) {
+        List<ShopItem> current = user.getEquipment();
+        if (current == null) current = new ArrayList<>();
+
+        for (int i = 0; i < current.size(); i++) {
+            if (current.get(i).getName().equals(item.getName())) {
+                current.get(i).setActive(true);
+                break;
+            }
+        }
+        user.setEquipment(current);
+        equipment.setValue(new ArrayList<>(current));
+    }
+
+    private void handlePermanentBoost(User user, ActiveEffects effects, ShopItem item,
+                                      RepositoryCallback<Void> callback, DocumentReference effectsRef) {
+        int newPp = (int) (user.getPp() * (1 + item.getBonus()));
+        user.setPp(newPp);
+        effects.addPermanentBonus(item.getBonus());
+
+        saveUserAndEffects(user, effects, callback, effectsRef);
+    }
+
+    private void handleTemporaryBoost(User user, ActiveEffects effects, ShopItem item,
+                                      RepositoryCallback<Void> callback, DocumentReference effectsRef) {
+        if (item.getType() == EquipmentType.POTION) {
+            effects.addTempBonus(item.getBonus());
+        } else if (item.getType() == EquipmentType.CLOTHING) {
+            effects.addEquipmentBonus(item.getBonus());
+        }
+
+        saveUserAndEffects(user, effects, callback, effectsRef);
+    }
+
+    private void saveUserAndEffects(User user, ActiveEffects effects,
+                                    RepositoryCallback<Void> callback, DocumentReference effectsRef) {
+        userRef.set(user)
+                .addOnSuccessListener(aVoid ->
+                        effectsRef.set(effects)
+                                .addOnSuccessListener(v -> callback.onSuccess(null))
+                                .addOnFailureListener(callback::onFailure)
+                )
+                .addOnFailureListener(callback::onFailure);
+    }
+    
 }

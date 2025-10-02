@@ -69,17 +69,7 @@ public class AccountFragment extends Fragment {
                 txtUsername.setText(user.getUsername());
                 txtLevel.setText("Level " + user.getLevel());
                 txtTitle.setText(user.getTitle() != null ? user.getTitle() : "Beginner");
-
-                int basePp = user.getPp();
-                int effectivePp = user.getEffectivePp();
-
-                if (user.getTempBonus() > 0) {
-                    // ako ima aktivan napitak / temporary boost
-                    txtPp.setText("PP: " + effectivePp + " (bazno " + basePp + ")");
-                } else {
-                    txtPp.setText("PP: " + basePp);
-                }
-
+                txtPp.setText("PP: " + user.getPp());
                 txtCoins.setText("Coins: " + user.getCoins());
 
                 int resId;
