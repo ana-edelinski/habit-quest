@@ -105,4 +105,8 @@ public class TaskOccurrenceRepository implements ITaskOccurrenceRepository {
             }
         });
     }
+
+    public void getById(String firebaseUid, String taskId, String occurrenceId, RepositoryCallback<TaskOccurrence> cb) {
+        remote.getById(firebaseUid, taskId, occurrenceId, cb);
+    }
 }

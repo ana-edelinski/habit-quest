@@ -20,4 +20,5 @@ public interface ITaskOccurrenceRepository {
 
     // dovlači sve occurrence za jedan task (npr. za detaljan prikaz)
     void fetchAllForTask(String firebaseUid, String taskId, RepositoryCallback<List<TaskOccurrence>> cb);
+    void getById(String firebaseUid, String taskId, String occurrenceId, RepositoryCallback<TaskOccurrence> cb);
 }

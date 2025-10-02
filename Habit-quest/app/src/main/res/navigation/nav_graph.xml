@@ -42,7 +42,18 @@
         android:id="@+id/calendarFragment"
         android:name="com.example.habitquest.presentation.fragments.CalendarFragment"
         android:label="Calendar"
-        tools:layout="@layout/fragment_task_list" />
+        tools:layout="@layout/fragment_calendar">
+
+        <action
+            android:id="@+id/action_calendarFragment_to_taskDetailFragment"
+            app:destination="@id/taskDetailFragment" />
+
+        <action
+            android:id="@+id/action_calendarFragment_to_occurrenceDetailFragment"
+            app:destination="@id/occurrenceDetailFragment" />
+
+    </fragment>
+
 
     <fragment
         android:id="@+id/taskDetailFragment"

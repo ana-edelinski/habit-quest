@@ -13,6 +13,7 @@ public interface ITaskRepository {
     void create(String firebaseUid, Task task, RepositoryCallback<Task> cb);
     void update(String firebaseUid, Task task, RepositoryCallback<Void> cb);
     void delete(String firebaseUid, String taskId, long localUserId, RepositoryCallback<Void> cb);
+    void getById(String firebaseUid, String taskId, RepositoryCallback<Task> cb);
 
     interface TasksListener {
         void onChanged(List<Task> list);

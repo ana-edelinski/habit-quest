@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.data.repositories.TaskRepository;
 import com.example.habitquest.data.repositories.CategoryRepository;
 import com.example.habitquest.data.repositories.TaskOccurrenceRepository;
@@ -28,8 +29,7 @@ public class CalendarViewModelFactory implements ViewModelProvider.Factory {
             TaskRepository taskRepo = new TaskRepository(context);
             CategoryRepository categoryRepo = new CategoryRepository(context);
             TaskOccurrenceRepository occurrenceRepo = new TaskOccurrenceRepository(context);
-            return (T) new CalendarViewModel(
-                    (android.app.Application) context,
+            return (T) new CalendarViewModel(new AppPreferences(context),
                     taskRepo,
                     categoryRepo,
                     occurrenceRepo

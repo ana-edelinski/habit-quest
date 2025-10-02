@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -30,6 +31,7 @@ import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
 import androidx.appcompat.app.AlertDialog;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -68,6 +70,8 @@ public class TaskDetailFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_task_detail, container, false);
 
+
+
         TextView tvName = v.findViewById(R.id.tvTaskNameDetail);
         TextView tvDescription = v.findViewById(R.id.tvTaskDescription);
         TextView tvDate = v.findViewById(R.id.tvTaskDate);
@@ -81,11 +85,13 @@ public class TaskDetailFragment extends Fragment {
                 new ViewModelProvider(requireActivity(), new TaskViewModelFactory(requireContext()))
                         .get(TaskViewModel.class);
 
+
         CategoryViewModel categoryViewModel =
                 new ViewModelProvider(
                         requireActivity(),
                         new CategoryViewModelFactory(requireContext())
                 ).get(CategoryViewModel.class);
+        categoryViewModel.startListening();
 
         categoryViewModel.categories.observe(getViewLifecycleOwner(), categories -> {
             for (Category c : categories) {

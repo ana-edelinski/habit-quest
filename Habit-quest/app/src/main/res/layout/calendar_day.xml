@@ -1,13 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dayRoot"
     android:layout_width="40dp"
     android:layout_height="40dp"
     android:foreground="?attr/selectableItemBackground">
 
-    <TextView
-        android:id="@+id/calendarDayText"
+    <!-- container koji će nositi broj i tačkice -->
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:textSize="14sp"/>
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/calendarDayText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="14sp"/>
+
+        <LinearLayout
+            android:id="@+id/dotsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginTop="2dp"/>
+    </LinearLayout>
 </FrameLayout>

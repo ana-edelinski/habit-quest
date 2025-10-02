@@ -97,6 +97,27 @@ public class TaskRemoteDataSource {
         return reg::remove;
     }
 
+    public void getById(String firebaseUid, String taskId, RepositoryCallback<Task> cb) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference ref = db.collection("users")
+                .document(firebaseUid)
+                .collection("tasks")
+                .document(taskId);
+
+        ref.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
+                Task result = task.getResult().toObject(Task.class);
+                if (result != null) {
+                    result.setId(task.getResult().getId()); // postavi ID dokumenta
+                }
+                cb.onSuccess(result);
+            } else {
+                cb.onFailure(new Exception("Task not found: " + taskId));
+            }
+        }).addOnFailureListener(cb::onFailure);
+    }
+
+
     // interfejs za eventove
     public interface RemoteListener {
         void onChanged(List<Task> list);

@@ -15,6 +15,7 @@
     <color name="greenShadeLight">#A8E6CF</color>
     <color name="greenShadeMedium">#56C596</color>
     <color name="greenShadeDark">#064E3B</color>
+    <color name="colorPrimaryTransparent">#80064E3B</color>
 
     <color name="grayDark">#666666</color>
     <color name="grayLight">#DDDDDD</color>

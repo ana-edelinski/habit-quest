@@ -72,5 +72,28 @@ public class TaskOccurrenceRemoteDataSource {
                 })
                 .addOnFailureListener(cb::onFailure);
     }
+
+    public void getById(String firebaseUid, String taskId, String occurrenceId, RepositoryCallback<TaskOccurrence> cb) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference ref = db.collection("users")
+                .document(firebaseUid)
+                .collection("tasks")
+                .document(taskId)
+                .collection("occurrences")
+                .document(occurrenceId);
+
+        ref.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
+                TaskOccurrence result = task.getResult().toObject(TaskOccurrence.class);
+                if (result != null) {
+                    result.setId(task.getResult().getId()); // ako u modelu imaš setId
+                }
+                cb.onSuccess(result);
+            } else {
+                cb.onFailure(new Exception("Occurrence not found: " + occurrenceId));
+            }
+        }).addOnFailureListener(cb::onFailure);
+    }
+
 }
 

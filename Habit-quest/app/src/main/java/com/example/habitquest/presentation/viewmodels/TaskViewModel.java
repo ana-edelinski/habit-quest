@@ -54,6 +54,13 @@ public class TaskViewModel extends ViewModel {
     private final MutableLiveData<List<TaskOccurrence>> _occurrences = new MutableLiveData<>();
     public LiveData<List<TaskOccurrence>> occurrences = _occurrences;
 
+    private final MutableLiveData<Task> _selectedTask = new MutableLiveData<>();
+    public LiveData<Task> selectedTask = _selectedTask;
+
+    private final MutableLiveData<TaskOccurrence> _selectedOccurrence = new MutableLiveData<>();
+    public LiveData<TaskOccurrence> selectedOccurrence = _selectedOccurrence;
+
+
     private Closeable listenerHandle;
 
     public TaskViewModel(AppPreferences prefs,
@@ -339,4 +346,44 @@ public class TaskViewModel extends ViewModel {
             }
         });
     }
+
+
+
+
+
+
+    public LiveData<Task> getTaskByIdLive(String taskId) {
+        MutableLiveData<Task> live = new MutableLiveData<>();
+        String firebaseUid = prefs.getFirebaseUid();
+        repository.getById(firebaseUid, taskId, new RepositoryCallback<Task>() {
+            @Override
+            public void onSuccess(Task result) {
+                live.postValue(result);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                live.postValue(null);
+            }
+        });
+        return live;
+    }
+
+    public LiveData<TaskOccurrence> getOccurrenceByIdLive(String taskId, String occurrenceId) {
+        MutableLiveData<TaskOccurrence> live = new MutableLiveData<>();
+        String firebaseUid = prefs.getFirebaseUid();
+        occurrenceRepository.getById(firebaseUid, taskId, occurrenceId, new RepositoryCallback<TaskOccurrence>() {
+            @Override
+            public void onSuccess(TaskOccurrence result) {
+                live.postValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                live.postValue(null);
+            }
+        });
+        return live;
+    }
+
+
 }

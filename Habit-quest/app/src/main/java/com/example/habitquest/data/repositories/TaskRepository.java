@@ -114,4 +114,8 @@ public class TaskRepository implements ITaskRepository {
             }
         });
     }
+
+    public void getById(String firebaseUid, String taskId, RepositoryCallback<Task> cb) {
+        remote.getById(firebaseUid, taskId, cb);
+    }
 }
