@@ -20,7 +20,7 @@ import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
 import com.example.habitquest.presentation.viewmodels.ShopViewModel;
 
-public class StoreFragment extends Fragment {
+public class ShopFragment extends Fragment {
 
     private ShopAdapter potionsAdapter;
     private ShopAdapter clothingAdapter;
@@ -32,7 +32,7 @@ public class StoreFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_store, container, false);
+        View v = inflater.inflate(R.layout.fragment_shop, container, false);
 
         // Potions
         RecyclerView rvPotions = v.findViewById(R.id.rvPotions);

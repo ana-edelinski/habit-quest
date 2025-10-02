@@ -57,9 +57,9 @@
 
     <fragment
         android:id="@+id/nav_store"
-        android:name="com.example.habitquest.presentation.fragments.StoreFragment"
+        android:name="com.example.habitquest.presentation.fragments.ShopFragment"
         android:label="Store"
-        tools:layout="@layout/fragment_store"/>
+        tools:layout="@layout/fragment_shop"/>
 
 
     <fragment
