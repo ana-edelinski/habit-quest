@@ -22,6 +22,7 @@ public class User implements Parcelable {
     private int coins;
     private List<ShopItem> cart = new ArrayList<>();
     private List<ShopItem> equipment = new ArrayList<>();
+    private double tempBonus;
 
     public User(Long id, String email, String username, int avatar, int totalXp, int level, String title, int pp, int coins) {
         this.id = id;
@@ -38,6 +39,7 @@ public class User implements Parcelable {
     public User() {
         this.cart = new ArrayList<>();
         this.coins = 0;
+        this.tempBonus = 0.0;
     }
 
     // Konstruktor za citanje iz Parcel objekta
@@ -55,6 +57,7 @@ public class User implements Parcelable {
         in.readList(cart, ShopItem.class.getClassLoader());
         equipment = new ArrayList<>();
         in.readList(equipment, ShopItem.class.getClassLoader());
+        tempBonus = in.readDouble();
     }
 
     // GET / SET
@@ -91,6 +94,13 @@ public class User implements Parcelable {
     public List<ShopItem> getEquipment() { return equipment; }
     public void setEquipment(List<ShopItem> equipment) { this.equipment = equipment; }
 
+    public double getTempBonus() { return tempBonus; }
+    public void setTempBonus(double tempBonus) { this.tempBonus = tempBonus; }
+
+    public int getEffectivePp() {
+        return (int) (pp * (1 + tempBonus));
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -99,6 +109,8 @@ public class User implements Parcelable {
                 ", avatar=" + avatar +
                 ", totalXp=" + totalXp +
                 ", level=" + level +
+                ", pp=" + pp +
+                ", tempBonus=" + tempBonus +
                 '}';
     }
 
@@ -121,6 +133,7 @@ public class User implements Parcelable {
         dest.writeInt(coins);
         dest.writeList(cart);
         dest.writeList(equipment);
+        dest.writeDouble(tempBonus);
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {

@@ -20,12 +20,17 @@ public class CartRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-    public void addItem(ShopItem item, RepositoryCallback<Void> callback) {
+    public void addItem(ShopItem item, User user, RepositoryCallback<Void> callback) {
         DocumentReference userRef = db.collection("users").document(uid);
-        userRef.update("cart", FieldValue.arrayUnion(item))
+
+        int previousBossReward = calculateBossReward(user.getLevel() - 1);
+        ShopItem pricedItem = new ShopItem(item, previousBossReward);
+
+        userRef.update("cart", FieldValue.arrayUnion(pricedItem))
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
+
 
     public void removeItem(ShopItem item, RepositoryCallback<Void> callback) {
         DocumentReference userRef = db.collection("users").document(uid);
@@ -76,7 +81,7 @@ public class CartRepository {
 
                     int total = 0;
                     for (ShopItem item : cart) {
-                        total += item.getPrice();
+                        total += item.getCalculatedPrice();
                     }
 
                     if (user.getCoins() < total) {

@@ -36,9 +36,9 @@ public class ShopItem {
         this.calculatedPrice = (int) (previousBossReward * base.priceFactor);
     }
 
-    public int getPrice() {
-        return calculatedPrice;
-    }
+//    public int getPrice() {
+//        return calculatedPrice;
+//    }
 
 
     public String getName() { return name; }
@@ -49,4 +49,11 @@ public class ShopItem {
     public int getImageResId() { return imageResId; }
 
     public void setActive(boolean active) { this.active = active; }
+
+    public int getCalculatedPrice() {
+        return calculatedPrice;
+    }
+    public void setCalculatedPrice(int calculatedPrice) {
+        this.calculatedPrice = calculatedPrice;
+    }
 }

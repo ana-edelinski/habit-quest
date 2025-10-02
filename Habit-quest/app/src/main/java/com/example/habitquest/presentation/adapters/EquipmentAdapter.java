@@ -21,6 +21,15 @@ import java.util.List;
 public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.EquipmentViewHolder> {
 
     private List<ShopItem> items = new ArrayList<>();
+    private OnItemClickListener listener;
+
+    public interface OnItemClickListener {
+        void onActivateClick(ShopItem item);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
 
     public void setItems(List<ShopItem> items) {
         // sortiramo tako da aktivirani idu prvi
@@ -39,7 +48,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
 
     @Override
     public void onBindViewHolder(@NonNull EquipmentViewHolder holder, int position) {
-        holder.bind(items.get(position));
+        holder.bind(items.get(position), listener);
     }
 
     @Override
@@ -59,7 +68,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
             btnActivate = itemView.findViewById(R.id.btnActivate);
         }
 
-        public void bind(ShopItem item) {
+        public void bind(ShopItem item, OnItemClickListener listener) {
             ivItemImage.setImageResource(item.getImageResId());
             tvName.setText(item.getName());
 
@@ -69,6 +78,9 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
             } else {
                 btnActivate.setText("Activate");
                 btnActivate.setEnabled(true);
+                btnActivate.setOnClickListener(v -> {
+                    if (listener != null) listener.onActivateClick(item);
+                });
             }
         }
     }

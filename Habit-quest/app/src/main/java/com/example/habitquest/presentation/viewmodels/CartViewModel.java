@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.habitquest.data.repositories.CartRepository;
 import com.example.habitquest.domain.model.ShopItem;
+import com.example.habitquest.domain.model.User;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.firestore.ListenerRegistration;
 
@@ -43,14 +44,15 @@ public class CartViewModel extends ViewModel {
         return totalPrice;
     }
 
-    public void addItem(ShopItem item) {
-        repository.addItem(item, new RepositoryCallback<Void>() {
+    public void addItem(ShopItem item, User user) {
+        repository.addItem(item, user, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) { /* Firestore update */ }
             @Override
             public void onFailure(Exception e) { }
         });
     }
+
 
     public void removeItem(ShopItem item) {
         repository.removeItem(item, new RepositoryCallback<Void>() {
@@ -63,7 +65,7 @@ public class CartViewModel extends ViewModel {
 
     private void recalcTotal(List<ShopItem> items) {
         int total = 0;
-        for (ShopItem i : items) total += i.getPrice();
+        for (ShopItem i : items) total += i.getCalculatedPrice();
         totalPrice.setValue(total);
     }
 

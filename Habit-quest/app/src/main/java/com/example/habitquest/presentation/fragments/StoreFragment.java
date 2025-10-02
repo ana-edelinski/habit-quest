@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import com.example.habitquest.R;
 import com.example.habitquest.domain.model.ShopItem;
-import com.example.habitquest.presentation.activities.HomeActivity;
+import com.example.habitquest.domain.model.User;
 import com.example.habitquest.presentation.adapters.ShopAdapter;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
@@ -27,6 +27,7 @@ public class StoreFragment extends Fragment {
     private ShopViewModel viewModel;
     private CartViewModel cartViewModel;
     private AccountViewModel accountViewModel;
+    private User currentUser;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,9 +57,11 @@ public class StoreFragment extends Fragment {
         cartViewModel = new ViewModelProvider(requireActivity()).get(CartViewModel.class);
         accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
-        accountViewModel.user.observe(getViewLifecycleOwner(), currentUser -> {
-            if (currentUser != null) {
-                viewModel.loadShopItems(currentUser);
+        // Učitaj usera i shop iteme
+        accountViewModel.user.observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                currentUser = user; // zapamti usera
+                viewModel.loadShopItems(user);
             }
         });
 
@@ -75,19 +78,21 @@ public class StoreFragment extends Fragment {
         potionsAdapter.setOnItemClickListener(new ShopAdapter.OnItemClickListener() {
             @Override
             public void onCartClick(ShopItem item) {
-                cartViewModel.addItem(item);
+                if (currentUser != null) {
+                    cartViewModel.addItem(item, currentUser);
 
-                Toast.makeText(getContext(), item.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), item.getName() + " added to cart", Toast.LENGTH_SHORT).show();
 
-                // mala animacija na ikoni korpe u toolbaru
-                View cartIcon = requireActivity().findViewById(R.id.action_cart);
-                if (cartIcon != null) {
-                    cartIcon.animate()
-                            .scaleX(1.2f).scaleY(1.2f)
-                            .setDuration(150)
-                            .withEndAction(() -> cartIcon.animate()
-                                    .scaleX(1f).scaleY(1f)
-                                    .setDuration(150));
+                    // mala animacija na ikoni korpe u toolbaru
+                    View cartIcon = requireActivity().findViewById(R.id.action_cart);
+                    if (cartIcon != null) {
+                        cartIcon.animate()
+                                .scaleX(1.2f).scaleY(1.2f)
+                                .setDuration(150)
+                                .withEndAction(() -> cartIcon.animate()
+                                        .scaleX(1f).scaleY(1f)
+                                        .setDuration(150));
+                    }
                 }
             }
 
@@ -100,21 +105,27 @@ public class StoreFragment extends Fragment {
         clothingAdapter.setOnItemClickListener(new ShopAdapter.OnItemClickListener() {
             @Override
             public void onCartClick(ShopItem item) {
-                cartViewModel.addItem(item);
+                if (currentUser != null) {
+                    cartViewModel.addItem(item, currentUser);
 
-                Toast.makeText(getContext(), item.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), item.getName() + " added to cart", Toast.LENGTH_SHORT).show();
 
-                requireActivity().findViewById(R.id.action_cart).animate()
-                        .scaleX(1.2f).scaleY(1.2f)
-                        .setDuration(150)
-                        .withEndAction(() -> requireActivity().findViewById(R.id.action_cart)
-                                .animate().scaleX(1f).scaleY(1f).setDuration(150));
+                    // mala animacija na ikoni korpe u toolbaru
+                    View cartIcon = requireActivity().findViewById(R.id.action_cart);
+                    if (cartIcon != null) {
+                        cartIcon.animate()
+                                .scaleX(1.2f).scaleY(1.2f)
+                                .setDuration(150)
+                                .withEndAction(() -> cartIcon.animate()
+                                        .scaleX(1f).scaleY(1f)
+                                        .setDuration(150));
+                    }
+                }
             }
 
             @Override
             public void onRemoveClick(ShopItem item) { }
         });
-
 
         return v;
     }

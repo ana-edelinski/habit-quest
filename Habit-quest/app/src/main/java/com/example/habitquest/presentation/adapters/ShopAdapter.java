@@ -74,7 +74,7 @@ public class ShopAdapter extends RecyclerView.Adapter<ShopAdapter.ShopViewHolder
 
         public void bind(ShopItem item, OnItemClickListener listener, Mode mode) {
             ivItemImage.setImageResource(item.getImageResId());
-            tvPrice.setText(item.getPrice() + " 🪙");
+            tvPrice.setText(item.getCalculatedPrice() + " 🪙");
             tvName.setText(item.getName());
 
             if (mode == Mode.STORE) {
