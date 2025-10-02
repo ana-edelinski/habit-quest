@@ -160,7 +160,7 @@ public class CalendarFragment extends Fragment {
                 c.textView.setAlpha(day.getPosition() == DayPosition.MonthDate ? 1f : 0.4f);
 
                 int todayColor = ContextCompat.getColor(requireContext(), R.color.colorPrimary);
-                int normalColor = ContextCompat.getColor(requireContext(), R.color.white);
+                int normalColor = ContextCompat.getColor(requireContext(), R.color.toolbar_bg);
 
                 if (date.equals(LocalDate.now())) {
                     c.textView.setTextColor(todayColor);
