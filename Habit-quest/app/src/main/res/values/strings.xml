@@ -42,5 +42,6 @@
 
     <string name="cart">Cart</string>
     <string name="logout">Logout</string>
+    <string name="shopUnlock">Shop unlocks after the first boss victory!</string>
 
 </resources>

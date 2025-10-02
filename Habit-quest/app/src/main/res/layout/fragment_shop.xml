@@ -9,6 +9,18 @@
         android:padding="8dp">
 
         <TextView
+            android:id="@+id/tvLockedMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/shopUnlock"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_red_dark"
+            android:padding="16dp"
+            android:visibility="gone"/>
+
+        <TextView
             android:id="@+id/tvPotions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

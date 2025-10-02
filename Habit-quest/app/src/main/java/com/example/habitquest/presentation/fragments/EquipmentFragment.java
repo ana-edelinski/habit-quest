@@ -13,10 +13,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.habitquest.R;
+import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.presentation.adapters.EquipmentAdapter;
 import com.example.habitquest.presentation.viewmodels.EquipmentViewModel;
+import com.example.habitquest.utils.RepositoryCallback;
 
 public class EquipmentFragment extends Fragment {
 
@@ -42,6 +45,20 @@ public class EquipmentFragment extends Fragment {
 
         equipmentViewModel.getEquipment().observe(getViewLifecycleOwner(), items -> {
             adapter.setItems(items);
+        });
+
+        adapter.setOnItemClickListener(item -> {
+            equipmentViewModel.activateItem(item, new RepositoryCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    Toast.makeText(getContext(), item.getName() + " activated!", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(getContext(), "Failed to activate " + item.getName(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 }

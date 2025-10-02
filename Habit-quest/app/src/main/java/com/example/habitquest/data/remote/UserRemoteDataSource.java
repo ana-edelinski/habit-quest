@@ -58,7 +58,7 @@ public class UserRemoteDataSource {
                                     firebaseUser.sendEmailVerification();
 
                                     User user = new User(null, email, username, avatar,
-                                            0, 0, "Beginner", 0, 0);
+                                            0, 0, "Beginner", 0, 0, 0);
 
                                     db.collection("users")
                                             .document(uid)

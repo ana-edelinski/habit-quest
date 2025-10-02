@@ -1,5 +1,6 @@
 package com.example.habitquest.data.repositories;
 
+import com.example.habitquest.domain.model.ShopData;
 import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.utils.RepositoryCallback;
@@ -19,12 +20,17 @@ public class CartRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-    public void addItem(ShopItem item, RepositoryCallback<Void> callback) {
+    public void addItem(ShopItem item, User user, RepositoryCallback<Void> callback) {
         DocumentReference userRef = db.collection("users").document(uid);
-        userRef.update("cart", FieldValue.arrayUnion(item))
+
+        int previousBossReward = user.getPreviousBossReward();
+        ShopItem pricedItem = new ShopItem(item, previousBossReward);
+
+        userRef.update("cart", FieldValue.arrayUnion(pricedItem))
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
+
 
     public void removeItem(ShopItem item, RepositoryCallback<Void> callback) {
         DocumentReference userRef = db.collection("users").document(uid);
@@ -60,8 +66,11 @@ public class CartRepository {
                     if (user == null) throw new RuntimeException("User not found");
 
                     List<ShopItem> cart = user.getCart();
+
                     int total = 0;
-                    for (ShopItem item : cart) total += item.getPrice();
+                    for (ShopItem item : cart) {
+                        total += item.getCalculatedPrice();
+                    }
 
                     if (user.getCoins() < total) {
                         throw new RuntimeException("Not enough coins");
@@ -85,5 +94,14 @@ public class CartRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+
+    public List<ShopItem> getShopItemsForUser(User user) {
+        int previousBossReward = user.getPreviousBossReward(); // koristi polje iz User-a
+        List<ShopItem> result = new ArrayList<>();
+        for (ShopItem base : ShopData.ITEMS) {
+            result.add(new ShopItem(base, previousBossReward));
+        }
+        return result;
+    }
 
 }
