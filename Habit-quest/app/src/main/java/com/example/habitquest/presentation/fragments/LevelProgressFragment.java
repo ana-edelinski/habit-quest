@@ -71,7 +71,7 @@ public class LevelProgressFragment extends Fragment {
                 tvXP.setText(user.getTotalXp() + " / " + xpForNextLevel + " XP");
 
                 tvPoints.setText("Points: " + user.getPp());
-                tvCoins.setText("Coins: " + ""); // user.getCoins()
+                tvCoins.setText("Coins: " + user.getCoins());
             }
         });
 
