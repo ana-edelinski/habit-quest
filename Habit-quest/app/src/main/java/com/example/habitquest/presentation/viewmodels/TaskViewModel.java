@@ -63,6 +63,9 @@ public class TaskViewModel extends ViewModel {
     private final MutableLiveData<String> _xpQuotaMessage = new MutableLiveData<>();
     public LiveData<String> xpQuotaMessage = _xpQuotaMessage;
 
+    private final MutableLiveData<String> _xpGrantedMessage = new MutableLiveData<>();
+    public LiveData<String> xpGrantedMessage = _xpGrantedMessage;
+
 
     private Closeable listenerHandle;
 
@@ -179,9 +182,10 @@ public class TaskViewModel extends ViewModel {
                     public void onSuccess(Boolean canGrantXp) {
                         if (canGrantXp) {
                             grantXpForTask(task, firebaseUid, null);
+                            _xpGrantedMessage.postValue("Task completed! +" + task.getTotalXp() + " XP");
                         } else {
                             _taskCompleted.postValue(false);
-                            _xpQuotaMessage.postValue("You have reached the XP quota for this task type.");
+                            _xpQuotaMessage.postValue("Quota reached – no XP awarded for this task.");
                         }
                         _taskCompletedId.postValue(task.getId());
                     }
@@ -212,9 +216,10 @@ public class TaskViewModel extends ViewModel {
                     public void onSuccess(Boolean canGrantXp) {
                         if (canGrantXp) {
                             grantXpForTask(task, firebaseUid, occurrence.getId());
+                            _xpGrantedMessage.postValue("Task completed! +" + task.getTotalXp() + " XP");
                         } else {
                             _taskCompleted.postValue(false);
-                            _xpQuotaMessage.postValue("You have reached the XP quota for this task type.");
+                            _xpQuotaMessage.postValue("Quota reached – no XP awarded for this task.");
                         }
                         _taskCompletedId.postValue(task.getId());
                     }
@@ -509,6 +514,14 @@ public class TaskViewModel extends ViewModel {
             }
         });
         return live;
+    }
+
+    public void clearXpGrantedMessage() {
+        _xpGrantedMessage.postValue(null);
+    }
+
+    public void clearXpQuotaMessage() {
+        _xpQuotaMessage.postValue(null);
     }
 
 

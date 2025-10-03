@@ -217,20 +217,28 @@ public class TaskDetailFragment extends Fragment {
             btnCancel.setVisibility(View.GONE);
         });
 
+        taskViewModel.xpGrantedMessage.observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                taskViewModel.clearXpGrantedMessage();
+            }
+        });
+
         taskViewModel.xpQuotaMessage.observe(getViewLifecycleOwner(), message -> {
             if (message != null) {
                 Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                taskViewModel.clearXpQuotaMessage();
             }
         });
 
         // posmatranje završetka taska
-        taskViewModel.taskCompletedId.observe(getViewLifecycleOwner(), completedId -> {
-            if (completedId != null && completedId.equals(task.getId())) {
-                Toast.makeText(requireContext(),
-                        "Task completed! +" + task.getTotalXp() + " XP",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+//        taskViewModel.taskCompletedId.observe(getViewLifecycleOwner(), completedId -> {
+//            if (completedId != null && completedId.equals(task.getId())) {
+//                Toast.makeText(requireContext(),
+//                        "Task completed! +" + task.getTotalXp() + " XP",
+//                        Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
         // posmatranje LevelUp eventa
         taskViewModel.levelUpEvent.observe(getViewLifecycleOwner(), user -> {
