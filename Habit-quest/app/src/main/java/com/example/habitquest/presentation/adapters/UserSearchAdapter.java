@@ -1,5 +1,6 @@
 package com.example.habitquest.presentation.adapters;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitquest.R;
@@ -58,7 +61,15 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
         holder.btnAddFriend.setOnClickListener(v -> {
             if (listener != null) listener.onAddFriendClicked(user);
         });
+
+        holder.itemView.setOnClickListener(v -> {
+            Bundle args = new Bundle();
+            args.putString("userId", user.getUid());
+            NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.nav_user_profile, args);
+        });
     }
+
 
     @Override
     public int getItemCount() {

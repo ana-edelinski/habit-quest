@@ -160,6 +160,9 @@ public class UserRemoteDataSource {
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         User user = document.toObject(User.class);
+                        if (user != null) {
+                            user.setUid(document.getId());
+                        }
                         callback.onSuccess(user);
                     } else {
                         callback.onFailure(new Exception("User not found"));
@@ -198,8 +201,12 @@ public class UserRemoteDataSource {
                     List<User> result = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         User user = doc.toObject(User.class);
+                        if (user != null) {
+                            user.setUid(doc.getId());
+                        }
                         result.add(user);
                     }
+
                     callback.onSuccess(result);
                 })
                 .addOnFailureListener(callback::onFailure);
