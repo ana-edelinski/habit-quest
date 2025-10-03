@@ -51,6 +51,10 @@ public class UserProfileFragment extends Fragment {
         txtCoins = view.findViewById(R.id.tvCoins);
         Button btnAddFriend = view.findViewById(R.id.btnAddFriend);
 
+        String currentUid = com.google.firebase.auth.FirebaseAuth.getInstance()
+                .getCurrentUser()
+                .getUid();
+
         String userId = getArguments() != null ? getArguments().getString("userId") : null;
         if (userId == null) return;
 
@@ -96,10 +100,44 @@ public class UserProfileFragment extends Fragment {
             }
         });
 
-        viewModel.loadUser(userId);
+        viewModel.currentUser.observe(getViewLifecycleOwner(), currentUser -> {
+            if (currentUser == null) return;
+            boolean isRequestSent = currentUser.getFriendRequestsSent().contains(userId);
+            btnAddFriend.setText(isRequestSent ? "Request Sent" : "Add Friend");
 
-        btnAddFriend.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Add friend not implemented yet", Toast.LENGTH_SHORT).show();
+            btnAddFriend.setOnClickListener(v -> {
+                if (isRequestSent) {
+                    viewModel.cancelFriendRequest(currentUid, userId, new RepositoryCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            Toast.makeText(requireContext(), "Friend request cancelled", Toast.LENGTH_SHORT).show();
+                            viewModel.loadCurrentUser(currentUid);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    viewModel.sendFriendRequest(currentUid, userId, new RepositoryCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            Toast.makeText(requireContext(), "Friend request sent", Toast.LENGTH_SHORT).show();
+                            viewModel.loadCurrentUser(currentUid);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
         });
+
+        viewModel.loadUser(userId);
+        viewModel.loadCurrentUser(currentUid)
+
     }
 }
