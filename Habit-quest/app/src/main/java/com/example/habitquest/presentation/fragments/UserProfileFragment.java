@@ -137,7 +137,7 @@ public class UserProfileFragment extends Fragment {
         });
 
         viewModel.loadUser(userId);
-        viewModel.loadCurrentUser(currentUid)
+        viewModel.loadCurrentUser(currentUid);
 
     }
 }
