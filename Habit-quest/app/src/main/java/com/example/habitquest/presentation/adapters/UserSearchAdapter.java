@@ -25,6 +25,7 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
     private List<String> currentUserSentRequests = new ArrayList<>();
 
     private OnAddFriendClickListener listener;
+    private String currentUid;
 
     public interface OnAddFriendClickListener {
         void onAddFriendClicked(User user);
@@ -40,6 +41,9 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
         this.onCancelFriendRequestClickListener = listener;
     }
 
+    public void setCurrentUid(String currentUid) {
+        this.currentUid = currentUid;
+    }
 
     public UserSearchAdapter(OnAddFriendClickListener listener) {
         this.listener = listener;
@@ -77,7 +81,14 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
         }
         holder.imgAvatar.setImageResource(resId);
 
-        // Ako je već poslat zahtev, menja se labela
+        boolean isSelf = user.getUid().equals(currentUid);
+
+        if (isSelf) {
+            holder.btnAddFriend.setVisibility(View.GONE);
+        } else {
+            holder.btnAddFriend.setVisibility(View.VISIBLE);
+        }
+
         boolean isRequestSent = currentUserSentRequests.contains(user.getUid());
         holder.btnAddFriend.setText(isRequestSent ? "Request Sent" : "Add Friend");
 

@@ -52,7 +52,7 @@ public class ExploreFragment extends Fragment {
                 @Override
                 public void onSuccess(Void result) {
                     Toast.makeText(requireContext(), "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
-                    exploreViewModel.loadCurrentUser(currentUid); 
+                    exploreViewModel.loadCurrentUser(currentUid);
                 }
 
                 @Override
@@ -83,21 +83,18 @@ public class ExploreFragment extends Fragment {
         ExploreViewModelFactory factory = new ExploreViewModelFactory(requireContext());
         exploreViewModel = new ViewModelProvider(this, factory).get(ExploreViewModel.class);
 
-        // Učitaj trenutnog korisnika da znamo koje requestove je već poslao
         String currentUid = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+        adapter.setCurrentUid(currentUid);
         exploreViewModel.loadCurrentUser(currentUid);
 
-        // Observer za refresh poslatih zahteva
         exploreViewModel.currentUser.observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 adapter.setCurrentUserSentRequests(user.getFriendRequestsSent());
             }
         });
 
-        // Observe results
         exploreViewModel.userSearchResults.observe(getViewLifecycleOwner(), adapter::setUsers);
 
-        // Handle search action
         etSearchUser.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
