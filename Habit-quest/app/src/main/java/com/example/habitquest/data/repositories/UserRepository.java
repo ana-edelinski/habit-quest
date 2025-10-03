@@ -132,4 +132,8 @@ public class UserRepository implements IUserRepository {
         remoteDataSource.searchUsersByUsername(query, callback);
     }
 
+    public void sendFriendRequest(String fromUid, String toUid, RepositoryCallback<Void> callback) {
+        remoteDataSource.sendFriendRequest(fromUid, toUid, callback);
+    }
+
 }

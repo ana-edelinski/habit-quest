@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -212,6 +213,16 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void sendFriendRequest(String fromUid, String toUid, RepositoryCallback<Void> callback) {
+        DocumentReference fromRef = db.collection(COLLECTION_NAME).document(fromUid);
+        DocumentReference toRef = db.collection(COLLECTION_NAME).document(toUid);
 
+        db.runTransaction(transaction -> {
+                    transaction.update(fromRef, "friendRequestsSent", FieldValue.arrayUnion(toUid));
+                    transaction.update(toRef, "friendRequestsReceived", FieldValue.arrayUnion(fromUid));
+                    return null;
+                }).addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
 
 }

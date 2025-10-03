@@ -47,8 +47,19 @@ public class ExploreFragment extends Fragment {
 
         rvUsers.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new UserSearchAdapter(user -> {
-            // TODO: Add friend logic
-            Toast.makeText(requireContext(), "Add " + user.getUsername(), Toast.LENGTH_SHORT).show();
+            String currentUid = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            exploreViewModel.sendFriendRequest(currentUid, user.getUid(), new com.example.habitquest.utils.RepositoryCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    Toast.makeText(requireContext(), "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
         rvUsers.setAdapter(adapter);
 

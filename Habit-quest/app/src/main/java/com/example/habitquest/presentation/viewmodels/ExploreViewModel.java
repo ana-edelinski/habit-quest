@@ -35,4 +35,9 @@ public class ExploreViewModel extends ViewModel {
             }
         });
     }
+
+    public void sendFriendRequest(String fromUid, String toUid, RepositoryCallback<Void> callback) {
+        userRepository.sendFriendRequest(fromUid, toUid, callback);
+    }
+
 }
