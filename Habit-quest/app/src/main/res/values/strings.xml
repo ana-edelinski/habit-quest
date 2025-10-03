@@ -44,4 +44,6 @@
     <string name="logout">Logout</string>
     <string name="shopUnlock">Shop unlocks after the first boss victory!</string>
 
+    <string name="friends">Friends</string>
+
 </resources>

@@ -61,6 +61,12 @@ public class AccountFragment extends Fragment {
             navController.navigate(R.id.changePasswordFragment);
         });
 
+        View btnMyFriends = view.findViewById(R.id.btnMyFriends);
+        btnMyFriends.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+            navController.navigate(R.id.myFriendsFragment);
+        });
+
         AccountViewModelFactory factory = new AccountViewModelFactory(requireContext());
         viewModel = new ViewModelProvider(this, factory).get(AccountViewModel.class);
 

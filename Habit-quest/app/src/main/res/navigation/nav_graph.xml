@@ -96,4 +96,11 @@
         android:label="Equipment"
         tools:layout="@layout/fragment_equipment" />
 
+    <fragment
+        android:id="@+id/myFriendsFragment"
+        android:name="com.example.habitquest.presentation.fragments.MyFriendsFragment"
+        android:label="My Friends"
+        tools:layout="@layout/fragment_my_friends" />
+
+
 </navigation>
