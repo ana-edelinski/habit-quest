@@ -103,6 +103,20 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
                 }
             }
         });
+
+        holder.itemView.setOnClickListener(v -> {
+            String currentUid = this.currentUid; 
+            if (user.getUid().equals(currentUid)) {
+                NavController navController = Navigation.findNavController(v);
+                navController.navigate(R.id.nav_account);
+            } else {
+                Bundle args = new Bundle();
+                args.putString("userId", user.getUid());
+                NavController navController = Navigation.findNavController(v);
+                navController.navigate(R.id.nav_user_profile, args);
+            }
+        });
+
     }
 
 
