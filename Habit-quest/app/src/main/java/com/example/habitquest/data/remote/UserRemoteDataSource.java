@@ -19,7 +19,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UserRemoteDataSource {
 
@@ -47,8 +49,9 @@ public class UserRemoteDataSource {
 
                     String uid = firebaseUser.getUid();
 
-                    db.collection("users")
-                            .whereEqualTo("username", username)
+                    // Provera da li username postoji
+                    db.collection(COLLECTION_NAME)
+                            .whereEqualTo("usernameLowercase", username.toLowerCase())
                             .get()
                             .addOnSuccessListener(querySnapshot -> {
                                 if (!querySnapshot.isEmpty()) {
@@ -57,12 +60,23 @@ public class UserRemoteDataSource {
                                 } else {
                                     firebaseUser.sendEmailVerification();
 
-                                    User user = new User(null, email, username, avatar,
-                                            0, 0, "Beginner", 0, 0, 0);
+                                    // 🔹 upisujemo i username i usernameLowercase
+                                    Map<String, Object> userMap = new HashMap<>();
+                                    userMap.put("email", email);
+                                    userMap.put("username", username);
+                                    userMap.put("usernameLowercase", username.toLowerCase());
+                                    userMap.put("avatar", avatar);
+                                    userMap.put("totalXp", 0);
+                                    userMap.put("level", 0);
+                                    userMap.put("title", "Beginner");
+                                    userMap.put("pp", 0);
+                                    userMap.put("coins", 0);
+                                    userMap.put("bossesDefeated", 0);
+                                    userMap.put("friends", new ArrayList<>()); // prazna lista prijatelja
 
-                                    db.collection("users")
+                                    db.collection(COLLECTION_NAME)
                                             .document(uid)
-                                            .set(user)
+                                            .set(userMap)
                                             .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                                             .addOnFailureListener(e -> {
                                                 firebaseUser.delete();
@@ -78,6 +92,7 @@ public class UserRemoteDataSource {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
 
     public void loginUser(String email, String password, RepositoryCallback<User> callback) {
@@ -166,5 +181,30 @@ public class UserRemoteDataSource {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void searchUsersByUsername(String query, RepositoryCallback<List<User>> callback) {
+        if (query == null || query.trim().isEmpty()) {
+            callback.onSuccess(new ArrayList<>());
+            return;
+        }
+
+        String searchTerm = query.trim().toLowerCase();
+
+        db.collection(COLLECTION_NAME)
+                .whereGreaterThanOrEqualTo("usernameLowercase", searchTerm)
+                .whereLessThanOrEqualTo("usernameLowercase", searchTerm + "\uf8ff")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<User> result = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        User user = doc.toObject(User.class);
+                        result.add(user);
+                    }
+                    callback.onSuccess(result);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 
 }
