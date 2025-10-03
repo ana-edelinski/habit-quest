@@ -136,4 +136,8 @@ public class UserRepository implements IUserRepository {
         remoteDataSource.sendFriendRequest(fromUid, toUid, callback);
     }
 
+    public void cancelFriendRequest(String fromUid, String toUid, RepositoryCallback<Void> callback) {
+        remoteDataSource.cancelFriendRequest(fromUid, toUid, callback);
+    }
+
 }

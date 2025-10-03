@@ -225,4 +225,16 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void cancelFriendRequest(String fromUid, String toUid, RepositoryCallback<Void> callback) {
+        DocumentReference fromRef = db.collection(COLLECTION_NAME).document(fromUid);
+        DocumentReference toRef = db.collection(COLLECTION_NAME).document(toUid);
+
+        db.runTransaction(transaction -> {
+                    transaction.update(fromRef, "friendRequestsSent", FieldValue.arrayRemove(toUid));
+                    transaction.update(toRef, "friendRequestsReceived", FieldValue.arrayRemove(fromUid));
+                    return null;
+                }).addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
+
 }

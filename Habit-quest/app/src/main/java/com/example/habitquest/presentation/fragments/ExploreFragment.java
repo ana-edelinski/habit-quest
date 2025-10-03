@@ -48,11 +48,11 @@ public class ExploreFragment extends Fragment {
         rvUsers.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new UserSearchAdapter(user -> {
             String currentUid = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
-
             exploreViewModel.sendFriendRequest(currentUid, user.getUid(), new com.example.habitquest.utils.RepositoryCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
                     Toast.makeText(requireContext(), "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
+                    exploreViewModel.loadCurrentUser(currentUid); 
                 }
 
                 @Override
@@ -61,10 +61,38 @@ public class ExploreFragment extends Fragment {
                 }
             });
         });
+
+        adapter.setOnCancelFriendRequestClickListener(user -> {
+            String currentUid = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+            exploreViewModel.cancelFriendRequest(currentUid, user.getUid(), new com.example.habitquest.utils.RepositoryCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    Toast.makeText(requireContext(), "Friend request cancelled for " + user.getUsername(), Toast.LENGTH_SHORT).show();
+                    exploreViewModel.loadCurrentUser(currentUid);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
         rvUsers.setAdapter(adapter);
 
         ExploreViewModelFactory factory = new ExploreViewModelFactory(requireContext());
         exploreViewModel = new ViewModelProvider(this, factory).get(ExploreViewModel.class);
+
+        // Učitaj trenutnog korisnika da znamo koje requestove je već poslao
+        String currentUid = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+        exploreViewModel.loadCurrentUser(currentUid);
+
+        // Observer za refresh poslatih zahteva
+        exploreViewModel.currentUser.observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                adapter.setCurrentUserSentRequests(user.getFriendRequestsSent());
+            }
+        });
 
         // Observe results
         exploreViewModel.userSearchResults.observe(getViewLifecycleOwner(), adapter::setUsers);

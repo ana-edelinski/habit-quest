@@ -22,11 +22,24 @@ import java.util.List;
 public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.UserViewHolder> {
 
     private List<User> users = new ArrayList<>();
+    private List<String> currentUserSentRequests = new ArrayList<>();
+
     private OnAddFriendClickListener listener;
 
     public interface OnAddFriendClickListener {
         void onAddFriendClicked(User user);
     }
+
+    public interface OnCancelFriendRequestClickListener {
+        void onCancelFriendRequestClicked(User user);
+    }
+
+    private OnCancelFriendRequestClickListener onCancelFriendRequestClickListener;
+
+    public void setOnCancelFriendRequestClickListener(OnCancelFriendRequestClickListener listener) {
+        this.onCancelFriendRequestClickListener = listener;
+    }
+
 
     public UserSearchAdapter(OnAddFriendClickListener listener) {
         this.listener = listener;
@@ -36,6 +49,12 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
         this.users = users != null ? users : new ArrayList<>();
         notifyDataSetChanged();
     }
+
+    public void setCurrentUserSentRequests(List<String> sentRequests) {
+        this.currentUserSentRequests = sentRequests != null ? sentRequests : new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
 
     @NonNull
     @Override
@@ -58,17 +77,23 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
         }
         holder.imgAvatar.setImageResource(resId);
 
-        holder.btnAddFriend.setOnClickListener(v -> {
-            if (listener != null) listener.onAddFriendClicked(user);
-        });
+        // Ako je već poslat zahtev, menja se labela
+        boolean isRequestSent = currentUserSentRequests.contains(user.getUid());
+        holder.btnAddFriend.setText(isRequestSent ? "Request Sent" : "Add Friend");
 
-        holder.itemView.setOnClickListener(v -> {
-            Bundle args = new Bundle();
-            args.putString("userId", user.getUid());
-            NavController navController = Navigation.findNavController(v);
-            navController.navigate(R.id.nav_user_profile, args);
+        holder.btnAddFriend.setOnClickListener(v -> {
+            if (isRequestSent) {
+                if (onCancelFriendRequestClickListener != null) {
+                    onCancelFriendRequestClickListener.onCancelFriendRequestClicked(user);
+                }
+            } else {
+                if (listener != null) {
+                    listener.onAddFriendClicked(user);
+                }
+            }
         });
     }
+
 
 
     @Override
