@@ -153,5 +153,18 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getFriends(String uid, RepositoryCallback<List<String>> callback) {
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<String> friends = (List<String>) documentSnapshot.get("friends");
+                        if (friends == null) friends = new ArrayList<>();
+                        callback.onSuccess(friends);
+                    } else {
+                        callback.onSuccess(new ArrayList<>());
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
 
 }

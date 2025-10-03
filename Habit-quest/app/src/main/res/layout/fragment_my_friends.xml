@@ -7,10 +7,12 @@
     android:gravity="center">
 
     <TextView
+        android:id="@+id/tvFriendsPlaceholder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="My Friends (coming soon)"
+        android:text="Loading friends..."
         android:textSize="18sp"
         android:textStyle="bold"/>
+
 
 </FrameLayout>

@@ -19,6 +19,9 @@ import com.example.habitquest.utils.ProgressPointsUtils;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.example.habitquest.utils.TitleUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserRepository implements IUserRepository {
 
     private final UsersLocalDataSource localDataSource;
@@ -121,6 +124,7 @@ public class UserRepository implements IUserRepository {
         });
     }
 
-
-
+    public void getFriends(String uid, RepositoryCallback<List<String>> callback) {
+        remoteDataSource.getFriends(uid, callback);
+    }
 }

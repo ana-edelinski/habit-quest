@@ -11,17 +11,15 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.habitquest.R;
+import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.MyFriendsViewModel;
 
 public class MyFriendsFragment extends Fragment {
 
-    private MyFriendsViewModel mViewModel;
-
-    public static MyFriendsFragment newInstance() {
-        return new MyFriendsFragment();
-    }
+    private AccountViewModel accountViewModel;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -30,10 +28,24 @@ public class MyFriendsFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(MyFriendsViewModel.class);
-        // TODO: Use the ViewModel
-    }
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
+        // Dobijemo AccountViewModel sa istim scope-om (activity)
+        accountViewModel = new ViewModelProvider(requireActivity())
+                .get(AccountViewModel.class);
+
+        TextView textView = view.findViewById(R.id.tvFriendsPlaceholder);
+
+        accountViewModel.friends.observe(getViewLifecycleOwner(), friends -> {
+            if (friends != null && !friends.isEmpty()) {
+                textView.setText("Friends: " + friends.toString());
+            } else {
+                textView.setText("No friends yet.");
+            }
+        });
+
+        // Pokreni učitavanje
+        accountViewModel.loadFriends();
+    }
 }

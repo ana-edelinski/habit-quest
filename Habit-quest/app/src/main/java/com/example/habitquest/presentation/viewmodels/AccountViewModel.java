@@ -9,6 +9,9 @@ import com.example.habitquest.domain.model.User;
 import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.utils.RepositoryCallback;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AccountViewModel extends ViewModel {
 
     private final MutableLiveData<User> _user = new MutableLiveData<>();
@@ -19,6 +22,9 @@ public class AccountViewModel extends ViewModel {
 
     private final UserRepository userRepository;
     private final String remoteUid;
+
+    private final MutableLiveData<List<String>> _friends = new MutableLiveData<>();
+    public LiveData<List<String>> friends = _friends;
 
     public AccountViewModel(AppPreferences prefs, UserRepository repo) {
         this.userRepository = repo;
@@ -46,6 +52,20 @@ public class AccountViewModel extends ViewModel {
             @Override
             public void onFailure(Exception e) {
                 _totalXp.postValue(0);
+            }
+        });
+    }
+
+    public void loadFriends() {
+        userRepository.getFriends(remoteUid, new RepositoryCallback<List<String>>() {
+            @Override
+            public void onSuccess(List<String> friendList) {
+                _friends.postValue(friendList);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _friends.postValue(new ArrayList<>());
             }
         });
     }

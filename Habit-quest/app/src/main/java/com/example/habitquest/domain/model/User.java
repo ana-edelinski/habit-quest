@@ -23,6 +23,7 @@ public class User implements Parcelable {
     private int bossesDefeated;
     private List<ShopItem> cart = new ArrayList<>();
     private List<ShopItem> equipment = new ArrayList<>();
+    private List<String> friends = new ArrayList<>();
 
     public User(Long id, String email, String username, int avatar, int totalXp, int level, String title, int pp, int coins, int bossesDefeated) {
         this.id = id;
@@ -36,11 +37,13 @@ public class User implements Parcelable {
         this.coins = coins;
         this.bossesDefeated = bossesDefeated;
         this.cart = new ArrayList<>();
+        this.friends = new ArrayList<>();
     }
 
     public User() {
         this.cart = new ArrayList<>();
         this.equipment = new ArrayList<>();
+        this.friends = new ArrayList<>();
         this.coins = 0;
         this.pp = 0;
         this.bossesDefeated = 0;
@@ -100,6 +103,13 @@ public class User implements Parcelable {
 
     public int getBossesDefeated() { return bossesDefeated; }
     public void setBossesDefeated(int bossesDefeated) { this.bossesDefeated = bossesDefeated; }
+    public List<String> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(List<String> friends) {
+        this.friends = friends;
+    }
 
     @Override
     public String toString() {
