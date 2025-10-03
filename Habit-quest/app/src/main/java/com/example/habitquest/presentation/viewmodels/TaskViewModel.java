@@ -60,6 +60,9 @@ public class TaskViewModel extends ViewModel {
     private final MutableLiveData<TaskOccurrence> _selectedOccurrence = new MutableLiveData<>();
     public LiveData<TaskOccurrence> selectedOccurrence = _selectedOccurrence;
 
+    private final MutableLiveData<String> _xpQuotaMessage = new MutableLiveData<>();
+    public LiveData<String> xpQuotaMessage = _xpQuotaMessage;
+
 
     private Closeable listenerHandle;
 
@@ -171,7 +174,23 @@ public class TaskViewModel extends ViewModel {
         repository.update(firebaseUid, task, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                grantXpForTask(task, firebaseUid, null);
+                userXpLogRepository.checkQuotaForTask(task, firebaseUid, new RepositoryCallback<Boolean>() {
+                    @Override
+                    public void onSuccess(Boolean canGrantXp) {
+                        if (canGrantXp) {
+                            grantXpForTask(task, firebaseUid, null);
+                        } else {
+                            _taskCompleted.postValue(false);
+                            _xpQuotaMessage.postValue("You have reached the XP quota for this task type.");
+                        }
+                        _taskCompletedId.postValue(task.getId());
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        _taskCompletedId.postValue(task.getId());
+                    }
+                });
                 _taskCompletedId.postValue(task.getId());
             }
 
@@ -188,7 +207,24 @@ public class TaskViewModel extends ViewModel {
         occurrenceRepository.completeOccurrence(firebaseUid, task.getId(), occurrence.getId(), new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                grantXpForTask(task, firebaseUid, occurrence.getId()); // XP dodela kao i za one-time
+                userXpLogRepository.checkQuotaForTask(task, firebaseUid, new RepositoryCallback<Boolean>() {
+                    @Override
+                    public void onSuccess(Boolean canGrantXp) {
+                        if (canGrantXp) {
+                            grantXpForTask(task, firebaseUid, occurrence.getId());
+                        } else {
+                            _taskCompleted.postValue(false);
+                            _xpQuotaMessage.postValue("You have reached the XP quota for this task type.");
+                        }
+                        _taskCompletedId.postValue(task.getId());
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        _taskCompletedId.postValue(task.getId());
+                    }
+                });
+
             }
 
             @Override
@@ -229,6 +265,72 @@ public class TaskViewModel extends ViewModel {
     }
 
 
+    public void pauseTask(Task task) {
+        String uid = prefs.getFirebaseUid();
+
+        // 1. promeni status samog taska
+        task.setStatus(TaskStatus.PAUSED);
+        repository.update(uid, task, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // 2. promeni sve occurrence koji su ACTIVE -> PAUSED
+                occurrenceRepository.fetchAllForTask(uid, task.getId(), new RepositoryCallback<List<TaskOccurrence>>() {
+                    @Override
+                    public void onSuccess(List<TaskOccurrence> occurrences) {
+                        for (TaskOccurrence occ : occurrences) {
+                            if (occ.getStatus() == TaskStatus.ACTIVE) {
+                                occurrenceRepository.updateOccurrenceStatus(uid, task.getId(), occ.getId(),
+                                        TaskStatus.PAUSED, new RepositoryCallback<Void>() {
+                                            @Override public void onSuccess(Void ignore) {}
+                                            @Override public void onFailure(Exception e) {}
+                                        });
+                            }
+                        }
+                    }
+                    @Override
+                    public void onFailure(Exception e) { }
+                });
+            }
+            @Override
+            public void onFailure(Exception e) { }
+        });
+    }
+
+    public void resumeTask(Task task) {
+        String uid = prefs.getFirebaseUid();
+
+        // 1. task nazad na ACTIVE
+        task.setStatus(TaskStatus.ACTIVE);
+        repository.update(uid, task, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // 2. occurrence koji su PAUSED -> ACTIVE
+                occurrenceRepository.fetchAllForTask(uid, task.getId(), new RepositoryCallback<List<TaskOccurrence>>() {
+                    @Override
+                    public void onSuccess(List<TaskOccurrence> occurrences) {
+                        for (TaskOccurrence occ : occurrences) {
+                            if (occ.getStatus() == TaskStatus.PAUSED) {
+                                occurrenceRepository.updateOccurrenceStatus(uid, task.getId(), occ.getId(),
+                                        TaskStatus.ACTIVE, new RepositoryCallback<Void>() {
+                                            @Override public void onSuccess(Void ignore) {
+
+                                            }
+                                            @Override public void onFailure(Exception e) {}
+                                        });
+                            }
+                        }
+                    }
+                    @Override
+                    public void onFailure(Exception e) { }
+                });
+            }
+            @Override
+            public void onFailure(Exception e) { }
+        });
+    }
+
+
+
     private void grantXpForTask(Task task, String firebaseUid,String occurrenceId) {
 
         userRepository.getUser(firebaseUid, new RepositoryCallback<User>() {
@@ -261,7 +363,9 @@ public class TaskViewModel extends ViewModel {
                 task.getId(),
                 null,
                 earnedXp,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                DifficultyLevel.fromXp(task.getDifficultyXp()),
+                ImportanceLevel.fromXp(task.getImportanceXp())
         );
 
         if(task.isRecurring()) {

@@ -11,4 +11,11 @@ public enum DifficultyLevel {
     DifficultyLevel(String label, int xp) { this.label = label; this.xp = xp; }
 
     @Override public String toString() { return label; }
+
+    public static DifficultyLevel fromXp(int xp) {
+        for (DifficultyLevel d : values()) {
+            if (d.xp == xp) return d;
+        }
+        throw new IllegalArgumentException("Unknown difficulty xp: " + xp);
+    }
 }

@@ -8,14 +8,33 @@ public class UserXpLog implements Parcelable {
     private String taskId;        // FK → Task (uvek postoji, čak i za occurrence)
     private String occurrenceId;  // FK → TaskOccurrence (može biti null za one-time zadatke)
 
+    private DifficultyLevel difficultyLevel;
+    private  ImportanceLevel importanceLevel;
+
     private int xpGained;       // XP dobijen završavanjem zadatka
     private long completedAt;   // epoch millis kada je korisnik označio zadatak kao urađen
     private String firebaseUid;
 
     public UserXpLog() {}
 
-    public UserXpLog(String id, Long userId,String firebaseUid, String taskId, String occurrenceId,
-                     int xpGained, long completedAt) {
+    public DifficultyLevel getDifficultyLevel() {
+        return difficultyLevel;
+    }
+
+    public void setDifficultyLevel(DifficultyLevel difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
+    }
+
+    public ImportanceLevel getImportanceLevel() {
+        return importanceLevel;
+    }
+
+    public void setImportanceLevel(ImportanceLevel importanceLevel) {
+        this.importanceLevel = importanceLevel;
+    }
+
+    public UserXpLog(String id, Long userId, String firebaseUid, String taskId, String occurrenceId,
+                     int xpGained, long completedAt, DifficultyLevel dl, ImportanceLevel il) {
         this.id = id;
         this.userId = userId;
         this.taskId = taskId;
@@ -23,6 +42,8 @@ public class UserXpLog implements Parcelable {
         this.xpGained = xpGained;
         this.completedAt = completedAt;
         this.firebaseUid = firebaseUid;
+        this.difficultyLevel =dl;
+        this.importanceLevel = il;
     }
 
     // --- GETTERI & SETTERI ---

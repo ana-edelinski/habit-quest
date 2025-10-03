@@ -64,6 +64,24 @@ public class OccurrenceDetailFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_occurrence_detail, container, false);
 
+        long now = System.currentTimeMillis();
+        boolean canMarkDone = false;
+
+        if (occurrence.getDate() != null) {
+            long taskTime = occurrence.getDate();
+
+            // prošlo vreme izvršenja
+            boolean isPast = now >= taskTime;
+
+            // razlika u danima
+            long diff = now - taskTime;
+            long daysDiff = diff / (1000 * 60 * 60 * 24);
+
+            // može se kompletirati ako je prošlo vreme izvršenja i ako nije prošlo više od 3 dana
+            canMarkDone = isPast && daysDiff <= 3;
+        }
+
+
         TextView tvName = v.findViewById(R.id.tvTaskNameDetail);
         TextView tvCategory = v.findViewById(R.id.tvCategoryDetail);
         TextView tvDate = v.findViewById(R.id.tvTaskDate);
@@ -76,7 +94,7 @@ public class OccurrenceDetailFragment extends Fragment {
         Button btnDone = v.findViewById(R.id.btnMarkDone);
         Button btnCancel = v.findViewById(R.id.btnCancel);
 
-        if(occurrence.getStatus() == TaskStatus.PAUSED){
+        if(occurrence.getStatus() != TaskStatus.ACTIVE || !canMarkDone){
             btnDone.setVisibility(View.GONE);
             btnCancel.setVisibility(View.GONE);
         }
@@ -146,6 +164,12 @@ public class OccurrenceDetailFragment extends Fragment {
                 btnDone.setVisibility(View.GONE);
                 btnCancel.setVisibility(View.GONE);
                 requireActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
+
+        taskViewModel.xpQuotaMessage.observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
             }
         });
 

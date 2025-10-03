@@ -116,6 +116,8 @@ public final class AppContract {
         public static final String COLUMN_OCCURRENCE_ID= "occurrenceId"; // String (FK TaskOccurrence) može biti NULL
         public static final String COLUMN_XP_GAINED    = "xpGained";     // INTEGER
         public static final String COLUMN_COMPLETED_AT = "completedAt";  // INTEGER (epoch millis)
+        public static final String COLUMN_DIFFICULTY      = "difficultyLevel"; // TEXT (enum name)
+        public static final String COLUMN_IMPORTANCE      = "importanceLevel"; // TEXT (enum name
 
         public static final String CREATE_TABLE =
                 "CREATE TABLE " + TABLE_NAME + " (" +
@@ -125,7 +127,9 @@ public final class AppContract {
                         COLUMN_TASK_ID       + " TEXT NOT NULL, " +
                         COLUMN_OCCURRENCE_ID + " TEXT, " +
                         COLUMN_XP_GAINED     + " INTEGER NOT NULL, " +
-                        COLUMN_COMPLETED_AT  + " INTEGER NOT NULL" +
+                        COLUMN_COMPLETED_AT  + " INTEGER NOT NULL," +
+                        COLUMN_DIFFICULTY    + " TEXT NOT NULL, " +
+                        COLUMN_IMPORTANCE    + " TEXT NOT NULL" +
                         ");";
     }
 

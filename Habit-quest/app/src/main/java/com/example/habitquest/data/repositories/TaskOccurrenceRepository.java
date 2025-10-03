@@ -105,6 +105,10 @@ public class TaskOccurrenceRepository implements ITaskOccurrenceRepository {
         });
     }
 
+    public void updateOccurrenceStatus(String firebaseUid, String taskId, String occurrenceId, TaskStatus status, RepositoryCallback<Void> cb) {
+        remote.updateOccurrenceStatus(firebaseUid, taskId, occurrenceId, status, cb);
+    }
+
     @Override
     public void fetchAllForTask(String firebaseUid, String taskId, RepositoryCallback<List<TaskOccurrence>> cb) {
         remote.getOccurrencesForTask(firebaseUid, taskId, new RepositoryCallback<List<TaskOccurrence>>() {

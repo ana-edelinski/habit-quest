@@ -3,6 +3,7 @@ package com.example.habitquest.data.remote;
 import androidx.annotation.NonNull;
 
 import com.example.habitquest.domain.model.Task;
+import com.example.habitquest.domain.model.TaskStatus;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -33,6 +34,7 @@ public class TaskRemoteDataSource {
                         Task t = d.toObject(Task.class);
                         if (t != null) {
                             t.setId(d.getId()); // koristimo Firestore documentId
+                            t = applyExpirationLogic(t, d.getReference());
                         }
                         out.add(t);
                     }
@@ -87,6 +89,7 @@ public class TaskRemoteDataSource {
                         Task t = d.toObject(Task.class);
                         if (t != null) {
                             t.setId(d.getId()); // uvek postavljamo Firestore documentId
+                            t = applyExpirationLogic(t, d.getReference());
                         }
                         out.add(t);
                     }
@@ -104,11 +107,13 @@ public class TaskRemoteDataSource {
                 .collection("tasks")
                 .document(taskId);
 
+
         ref.get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                 Task result = task.getResult().toObject(Task.class);
                 if (result != null) {
                     result.setId(task.getResult().getId()); // postavi ID dokumenta
+                    result = applyExpirationLogic(result, ref);
                 }
                 cb.onSuccess(result);
             } else {
@@ -116,6 +121,23 @@ public class TaskRemoteDataSource {
             }
         }).addOnFailureListener(cb::onFailure);
     }
+
+
+    public static Task applyExpirationLogic(Task t, DocumentReference ref) {
+        if (t == null) return null;
+        if (!t.isRecurring() && t.getDate() != null) {
+            long now = System.currentTimeMillis();
+            long diff = now - t.getDate();
+            long daysDiff = diff / (1000 * 60 * 60 * 24);
+
+            if (daysDiff > 3 && t.getStatus() == TaskStatus.ACTIVE) {
+                t.setStatus(TaskStatus.NOT_DONE);
+                ref.update("status", TaskStatus.NOT_DONE.name());
+            }
+        }
+        return t;
+    }
+
 
 
     // interfejs za eventove

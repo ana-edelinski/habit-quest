@@ -1,7 +1,9 @@
 package com.example.habitquest.data.remote;
 
+import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskOccurrence;
 import com.example.habitquest.domain.model.TaskStatus;
+import com.example.habitquest.presentation.fragments.OccurrenceDetailFragment;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -66,6 +68,7 @@ public class TaskOccurrenceRemoteDataSource {
                     List<TaskOccurrence> list = new ArrayList<>();
                     for (DocumentSnapshot doc : qs.getDocuments()) {
                         TaskOccurrence occ = doc.toObject(TaskOccurrence.class);
+                        occ = applyExpirationLogic(occ, doc.getReference());
                         list.add(occ);
                     }
                     cb.onSuccess(list);
@@ -87,12 +90,29 @@ public class TaskOccurrenceRemoteDataSource {
                 TaskOccurrence result = task.getResult().toObject(TaskOccurrence.class);
                 if (result != null) {
                     result.setId(task.getResult().getId()); // ako u modelu imaš setId
+                    applyExpirationLogic(result, ref);
                 }
                 cb.onSuccess(result);
             } else {
                 cb.onFailure(new Exception("Occurrence not found: " + occurrenceId));
             }
         }).addOnFailureListener(cb::onFailure);
+    }
+
+
+    public static TaskOccurrence applyExpirationLogic(TaskOccurrence o, DocumentReference ref) {
+        if (o == null) return null;
+        if ( o.getDate() != null) {
+            long now = System.currentTimeMillis();
+            long diff = now - o.getDate();
+            long daysDiff = diff / (1000 * 60 * 60 * 24);
+
+            if (daysDiff > 3 && o.getStatus() == TaskStatus.ACTIVE) {
+                o.setStatus(TaskStatus.NOT_DONE);
+                ref.update("status", TaskStatus.NOT_DONE.name());
+            }
+        }
+        return o;
     }
 
 }

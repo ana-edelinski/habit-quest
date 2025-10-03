@@ -3,6 +3,9 @@ package com.example.habitquest.data.repositories;
 import android.content.Context;
 
 import com.example.habitquest.data.remote.UserXpLogRemoteDataSource;
+import com.example.habitquest.domain.model.DifficultyLevel;
+import com.example.habitquest.domain.model.ImportanceLevel;
+import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.UserXpLog;
 import com.example.habitquest.domain.repositoryinterfaces.IUserXpLogRepository;
 import com.example.habitquest.utils.RepositoryCallback;
@@ -105,6 +108,84 @@ public class UserXpLogRepository implements IUserXpLogRepository {
             }
         });
     }
+
+
+
+    public void checkQuotaForTask(Task task, String firebaseUid, RepositoryCallback<Boolean> cb) {
+        DifficultyLevel diff = DifficultyLevel.fromXp(task.getDifficultyXp());
+        ImportanceLevel imp = ImportanceLevel.fromXp(task.getImportanceXp());
+
+        // Extreme → max 1 nedeljno
+        if (diff == DifficultyLevel.EXTREME) {
+            remote.countLogsForThisWeek(firebaseUid, diff, new RepositoryCallback<Integer>() {
+                @Override
+                public void onSuccess(Integer count) {
+                    cb.onSuccess(count < 1);
+                }
+                @Override public void onFailure(Exception e) { cb.onFailure(e); }
+            });
+            return;
+        }
+
+        // Hard i Very important → max 2 dnevno
+        if (diff == DifficultyLevel.HARD || imp == ImportanceLevel.EXTREME_IMPORTANT) {
+            remote.countLogsForToday(firebaseUid, diff, null, new RepositoryCallback<Integer>() {
+                @Override
+                public void onSuccess(Integer count) {
+                    cb.onSuccess(count < 2);
+                }
+                @Override public void onFailure(Exception e) { cb.onFailure(e); }
+            });
+            return;
+        }
+
+        // Easy i Important → max 5 dnevno
+        if (diff == DifficultyLevel.EASY || imp == ImportanceLevel.IMPORTANT) {
+            remote.countLogsForToday(firebaseUid, diff, null, new RepositoryCallback<Integer>() {
+                @Override
+                public void onSuccess(Integer count) {
+                    cb.onSuccess(count < 5);
+                }
+                @Override public void onFailure(Exception e) { cb.onFailure(e); }
+            });
+            return;
+        }
+
+        // Very easy i Normal → max 5 dnevno
+        if (diff == DifficultyLevel.VERY_EASY || imp == ImportanceLevel.NORMAL) {
+            remote.countLogsForToday(firebaseUid, diff, null, new RepositoryCallback<Integer>() {
+                @Override
+                public void onSuccess(Integer count) {
+                    cb.onSuccess(count < 5);
+                }
+                @Override public void onFailure(Exception e) { cb.onFailure(e); }
+            });
+            return;
+        }
+
+
+
+
+
+
+
+//        // Special → max 1 mesečno
+//        if (imp == ImportanceLevel.SPECIAL) {
+//            remote.countLogsForThisMonth(firebaseUid, imp, new RepositoryCallback<Integer>() {
+//                @Override
+//                public void onSuccess(Integer count) {
+//                    cb.onSuccess(count < 1);
+//                }
+//                @Override public void onFailure(Exception e) { cb.onFailure(e); }
+//            });
+//            return;
+//        }
+
+        // default → nema limita
+        cb.onSuccess(true);
+    }
+
+
 
 }
 

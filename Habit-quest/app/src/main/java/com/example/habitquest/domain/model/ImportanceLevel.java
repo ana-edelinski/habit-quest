@@ -9,4 +9,11 @@ public enum ImportanceLevel {
     public final int xp;
     ImportanceLevel(String label, int xp) { this.label = label; this.xp = xp; }
     @Override public String toString() { return label; }
+
+    public static ImportanceLevel fromXp(int xp) {
+        for (ImportanceLevel i : values()) {
+            if (i.xp == xp) return i;
+        }
+        throw new IllegalArgumentException("Unknown importance xp: " + xp);
+    }
 }

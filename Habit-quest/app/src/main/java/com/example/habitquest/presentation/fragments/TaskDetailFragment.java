@@ -70,6 +70,24 @@ public class TaskDetailFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_task_detail, container, false);
 
+        long now = System.currentTimeMillis();
+        boolean canMarkDone = false;
+
+        if (task.getDate() != null) {
+            long taskTime = task.getDate();
+
+            // prošlo vreme izvršenja
+            boolean isPast = now >= taskTime;
+
+            // razlika u danima
+            long diff = now - taskTime;
+            long daysDiff = diff / (1000 * 60 * 60 * 24);
+
+            // može se kompletirati ako je prošlo vreme izvršenja i ako nije prošlo više od 3 dana
+            canMarkDone = isPast && daysDiff <= 3;
+        }
+
+
 
 
         TextView tvName = v.findViewById(R.id.tvTaskNameDetail);
@@ -157,23 +175,32 @@ public class TaskDetailFragment extends Fragment {
 
         if(task.isRecurring()){
             btnDone.setVisibility(View.GONE);
-            btnDelete.setVisibility(View.GONE);
-            btnEdit.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.VISIBLE);
+            btnEdit.setVisibility(View.VISIBLE);
             btnCancel.setVisibility(View.GONE);
             btnPause.setVisibility(View.VISIBLE);
 
         } else {
             btnPause.setVisibility(View.GONE);
-            if (task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.NOT_DONE || task.getStatus() == TaskStatus.CANCELED ) {
+
+            if (task.getStatus() == TaskStatus.ACTIVE) {
+                // Aktivni zadatak
+                btnDelete.setVisibility(View.VISIBLE);
+                btnEdit.setVisibility(View.VISIBLE);
+                btnCancel.setVisibility(View.VISIBLE);
+
+//                if (canMarkDone) {
+//                    btnDone.setVisibility(View.VISIBLE);
+//                } else {
+//                    btnDone.setVisibility(View.GONE);
+//                }
+                btnDone.setVisibility(View.VISIBLE);
+            } else {
+                // Ako je završen, not_done ili otkazan
                 btnDone.setVisibility(View.GONE);
                 btnDelete.setVisibility(View.GONE);
                 btnEdit.setVisibility(View.GONE);
                 btnCancel.setVisibility(View.GONE);
-            } else {
-                btnDone.setVisibility(View.VISIBLE);
-                btnDelete.setVisibility(View.VISIBLE);
-                btnEdit.setVisibility(View.VISIBLE);
-                btnCancel.setVisibility(View.VISIBLE);
             }
         }
 
@@ -188,6 +215,12 @@ public class TaskDetailFragment extends Fragment {
             btnEdit.setVisibility(View.GONE);
             btnDelete.setVisibility(View.GONE);
             btnCancel.setVisibility(View.GONE);
+        });
+
+        taskViewModel.xpQuotaMessage.observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+            }
         });
 
         // posmatranje završetka taska
@@ -236,6 +269,22 @@ public class TaskDetailFragment extends Fragment {
                     .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                     .show();
         });
+
+        // pazuiranje ponavljajuceg zadatka
+        btnPause.setOnClickListener(v1 -> {
+            if (task.getStatus() == TaskStatus.ACTIVE) {
+                taskViewModel.pauseTask(task);
+                btnPause.setText("Resume");
+                Toast.makeText(requireContext(), "Task paused", Toast.LENGTH_SHORT).show();
+            } else if (task.getStatus() == TaskStatus.PAUSED) {
+                taskViewModel.resumeTask(task);
+                btnPause.setText("Pause");
+                Toast.makeText(requireContext(), "Task resumed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
 
         // edit zadatka
         btnEdit.setOnClickListener(view1 -> {

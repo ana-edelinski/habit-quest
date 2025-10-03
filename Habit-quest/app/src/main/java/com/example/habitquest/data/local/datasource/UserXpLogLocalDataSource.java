@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.habitquest.data.local.db.AppContract;
 import com.example.habitquest.data.local.db.SQLiteHelper;
+import com.example.habitquest.domain.model.DifficultyLevel;
+import com.example.habitquest.domain.model.ImportanceLevel;
 import com.example.habitquest.domain.model.UserXpLog;
 
 import java.util.ArrayList;
@@ -75,6 +77,14 @@ public class UserXpLogLocalDataSource {
         values.put(AppContract.UserXpLogEntry.COLUMN_OCCURRENCE_ID, log.getOccurrenceId());
         values.put(AppContract.UserXpLogEntry.COLUMN_XP_GAINED, log.getXpGained());
         values.put(AppContract.UserXpLogEntry.COLUMN_COMPLETED_AT, log.getCompletedAt());
+
+        if (log.getDifficultyLevel() != null) {
+            values.put(AppContract.UserXpLogEntry.COLUMN_DIFFICULTY, log.getDifficultyLevel().name());
+        }
+        if (log.getImportanceLevel() != null) {
+            values.put(AppContract.UserXpLogEntry.COLUMN_IMPORTANCE, log.getImportanceLevel().name());
+        }
+
         return values;
     }
 
@@ -86,6 +96,18 @@ public class UserXpLogLocalDataSource {
         log.setOccurrenceId(cursor.getString(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_OCCURRENCE_ID)));
         log.setXpGained(cursor.getInt(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_XP_GAINED)));
         log.setCompletedAt(cursor.getLong(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_COMPLETED_AT)));
+
+        String diffStr = cursor.getString(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_DIFFICULTY));
+        if (diffStr != null) {
+            log.setDifficultyLevel(DifficultyLevel.valueOf(diffStr));
+        }
+
+        String impStr = cursor.getString(cursor.getColumnIndexOrThrow(AppContract.UserXpLogEntry.COLUMN_IMPORTANCE));
+        if (impStr != null) {
+            log.setImportanceLevel(ImportanceLevel.valueOf(impStr));
+        }
+
         return log;
     }
+
 }
