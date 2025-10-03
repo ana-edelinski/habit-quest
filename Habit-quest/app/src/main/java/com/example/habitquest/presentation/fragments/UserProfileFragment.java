@@ -87,9 +87,11 @@ public class UserProfileFragment extends Fragment {
 
             // QR kod
             try {
+                String qrContent = "habitquest://addfriend?uid=" + user.getUid();
+
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                 Bitmap bitmap = barcodeEncoder.encodeBitmap(
-                        user.getUid(), // ili userId
+                        qrContent,
                         com.google.zxing.BarcodeFormat.QR_CODE,
                         400,
                         400
@@ -98,6 +100,7 @@ public class UserProfileFragment extends Fragment {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
         });
 
         viewModel.currentUser.observe(getViewLifecycleOwner(), currentUser -> {

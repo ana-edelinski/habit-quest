@@ -1,10 +1,12 @@
 package com.example.habitquest.presentation.activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
@@ -18,9 +20,11 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.habitquest.R;
 import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
 import com.example.habitquest.presentation.viewmodels.LoginViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.LoginViewModelFactory;
+import com.example.habitquest.utils.RepositoryCallback;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.BadgeUtils;
@@ -28,6 +32,8 @@ import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+
 import androidx.core.view.GravityCompat;
 import androidx.navigation.ui.AppBarConfiguration;
 
@@ -69,7 +75,44 @@ public class HomeActivity extends AppCompatActivity {
         setupToolbar();
         setupBottomNavigation();
 
+        handleDeepLink(getIntent());
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleDeepLink(intent);
+    }
+
+    private void handleDeepLink(Intent intent) {
+        if (intent == null || intent.getData() == null) return;
+
+        Uri data = intent.getData();
+        if ("habitquest".equals(data.getScheme()) && "addfriend".equals(data.getHost())) {
+            String scannedUid = data.getQueryParameter("uid");
+            String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            if (scannedUid != null && !scannedUid.equals(currentUid)) {
+                UserRepository repo = new UserRepository(this);
+                repo.sendFriendRequest(currentUid, scannedUid, new RepositoryCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Toast.makeText(HomeActivity.this,
+                                "Friend request sent via QR", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(HomeActivity.this,
+                                "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(this, "You cannot add yourself as a friend!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
     private void initViewModel() {
         LoginViewModelFactory factory = new LoginViewModelFactory(this);

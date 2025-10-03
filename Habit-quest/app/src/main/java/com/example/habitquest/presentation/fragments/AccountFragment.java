@@ -93,7 +93,7 @@ public class AccountFragment extends Fragment {
                 FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (firebaseUser != null) {
                     try {
-                        String qrContent = firebaseUser.getUid();
+                        String qrContent = "habitquest://addfriend?uid=" + user.getUid();
                         BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                         Bitmap bitmap = barcodeEncoder.encodeBitmap(
                                 qrContent,
