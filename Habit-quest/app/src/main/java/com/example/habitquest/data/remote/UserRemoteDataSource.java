@@ -186,6 +186,37 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getFriendRequestsReceived(String uid, RepositoryCallback<List<String>> callback) {
+        db.collection(COLLECTION_NAME).document(uid)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<String> requests = (List<String>) documentSnapshot.get("friendRequestsReceived");
+                        if (requests == null) requests = new ArrayList<>();
+                        callback.onSuccess(requests);
+                    } else {
+                        callback.onSuccess(new ArrayList<>());
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void getFriendRequestsSent(String uid, RepositoryCallback<List<String>> callback) {
+        db.collection(COLLECTION_NAME).document(uid)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<String> requests = (List<String>) documentSnapshot.get("friendRequestsSent");
+                        if (requests == null) requests = new ArrayList<>();
+                        callback.onSuccess(requests);
+                    } else {
+                        callback.onSuccess(new ArrayList<>());
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
     public void searchUsersByUsername(String query, RepositoryCallback<List<User>> callback) {
         if (query == null || query.trim().isEmpty()) {
             callback.onSuccess(new ArrayList<>());

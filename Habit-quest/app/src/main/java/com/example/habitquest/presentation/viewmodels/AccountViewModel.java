@@ -26,6 +26,14 @@ public class AccountViewModel extends ViewModel {
     private final MutableLiveData<List<String>> _friends = new MutableLiveData<>();
     public LiveData<List<String>> friends = _friends;
 
+    // 🔹 Dodato za friend requestove
+    private final MutableLiveData<List<String>> _friendRequestsReceived = new MutableLiveData<>();
+    public LiveData<List<String>> friendRequestsReceived = _friendRequestsReceived;
+
+    private final MutableLiveData<List<String>> _friendRequestsSent = new MutableLiveData<>();
+    public LiveData<List<String>> friendRequestsSent = _friendRequestsSent;
+
+
     public AccountViewModel(AppPreferences prefs, UserRepository repo) {
         this.userRepository = repo;
         this.remoteUid = prefs.getFirebaseUid();
@@ -47,6 +55,11 @@ public class AccountViewModel extends ViewModel {
             public void onSuccess(User remoteUser) {
                 _user.postValue(remoteUser);
                 _totalXp.postValue(remoteUser.getTotalXp());
+
+                // Kada dođe user, odmah setujemo i njegove liste ako postoje
+                _friends.postValue(remoteUser.getFriends());
+                _friendRequestsReceived.postValue(remoteUser.getFriendRequestsReceived());
+                _friendRequestsSent.postValue(remoteUser.getFriendRequestsSent());
             }
 
             @Override
@@ -70,4 +83,33 @@ public class AccountViewModel extends ViewModel {
         });
     }
 
+    // 🔹 Nova metoda: učitavanje primljenih zahteva
+    public void loadFriendRequestsReceived() {
+        userRepository.getFriendRequestsReceived(remoteUid, new RepositoryCallback<List<String>>() {
+            @Override
+            public void onSuccess(List<String> requests) {
+                _friendRequestsReceived.postValue(requests);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _friendRequestsReceived.postValue(new ArrayList<>());
+            }
+        });
+    }
+
+    // 🔹 (opciono) ako ti kasnije zatreba i poslati zahtevi
+    public void loadFriendRequestsSent() {
+        userRepository.getFriendRequestsSent(remoteUid, new RepositoryCallback<List<String>>() {
+            @Override
+            public void onSuccess(List<String> requests) {
+                _friendRequestsSent.postValue(requests);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _friendRequestsSent.postValue(new ArrayList<>());
+            }
+        });
+    }
 }

@@ -128,6 +128,15 @@ public class UserRepository implements IUserRepository {
         remoteDataSource.getFriends(uid, callback);
     }
 
+    public void getFriendRequestsReceived(String uid, RepositoryCallback<List<String>> callback) {
+        remoteDataSource.getFriendRequestsReceived(uid, callback);
+    }
+
+    public void getFriendRequestsSent(String uid, RepositoryCallback<List<String>> callback) {
+        remoteDataSource.getFriendRequestsSent(uid, callback);
+    }
+
+
     public void searchUsersByUsername(String query, RepositoryCallback<List<User>> callback) {
         remoteDataSource.searchUsersByUsername(query, callback);
     }
