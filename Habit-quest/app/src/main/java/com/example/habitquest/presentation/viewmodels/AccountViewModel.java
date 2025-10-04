@@ -114,4 +114,34 @@ public class AccountViewModel extends ViewModel {
             }
         });
     }
+
+    public void acceptFriendRequest(String requesterUid) {
+        userRepository.acceptFriendRequest(remoteUid, requesterUid, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                loadFriendRequestsReceived(); // osveži listu zahteva
+                loadFriends(); // osveži listu prijatelja
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // opciono: možeš dodati toast poruku kasnije
+            }
+        });
+    }
+
+    public void rejectFriendRequest(String requesterUid) {
+        userRepository.rejectFriendRequest(remoteUid, requesterUid, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                loadFriendRequestsReceived(); // samo osveži listu zahteva
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // opciono: možeš dodati toast poruku kasnije
+            }
+        });
+    }
+
 }

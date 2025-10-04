@@ -40,6 +40,19 @@ public class FriendRequestsFragment extends Fragment {
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
 
+        adapter.setOnRequestActionListener(new FriendRequestsAdapter.OnRequestActionListener() {
+            @Override
+            public void onAccept(String requesterUid) {
+                accountViewModel.acceptFriendRequest(requesterUid);
+            }
+
+            @Override
+            public void onReject(String requesterUid) {
+                accountViewModel.rejectFriendRequest(requesterUid);
+            }
+        });
+
+
         TextView placeholder = v.findViewById(R.id.tvRequestsPlaceholder);
 
         accountViewModel.friendRequestsUsers.observe(getViewLifecycleOwner(), list -> {

@@ -287,4 +287,33 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void acceptFriendRequest(String currentUid, String requesterUid, RepositoryCallback<Void> callback) {
+        DocumentReference currentUserRef = db.collection(COLLECTION_NAME).document(currentUid);
+        DocumentReference requesterRef = db.collection(COLLECTION_NAME).document(requesterUid);
+
+        db.runTransaction(transaction -> {
+                    transaction.update(currentUserRef, "friends", FieldValue.arrayUnion(requesterUid));
+                    transaction.update(requesterRef, "friends", FieldValue.arrayUnion(currentUid));
+
+                    transaction.update(currentUserRef, "friendRequestsReceived", FieldValue.arrayRemove(requesterUid));
+                    transaction.update(requesterRef, "friendRequestsSent", FieldValue.arrayRemove(currentUid));
+
+                    return null;
+                }).addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void rejectFriendRequest(String currentUid, String requesterUid, RepositoryCallback<Void> callback) {
+        DocumentReference currentUserRef = db.collection(COLLECTION_NAME).document(currentUid);
+        DocumentReference requesterRef = db.collection(COLLECTION_NAME).document(requesterUid);
+
+        db.runTransaction(transaction -> {
+                    transaction.update(currentUserRef, "friendRequestsReceived", FieldValue.arrayRemove(requesterUid));
+                    transaction.update(requesterRef, "friendRequestsSent", FieldValue.arrayRemove(currentUid));
+                    return null;
+                }).addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 }

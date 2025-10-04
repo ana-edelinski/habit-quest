@@ -18,7 +18,17 @@ import java.util.List;
 
 public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAdapter.VH> {
 
+    public interface OnRequestActionListener {
+        void onAccept(String requesterUid);
+        void onReject(String requesterUid);
+    }
+
     private List<User> users = new ArrayList<>();
+    private OnRequestActionListener listener;
+
+    public void setOnRequestActionListener(OnRequestActionListener listener) {
+        this.listener = listener;
+    }
 
     public void submitList(List<User> list) {
         users = (list != null) ? list : new ArrayList<>();
@@ -38,6 +48,14 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
         User user = users.get(position);
         holder.tvUsername.setText(user.getUsername());
         holder.ivAvatar.setImageResource(getAvatarRes(user.getAvatar()));
+
+        holder.btnAccept.setOnClickListener(v -> {
+            if (listener != null) listener.onAccept(user.getUid());
+        });
+
+        holder.btnReject.setOnClickListener(v -> {
+            if (listener != null) listener.onReject(user.getUid());
+        });
     }
 
     @Override
