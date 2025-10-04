@@ -124,8 +124,18 @@ public class UserRepository implements IUserRepository {
         });
     }
 
-    public void getFriends(String uid, RepositoryCallback<List<String>> callback) {
+    public void getFriends(String uid, RepositoryCallback<List<User>> callback) {
         remoteDataSource.getFriends(uid, callback);
+    }
+
+
+    public void getFriendRequestsReceived(String uid, RepositoryCallback<List<User>> callback) {
+        remoteDataSource.getFriendRequestsReceived(uid, callback);
+    }
+
+
+    public void getFriendRequestsSent(String uid, RepositoryCallback<List<String>> callback) {
+        remoteDataSource.getFriendRequestsSent(uid, callback);
     }
 
     public void searchUsersByUsername(String query, RepositoryCallback<List<User>> callback) {
@@ -138,6 +148,22 @@ public class UserRepository implements IUserRepository {
 
     public void cancelFriendRequest(String fromUid, String toUid, RepositoryCallback<Void> callback) {
         remoteDataSource.cancelFriendRequest(fromUid, toUid, callback);
+    }
+
+    public void acceptFriendRequest(String currentUid, String requesterUid, RepositoryCallback<Void> callback) {
+        remoteDataSource.acceptFriendRequest(currentUid, requesterUid, callback);
+    }
+
+    public void rejectFriendRequest(String currentUid, String requesterUid, RepositoryCallback<Void> callback) {
+        remoteDataSource.rejectFriendRequest(currentUid, requesterUid, callback);
+    }
+
+    public void listenForFriends(String uid, RepositoryCallback<List<User>> callback) {
+        remoteDataSource.listenForFriends(uid, callback);
+    }
+
+    public void listenForFriendRequests(String uid, RepositoryCallback<List<User>> callback) {
+        remoteDataSource.listenForFriendRequests(uid, callback);
     }
 
 }

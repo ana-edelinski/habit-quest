@@ -47,4 +47,8 @@
     <string name="friends">Friends</string>
     <string name="search">Search</string>
 
+    <string name="createAlliance">Create Alliance</string>
+    <string name="friendRequests">Friend Requests</string>
+    <string name="myFriends">My Friends</string>
+    <string name="approveIgnoreRequests">Approve or ignore requests</string>
 </resources>

@@ -18,9 +18,20 @@ import java.util.List;
 
 public class CartRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private final String uid;
+
+    public CartRepository() {
+        var user = FirebaseAuth.getInstance().getCurrentUser();
+        this.uid = (user != null) ? user.getUid() : null;
+    }
+
 
     public void addItem(ShopItem item, User user, RepositoryCallback<Void> callback) {
+        if (uid == null) {
+            callback.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
         DocumentReference userRef = db.collection("users").document(uid);
 
         int previousBossReward = user.getPreviousBossReward();
@@ -31,8 +42,12 @@ public class CartRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-
     public void removeItem(ShopItem item, RepositoryCallback<Void> callback) {
+        if (uid == null) {
+            callback.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
         DocumentReference userRef = db.collection("users").document(uid);
         userRef.update("cart", FieldValue.arrayRemove(item))
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
@@ -40,6 +55,11 @@ public class CartRepository {
     }
 
     public ListenerRegistration observeCart(RepositoryCallback<List<ShopItem>> callback) {
+        if (uid == null) {
+            callback.onFailure(new Exception("User not logged in"));
+            return null;
+        }
+
         DocumentReference userRef = db.collection("users").document(uid);
         return userRef.addSnapshotListener((snapshot, e) -> {
             if (e != null) {
@@ -57,6 +77,11 @@ public class CartRepository {
     }
 
     public void buyItems(RepositoryCallback<Void> callback) {
+        if (uid == null) {
+            callback.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
         DocumentReference userRef = db.collection("users").document(uid);
 
         db.runTransaction(transaction -> {
@@ -66,7 +91,6 @@ public class CartRepository {
                     if (user == null) throw new RuntimeException("User not found");
 
                     List<ShopItem> cart = user.getCart();
-
                     int total = 0;
                     for (ShopItem item : cart) {
                         total += item.getCalculatedPrice();
@@ -84,16 +108,14 @@ public class CartRepository {
                         equipment.add(si);
                     }
                     user.setEquipment(equipment);
-
                     user.setCart(new ArrayList<>());
 
                     transaction.set(userRef, user);
-
                     return null;
-                }).addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                })
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
-
 
     public List<ShopItem> getShopItemsForUser(User user) {
         int previousBossReward = user.getPreviousBossReward(); // koristi polje iz User-a

@@ -1,9 +1,11 @@
 package com.example.habitquest.presentation.fragments;
 
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -11,15 +13,24 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.habitquest.R;
-import com.example.habitquest.presentation.viewmodels.AccountViewModel;
+import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.data.repositories.UserRepository;
+import com.example.habitquest.domain.model.User;
+import com.example.habitquest.presentation.adapters.FriendsAdapter;
 import com.example.habitquest.presentation.viewmodels.MyFriendsViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.MyFriendsViewModelFactory;
+
+import java.util.List;
 
 public class MyFriendsFragment extends Fragment {
 
-    private AccountViewModel accountViewModel;
+    private MyFriendsViewModel myFriendsViewModel;
+    private FriendsAdapter friendsAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -28,24 +39,81 @@ public class MyFriendsFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(v, savedInstanceState);
 
-        // Dobijemo AccountViewModel sa istim scope-om (activity)
-        accountViewModel = new ViewModelProvider(requireActivity())
-                .get(AccountViewModel.class);
+        myFriendsViewModel = new ViewModelProvider(requireActivity(),
+                new MyFriendsViewModelFactory(new AppPreferences(requireContext()), new UserRepository(requireContext()))
+        ).get(MyFriendsViewModel.class);
 
-        TextView textView = view.findViewById(R.id.tvFriendsPlaceholder);
+        TextView placeholder = v.findViewById(R.id.tvFriendsPlaceholder);
+        RecyclerView rv = v.findViewById(R.id.rvFriends);
+        Button btnCreateAlliance = v.findViewById(R.id.btnCreateAlliance);
 
-        accountViewModel.friends.observe(getViewLifecycleOwner(), friends -> {
-            if (friends != null && !friends.isEmpty()) {
-                textView.setText("Friends: " + friends.toString());
+        View layoutFriendRequests = v.findViewById(R.id.layoutFriendRequests);
+        ImageView imgRequestsAvatar = v.findViewById(R.id.imgRequestsAvatar);
+        View placeholderCircle = v.findViewById(R.id.placeholderCircle);
+        TextView tvBadge = v.findViewById(R.id.tvRequestsBadge);
+
+        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        friendsAdapter = new FriendsAdapter();
+        rv.setAdapter(friendsAdapter);
+
+        friendsAdapter.setOnFriendClickListener(friend -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("userId", friend.getUid());
+            Navigation.findNavController(v).navigate(R.id.nav_user_profile, bundle);
+        });
+
+        myFriendsViewModel.friends.observe(getViewLifecycleOwner(), list -> {
+            if (list != null && !list.isEmpty()) {
+                friendsAdapter.submitList(list);
+                rv.setVisibility(View.VISIBLE);
+                placeholder.setVisibility(View.GONE);
             } else {
-                textView.setText("No friends yet.");
+                placeholder.setText("No friends yet.");
+                rv.setVisibility(View.GONE);
+                placeholder.setVisibility(View.VISIBLE);
             }
         });
 
-        // Pokreni učitavanje
-        accountViewModel.loadFriends();
+        myFriendsViewModel.friendRequestsUsers.observe(getViewLifecycleOwner(), list -> updateFriendRequestsUI(list, imgRequestsAvatar, placeholderCircle, tvBadge));
+
+        layoutFriendRequests.setOnClickListener(view ->
+                Navigation.findNavController(view).navigate(R.id.friendRequestsFragment)
+        );
+
+        btnCreateAlliance.setOnClickListener(view -> {
+            // TODO
+        });
+
+        myFriendsViewModel.listenForFriendsRealtime();
+        myFriendsViewModel.listenForFriendRequestsRealtime();
+    }
+
+    private void updateFriendRequestsUI(List<User> requests, ImageView imgAvatar, View placeholder, TextView badge) {
+        if (requests != null && !requests.isEmpty()) {
+            User first = requests.get(0);
+            imgAvatar.setVisibility(View.VISIBLE);
+            placeholder.setVisibility(View.GONE);
+            badge.setVisibility(View.VISIBLE);
+            badge.setText(String.valueOf(requests.size()));
+            imgAvatar.setImageResource(getAvatarResource(first.getAvatar()));
+        } else {
+            imgAvatar.setVisibility(View.GONE);
+            placeholder.setVisibility(View.VISIBLE);
+            badge.setVisibility(View.GONE);
+        }
+    }
+
+    private int getAvatarResource(int index) {
+        switch (index) {
+            case 1: return R.drawable.avatar1;
+            case 2: return R.drawable.avatar2;
+            case 3: return R.drawable.avatar3;
+            case 4: return R.drawable.avatar4;
+            case 5: return R.drawable.avatar5;
+            default: return R.drawable.avatar1;
+        }
     }
 }
