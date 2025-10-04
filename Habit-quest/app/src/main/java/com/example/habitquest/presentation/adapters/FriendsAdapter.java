@@ -3,22 +3,33 @@ package com.example.habitquest.presentation.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitquest.R;
+import com.example.habitquest.domain.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.VH> {
 
-    private List<String> friends = new ArrayList<>();
+    private List<User> friends = new ArrayList<>();
+    private OnFriendClickListener listener;
 
-    public void submitList(List<String> list) {
-        friends = list != null ? list : new ArrayList<>();
+    public interface OnFriendClickListener {
+        void onFriendClick(User friend);
+    }
+
+    public void setOnFriendClickListener(OnFriendClickListener listener) {
+        this.listener = listener;
+    }
+
+    public void submitList(List<User> list) {
+        this.friends = list != null ? list : new ArrayList<>();
         notifyDataSetChanged();
     }
 
@@ -32,8 +43,14 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.VH> {
 
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
-        String friendUid = friends.get(position);
-        holder.tvFriendName.setText(friendUid); // za sad prikazujemo samo UID
+        User friend = friends.get(position);
+
+        holder.tvUsername.setText(friend.getUsername());
+        holder.ivAvatar.setImageResource(getAvatarRes(friend.getAvatar()));
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onFriendClick(friend);
+        });
     }
 
     @Override
@@ -42,10 +59,24 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.VH> {
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView tvFriendName;
+        ImageView ivAvatar;
+        TextView tvUsername;
+
         VH(@NonNull View itemView) {
             super(itemView);
-            tvFriendName = itemView.findViewById(R.id.tvFriendName);
+            ivAvatar = itemView.findViewById(R.id.ivAvatar);
+            tvUsername = itemView.findViewById(R.id.tvUsername);
+        }
+    }
+
+    private int getAvatarRes(int index) {
+        switch (index) {
+            case 1: return R.drawable.avatar1;
+            case 2: return R.drawable.avatar2;
+            case 3: return R.drawable.avatar3;
+            case 4: return R.drawable.avatar4;
+            case 5: return R.drawable.avatar5;
+            default: return R.drawable.avatar1;
         }
     }
 }

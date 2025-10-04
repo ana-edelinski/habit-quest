@@ -17,8 +17,9 @@ public class MyFriendsViewModel extends ViewModel {
     private final UserRepository userRepository;
     private final String remoteUid;
 
-    private final MutableLiveData<List<String>> _friends = new MutableLiveData<>();
-    public LiveData<List<String>> friends = _friends;
+    private final MutableLiveData<List<User>> _friends = new MutableLiveData<>();
+    public LiveData<List<User>> friends = _friends;
+
 
     private final MutableLiveData<List<User>> _friendRequestsUsers = new MutableLiveData<>();
     public LiveData<List<User>> friendRequestsUsers = _friendRequestsUsers;
@@ -29,9 +30,9 @@ public class MyFriendsViewModel extends ViewModel {
     }
 
     public void loadFriends() {
-        userRepository.getFriends(remoteUid, new RepositoryCallback<List<String>>() {
+        userRepository.getFriends(remoteUid, new RepositoryCallback<List<User>>() {
             @Override
-            public void onSuccess(List<String> friendList) {
+            public void onSuccess(List<User> friendList) {
                 _friends.postValue(friendList);
             }
 
@@ -43,9 +44,9 @@ public class MyFriendsViewModel extends ViewModel {
     }
 
     public void listenForFriendsRealtime() {
-        userRepository.listenForFriends(remoteUid, new RepositoryCallback<List<String>>() {
+        userRepository.listenForFriends(remoteUid, new RepositoryCallback<List<User>>() {
             @Override
-            public void onSuccess(List<String> friendList) {
+            public void onSuccess(List<User> friendList) {
                 _friends.postValue(friendList);
             }
 
@@ -53,6 +54,7 @@ public class MyFriendsViewModel extends ViewModel {
             public void onFailure(Exception e) { }
         });
     }
+
 
     public void listenForFriendRequestsRealtime() {
         userRepository.listenForFriendRequests(remoteUid, new RepositoryCallback<List<User>>() {

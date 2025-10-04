@@ -124,9 +124,10 @@ public class UserRepository implements IUserRepository {
         });
     }
 
-    public void getFriends(String uid, RepositoryCallback<List<String>> callback) {
+    public void getFriends(String uid, RepositoryCallback<List<User>> callback) {
         remoteDataSource.getFriends(uid, callback);
     }
+
 
     public void getFriendRequestsReceived(String uid, RepositoryCallback<List<User>> callback) {
         remoteDataSource.getFriendRequestsReceived(uid, callback);
@@ -157,7 +158,7 @@ public class UserRepository implements IUserRepository {
         remoteDataSource.rejectFriendRequest(currentUid, requesterUid, callback);
     }
 
-    public void listenForFriends(String uid, RepositoryCallback<List<String>> callback) {
+    public void listenForFriends(String uid, RepositoryCallback<List<User>> callback) {
         remoteDataSource.listenForFriends(uid, callback);
     }
 

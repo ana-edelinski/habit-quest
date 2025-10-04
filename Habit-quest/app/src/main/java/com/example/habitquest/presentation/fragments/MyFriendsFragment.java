@@ -51,6 +51,13 @@ public class MyFriendsFragment extends Fragment {
         friendsAdapter = new FriendsAdapter();
         rv.setAdapter(friendsAdapter);
 
+        // ✅ Klik na prijatelja
+        friendsAdapter.setOnFriendClickListener(friend -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("uid", friend.getUid());
+            Navigation.findNavController(v).navigate(R.id.nav_user_profile, bundle);
+        });
+
         myFriendsViewModel.friends.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
                 friendsAdapter.submitList(list);
@@ -69,4 +76,5 @@ public class MyFriendsFragment extends Fragment {
                 Navigation.findNavController(view).navigate(R.id.friendRequestsFragment)
         );
     }
+
 }

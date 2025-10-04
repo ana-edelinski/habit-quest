@@ -176,19 +176,40 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void getFriends(String uid, RepositoryCallback<List<String>> callback) {
-        db.collection("users").document(uid).get()
+    public void getFriends(String uid, RepositoryCallback<List<User>> callback) {
+        db.collection("users").document(uid)
+                .get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        List<String> friends = (List<String>) documentSnapshot.get("friends");
-                        if (friends == null) friends = new ArrayList<>();
-                        callback.onSuccess(friends);
-                    } else {
+                    if (!documentSnapshot.exists()) {
                         callback.onSuccess(new ArrayList<>());
+                        return;
                     }
+
+                    List<String> friendUids = (List<String>) documentSnapshot.get("friends");
+                    if (friendUids == null || friendUids.isEmpty()) {
+                        callback.onSuccess(new ArrayList<>());
+                        return;
+                    }
+
+                    db.collection(COLLECTION_NAME)
+                            .whereIn(com.google.firebase.firestore.FieldPath.documentId(), friendUids)
+                            .get()
+                            .addOnSuccessListener(querySnapshot -> {
+                                List<User> friends = new ArrayList<>();
+                                for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                                    User friend = doc.toObject(User.class);
+                                    if (friend != null) {
+                                        friend.setUid(doc.getId());
+                                        friends.add(friend);
+                                    }
+                                }
+                                callback.onSuccess(friends);
+                            })
+                            .addOnFailureListener(callback::onFailure);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
     public void getFriendRequestsReceived(String uid, RepositoryCallback<List<User>> callback) {
         db.collection(COLLECTION_NAME).document(uid).get()
@@ -319,22 +340,41 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void listenForFriends(String uid, RepositoryCallback<List<String>> callback) {
+    public void listenForFriends(String uid, RepositoryCallback<List<User>> callback) {
         if (friendsListener != null) friendsListener.remove();
 
         friendsListener = db.collection(COLLECTION_NAME)
                 .document(uid)
-                .addSnapshotListener((DocumentSnapshot snapshot, FirebaseFirestoreException e) -> {
-                    if (e != null) {
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null || !snapshot.exists()) {
                         callback.onFailure(e);
                         return;
                     }
-                    if (snapshot != null && snapshot.exists()) {
-                        List<String> friends = (List<String>) snapshot.get("friends");
-                        callback.onSuccess(friends != null ? friends : new ArrayList<>());
+
+                    List<String> friendUids = (List<String>) snapshot.get("friends");
+                    if (friendUids == null || friendUids.isEmpty()) {
+                        callback.onSuccess(new ArrayList<>());
+                        return;
                     }
+
+                    db.collection(COLLECTION_NAME)
+                            .whereIn(com.google.firebase.firestore.FieldPath.documentId(), friendUids)
+                            .get()
+                            .addOnSuccessListener(query -> {
+                                List<User> list = new ArrayList<>();
+                                for (DocumentSnapshot doc : query.getDocuments()) {
+                                    User u = doc.toObject(User.class);
+                                    if (u != null) {
+                                        u.setUid(doc.getId());
+                                        list.add(u);
+                                    }
+                                }
+                                callback.onSuccess(list);
+                            })
+                            .addOnFailureListener(callback::onFailure);
                 });
     }
+
 
     public void listenForFriendRequests(String uid, RepositoryCallback<List<User>> callback) {
         if (friendRequestsListener != null) friendRequestsListener.remove();
