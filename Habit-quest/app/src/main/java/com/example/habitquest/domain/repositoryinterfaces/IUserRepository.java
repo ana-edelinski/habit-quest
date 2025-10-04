@@ -9,4 +9,6 @@ public interface IUserRepository {
     public void insertUser(String email, String username, String password, int avatar, RepositoryCallback<Void> callback);
     public void loginUser(String email, String password, RepositoryCallback<User> callback);
     public void changePassword(String oldPassword, String newPassword, RepositoryCallback<Void> callback);
+
+    void getUser(String remoteUid, RepositoryCallback<User> cb);
     }

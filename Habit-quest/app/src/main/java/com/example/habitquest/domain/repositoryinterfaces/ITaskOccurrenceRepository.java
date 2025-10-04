@@ -23,4 +23,6 @@ public interface ITaskOccurrenceRepository {
     void getById(String firebaseUid, String taskId, String occurrenceId, RepositoryCallback<TaskOccurrence> cb);
 
     void cancelOccurrence(String firebaseUid, String taskId, String occurrenceId, RepositoryCallback<Void> cb);
+    void countOccurrencesInPeriod(String firebaseUid, long start, long end, RepositoryCallback<Integer> cb);
+
 }

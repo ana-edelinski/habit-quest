@@ -139,6 +139,34 @@ public class TaskRemoteDataSource {
     }
 
 
+    public void countOneTimeTasksInPeriod(String firebaseUid, long start, long end, RepositoryCallback<Integer> cb) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("tasks")
+                .whereEqualTo("firebaseUid", firebaseUid)
+                // samo zadaci koji imaju "date" (tj. one-time)
+                .whereGreaterThanOrEqualTo("date", start)
+                .whereLessThanOrEqualTo("date", end)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    int count = 0;
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        Task task = doc.toObject(Task.class);
+                        if (task == null) continue;
+
+                        String status = doc.getString("status");
+                        if ("COMPLETED".equals(status) || "NOT_DONE".equals(status)) {
+                            count++;
+                        }
+                    }
+                    cb.onSuccess(count);
+                })
+                .addOnFailureListener(cb::onFailure);
+    }
+
+
+
+
 
     // interfejs za eventove
     public interface RemoteListener {

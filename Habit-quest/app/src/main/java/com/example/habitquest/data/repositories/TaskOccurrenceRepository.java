@@ -128,4 +128,12 @@ public class TaskOccurrenceRepository implements ITaskOccurrenceRepository {
     public void getById(String firebaseUid, String taskId, String occurrenceId, RepositoryCallback<TaskOccurrence> cb) {
         remote.getById(firebaseUid, taskId, occurrenceId, cb);
     }
+
+    @Override
+    public void countOccurrencesInPeriod(String firebaseUid, long start, long end, RepositoryCallback<Integer> cb) {
+        remote.countOccurrencesInPeriod(firebaseUid, start, end, cb);
+    }
+
+
+
 }

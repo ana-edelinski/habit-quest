@@ -15,6 +15,9 @@ public interface ITaskRepository {
     void delete(String firebaseUid, String taskId, long localUserId, RepositoryCallback<Void> cb);
     void getById(String firebaseUid, String taskId, RepositoryCallback<Task> cb);
 
+    void countOneTimeTasksInPeriod(String firebaseUid, long start, long end, RepositoryCallback<Integer> cb);
+
+
     interface TasksListener {
         void onChanged(List<Task> list);
         void onError(Exception e);
