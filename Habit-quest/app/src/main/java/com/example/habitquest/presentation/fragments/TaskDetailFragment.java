@@ -17,19 +17,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.habitquest.R;
+import com.example.habitquest.domain.model.Boss;
 import com.example.habitquest.domain.model.Category;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
 import com.example.habitquest.presentation.adapters.OccurrenceAdapter;
+import com.example.habitquest.presentation.viewmodels.BossFightViewModel;
 import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.BossFightViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
+import com.example.habitquest.utils.RepositoryCallback;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -370,12 +376,58 @@ public class TaskDetailFragment extends Fragment {
 
         Button btnOk = dialog.findViewById(R.id.btnOk);
         btnOk.setOnClickListener(v -> {
+//            dialog.dismiss();
+//            NavHostFragment.findNavController(this)
+//                    .navigate(R.id.action_taskDetailFragment_to_levelProgressFragment);
             dialog.dismiss();
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.action_taskDetailFragment_to_levelProgressFragment);
+
+            // 1️⃣ Kreiraj novog bossa
+            BossFightViewModelFactory factory = new BossFightViewModelFactory(requireContext());
+            BossFightViewModel bossFightViewModel = new ViewModelProvider(this, factory)
+                    .get(BossFightViewModel.class);
+
+            bossFightViewModel.createNextBoss(new RepositoryCallback<Boss>() {
+                @Override
+                public void onSuccess(Boss boss) {
+                    // 2️⃣ Kada je boss spreman, prikaži dijalog
+                    showBossChallengeDialog(boss.getLevel());
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    e.printStackTrace();
+                }
+            });
         });
 
         dialog.show();
     }
+
+    private void showBossChallengeDialog(int level) {
+        Dialog bossDialog = new Dialog(requireContext());
+        bossDialog.setContentView(R.layout.dialog_boss_challenge);
+        bossDialog.setCancelable(false);
+
+        TextView tvTitle = bossDialog.findViewById(R.id.tvBossTitle);
+        TextView tvDescription = bossDialog.findViewById(R.id.tvBossDescription);
+        Button btnFight = bossDialog.findViewById(R.id.btnFightNow);
+        Button btnLater = bossDialog.findViewById(R.id.btnLater);
+        ImageView imgBoss = bossDialog.findViewById(R.id.imgBoss);
+
+        tvTitle.setText("⚔️ New Boss Challenge!");
+        tvDescription.setText("A powerful Boss (Level " + level + ") has appeared.\nAre you ready to fight?");
+        imgBoss.setImageResource(R.drawable.boss_level_1); // možeš kasnije menjati po nivou
+
+        btnFight.setOnClickListener(v -> {
+            bossDialog.dismiss();
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_taskDetailFragment_to_bossFightFragment);
+        });
+
+        btnLater.setOnClickListener(v -> bossDialog.dismiss());
+
+        bossDialog.show();
+    }
+
 
 }

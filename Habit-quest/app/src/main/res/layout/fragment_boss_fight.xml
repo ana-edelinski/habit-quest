@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".presentation.fragments.BossFightFragment">
+
+    <!-- 🔹 Naslov / nivo bossa -->
+    <TextView
+        android:id="@+id/tvBossTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Boss Level 1"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 🔹 Slika bossa -->
+    <ImageView
+        android:id="@+id/imgBoss"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:src="@drawable/boss_level_1"
+        android:contentDescription="Boss image"
+        app:layout_constraintTop_toBottomOf="@id/tvBossTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp"/>
+
+    <!-- 🔹 Tekst "Boss HP" + numerička vrednost -->
+    <LinearLayout
+        android:id="@+id/layoutBossHpLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/imgBoss"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:id="@+id/tvBossHpLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Boss HP:"
+            android:textStyle="bold"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/tvBossHpValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100 / 100"
+            android:textColor="@color/red"
+            android:layout_marginStart="6dp"/>
+    </LinearLayout>
+
+    <!-- 🔹 Health bar bossa -->
+    <ProgressBar
+        android:id="@+id/progressBossHp"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        android:progressTint="@color/red"
+        android:max="100"
+        android:progress="100"
+        app:layout_constraintTop_toBottomOf="@id/layoutBossHpLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp"/>
+
+    <!-- 🔹 Tekst "Your PP" + numerička vrednost -->
+    <LinearLayout
+        android:id="@+id/layoutPlayerPpLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/progressBossHp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:id="@+id/tvPlayerPpLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your PP:"
+            android:textStyle="bold"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/tvPlayerPpValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="70 / 100"
+            android:textColor="@color/blue"
+            android:layout_marginStart="6dp"/>
+    </LinearLayout>
+
+    <!-- 🔹 Player PP bar -->
+    <ProgressBar
+        android:id="@+id/progressPlayerPp"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="16dp"
+        android:progressTint="@color/blue"
+        android:max="100"
+        android:progress="70"
+        app:layout_constraintTop_toBottomOf="@id/layoutPlayerPpLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp"/>
+
+    <!-- 🔹 Tekstualni info -->
+    <LinearLayout
+        android:id="@+id/layoutBattleInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/progressPlayerPp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/tvSuccessRate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chance: 75%"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/tvRemainingAttacks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Attack 0/5"
+            android:textSize="16sp"
+            android:textColor="@color/toolbar_bg"/>
+    </LinearLayout>
+
+    <!-- 🔹 Tekstualni feedback ("Hit!" / "Miss!") -->
+    <TextView
+        android:id="@+id/tvBattleFeedback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"
+        app:layout_constraintTop_toBottomOf="@id/layoutBattleInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <!-- 🔹 Dugme za napad -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAttack"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="ATTACK"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        android:backgroundTint="@color/colorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="32dp"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

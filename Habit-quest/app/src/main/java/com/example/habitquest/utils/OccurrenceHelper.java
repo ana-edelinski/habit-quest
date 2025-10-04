@@ -32,6 +32,7 @@ public class OccurrenceHelper {
             occ.setTaskId(task.getId());
             occ.setStatus(TaskStatus.ACTIVE);
             occ.setDate(current);
+            occ.setFirebaseUid(task.getFirebaseUid());
             occurrences.add(occ);
 
             // pomeraj dalje

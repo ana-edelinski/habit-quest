@@ -10,7 +10,7 @@ import android.util.Log;
 // Brine se o onCreate i onUpgrade metodama baze.
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "habitquest.db";
-    private static final int DATABASE_VERSION = 19;
+    private static final int DATABASE_VERSION = 20;
 
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

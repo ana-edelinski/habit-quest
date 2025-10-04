@@ -119,8 +119,8 @@ public class TaskOccurrenceRemoteDataSource {
     public void countOccurrencesInPeriod(String firebaseUid, long start, long end, RepositoryCallback<Integer> cb) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Kolekcija 'task_occurrences' u kojoj su svi occurrence dokumenti
-        db.collection("task_occurrences")
+        // Pretraga svih podkolekcija nazvanih "occurrences"
+        db.collectionGroup("occurrences")
                 .whereEqualTo("firebaseUid", firebaseUid)
                 .whereGreaterThanOrEqualTo("date", start)
                 .whereLessThanOrEqualTo("date", end)
@@ -140,6 +140,7 @@ public class TaskOccurrenceRemoteDataSource {
                 })
                 .addOnFailureListener(cb::onFailure);
     }
+
 
 
 }

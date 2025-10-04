@@ -49,6 +49,7 @@ public class BossFightViewModel extends ViewModel {
         this.bossRepository = bossRepository;
         this.userRepository = userRepository;
         this.stagePerformanceCalculator = stagePerformanceCalculator;
+
     }
 
     // ------------------ Inicijalizacija borbe ------------------
@@ -90,10 +91,47 @@ public class BossFightViewModel extends ViewModel {
     // ------------------ Učitavanje trenutnog bosa ------------------
 
     public void loadCurrentBoss() {
-        bossRepository.getCurrentBoss(prefs.getFirebaseUid(), new RepositoryCallback<Boss>() {
+        String uid = prefs.getFirebaseUid();
+
+        // 1️⃣ Dohvati usera da vidiš koji je njegov trenutni level
+        userRepository.getUser(uid, new RepositoryCallback<User>() {
             @Override
-            public void onSuccess(Boss boss) {
-                if (boss != null) _currentBoss.postValue(boss);
+            public void onSuccess(User user) {
+                if (user == null) return;
+
+                // 2️⃣ Na osnovu levela formiraj bossId (npr. boss_1, boss_2, ...)
+                String bossId = "boss_" + user.getLevel();
+
+                // 3️⃣ Sada dohvati odgovarajućeg bossa
+                bossRepository.getCurrentBoss(bossId, new RepositoryCallback<Boss>() {
+                    @Override
+                    public void onSuccess(Boss boss) {
+                        if (boss != null) {
+                            _currentBoss.postValue(boss);
+                        } else {
+                            // Ako nema bossa u bazi, napravi ga
+                            Boss firstBoss = new Boss(user.getLevel(), 100, 200);
+                            firstBoss.setId(bossId);
+
+                            bossRepository.saveBoss(firstBoss, new RepositoryCallback<Void>() {
+                                @Override
+                                public void onSuccess(Void data) {
+                                    _currentBoss.postValue(firstBoss);
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        e.printStackTrace();
+                    }
+                });
             }
 
             @Override
@@ -102,6 +140,7 @@ public class BossFightViewModel extends ViewModel {
             }
         });
     }
+
 
     // ------------------ Početak borbe ------------------
 
@@ -195,5 +234,86 @@ public class BossFightViewModel extends ViewModel {
             }
         });
     }
+
+
+    /**
+     * Kreira sledećeg bossa kada korisnik dostigne novi nivo.
+     */
+    public void createNextBoss(RepositoryCallback<Boss> callback) {
+        String uid = prefs.getFirebaseUid();
+
+        // 1️⃣ Prvo dohvati korisnika da saznaš njegov trenutni level
+        userRepository.getUser(uid, new RepositoryCallback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                if (user == null) {
+                    callback.onFailure(new Exception("User not found"));
+                    return;
+                }
+
+                // 2️⃣ Formiraj bossId na osnovu njegovog trenutnog levela
+                String bossId = "boss_" + user.getLevel();
+
+                // 3️⃣ Dohvati trenutnog bossa po tom ID-ju (ako postoji)
+                bossRepository.getCurrentBoss(bossId, new RepositoryCallback<Boss>() {
+                    @Override
+                    public void onSuccess(Boss currentBoss) {
+                        if (currentBoss != null) {
+                            // ✅ Kreiraj sledećeg bossa na osnovu prethodnog
+                            bossRepository.createNextBoss(currentBoss, new RepositoryCallback<Boss>() {
+                                @Override
+                                public void onSuccess(Boss newBoss) {
+                                    _currentBoss.postValue(newBoss);
+                                    callback.onSuccess(newBoss);
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    e.printStackTrace();
+                                    callback.onFailure(e);
+                                }
+                            });
+                        } else {
+                            // ✅ Ako nema trenutnog, kreiraj prvog
+                            Boss firstBoss = new Boss(
+                                    1,      // level
+                                    100,    // HP
+                                    200     // rewardCoins
+                            );
+                            firstBoss.setId("boss_1");
+
+                            bossRepository.saveBoss(firstBoss, new RepositoryCallback<Void>() {
+                                @Override
+                                public void onSuccess(Void data) {
+                                    _currentBoss.postValue(firstBoss);
+                                    callback.onSuccess(firstBoss);
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    e.printStackTrace();
+                                    callback.onFailure(e);
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        e.printStackTrace();
+                        callback.onFailure(e);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                e.printStackTrace();
+                callback.onFailure(e);
+            }
+        });
+    }
+
+
 }
 

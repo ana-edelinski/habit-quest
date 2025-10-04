@@ -13,19 +13,19 @@ public class BossRemoteDataSource {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public void getCurrentBoss(String firestoreUid, RepositoryCallback<Boss> callback) {
+    public void getCurrentBoss(String bossId, RepositoryCallback<Boss> callback) {
         db.collection("bosses")
-                .document(firestoreUid)
+                .document(bossId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     if (snapshot.exists()) {
-                        Boss boss = snapshot.toObject(Boss.class);
-                        callback.onSuccess(boss);
+                        callback.onSuccess(snapshot.toObject(Boss.class));
                     } else {
                         callback.onSuccess(null);
                     }
                 })
-                .addOnFailureListener(e -> callback.onFailure(e));
+                .addOnFailureListener(callback::onFailure);
+
     }
 
     public void createNextBoss(Boss newBoss, RepositoryCallback<Boss> callback) {
@@ -49,6 +49,15 @@ public class BossRemoteDataSource {
                 .add(result)
                 .addOnSuccessListener(ref -> callback.onSuccess(null))
                 .addOnFailureListener(e -> callback.onFailure(e));
+    }
+
+    public void saveBoss(Boss boss, RepositoryCallback<Void> callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("bosses")
+                .document(boss.getId())
+                .set(boss)
+                .addOnSuccessListener(unused -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
     }
 }
 

@@ -18,8 +18,8 @@ public class BossRepository implements IBossRepository {
     }
 
     @Override
-    public void getCurrentBoss(String firestoreUid, RepositoryCallback<Boss> callback) {
-        remoteDataSource.getCurrentBoss(firestoreUid, callback);
+    public void getCurrentBoss(String bossId, RepositoryCallback<Boss> callback) {
+        remoteDataSource.getCurrentBoss(bossId, callback);
     }
 
     @Override
@@ -44,5 +44,24 @@ public class BossRepository implements IBossRepository {
     public void saveBattleResult(BossFightResult result, RepositoryCallback<Void> callback) {
         remoteDataSource.saveBattleResult(result, callback);
     }
+
+    public void saveBoss(Boss boss, RepositoryCallback<Void> callback) {
+        remoteDataSource.saveBoss(boss, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void data) {
+                callback.onSuccess(null);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                e.printStackTrace();
+                callback.onFailure(e);
+            }
+        });
+    }
+
+
+
+
 }
 

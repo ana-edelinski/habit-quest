@@ -11,11 +11,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.habitquest.R;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.AccountViewModelFactory;
 import com.example.habitquest.utils.LevelUtils;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 public class LevelProgressFragment extends Fragment {
@@ -76,6 +79,14 @@ public class LevelProgressFragment extends Fragment {
         });
 
         viewModel.loadUser();
+
+        // dugme za bossa
+        MaterialButton btnBossFight = view.findViewById(R.id.btnEnterBossFight);
+        btnBossFight.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.action_levelProgressFragment_to_bossFightFragment);
+        });
+
 
         return view;
     }

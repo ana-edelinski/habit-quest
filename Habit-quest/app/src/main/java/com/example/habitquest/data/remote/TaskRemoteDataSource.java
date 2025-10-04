@@ -45,6 +45,7 @@ public class TaskRemoteDataSource {
 
     public void create(@NonNull String firebaseUid, @NonNull Task task, @NonNull RepositoryCallback<Task> cb) {
         // Firestore sam generiše ID
+        task.setFirebaseUid(firebaseUid);
         DocumentReference docRef = tasks(firebaseUid).document();
         String newId = docRef.getId();
         task.setId(newId);
@@ -55,6 +56,7 @@ public class TaskRemoteDataSource {
     }
 
     public void update(@NonNull String firebaseUid, @NonNull Task task, @NonNull RepositoryCallback<Void> cb) {
+        task.setFirebaseUid(firebaseUid);
         if (task.getId() == null) {
             cb.onFailure(new IllegalArgumentException("Task id is null"));
             return;
@@ -142,9 +144,9 @@ public class TaskRemoteDataSource {
     public void countOneTimeTasksInPeriod(String firebaseUid, long start, long end, RepositoryCallback<Integer> cb) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("tasks")
+        db.collectionGroup("tasks")
                 .whereEqualTo("firebaseUid", firebaseUid)
-                // samo zadaci koji imaju "date" (tj. one-time)
+                // samo zadaci koji imaju polje "date" (tj. one-time zadaci)
                 .whereGreaterThanOrEqualTo("date", start)
                 .whereLessThanOrEqualTo("date", end)
                 .get()
@@ -163,6 +165,7 @@ public class TaskRemoteDataSource {
                 })
                 .addOnFailureListener(cb::onFailure);
     }
+
 
 
 
