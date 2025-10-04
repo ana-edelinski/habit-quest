@@ -14,12 +14,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.presentation.adapters.FriendRequestsAdapter;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
+import com.example.habitquest.presentation.viewmodels.MyFriendsViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.MyFriendsViewModelFactory;
 
 public class FriendRequestsFragment extends Fragment {
 
-    private AccountViewModel accountViewModel;
+    private MyFriendsViewModel myFriendsViewModel;
     private FriendRequestsAdapter adapter;
 
     @Nullable
@@ -33,7 +37,9 @@ public class FriendRequestsFragment extends Fragment {
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
-        accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
+        myFriendsViewModel = new ViewModelProvider(requireActivity(),
+                new MyFriendsViewModelFactory(new AppPreferences(requireContext()), new UserRepository(requireContext()))
+        ).get(MyFriendsViewModel.class);
         adapter = new FriendRequestsAdapter();
 
         RecyclerView rv = v.findViewById(R.id.rvFriendRequests);
@@ -44,19 +50,19 @@ public class FriendRequestsFragment extends Fragment {
             @Override
             public void onAccept(String requesterUid) {
                 adapter.removeByUid(requesterUid);
-                accountViewModel.acceptFriendRequest(requesterUid);
+                myFriendsViewModel.acceptFriendRequest(requesterUid);
             }
 
             @Override
             public void onReject(String requesterUid) {
                 adapter.removeByUid(requesterUid);
-                accountViewModel.rejectFriendRequest(requesterUid);
+                myFriendsViewModel.rejectFriendRequest(requesterUid);
             }
         });
 
         TextView placeholder = v.findViewById(R.id.tvRequestsPlaceholder);
 
-        accountViewModel.friendRequestsUsers.observe(getViewLifecycleOwner(), list -> {
+        myFriendsViewModel.friendRequestsUsers.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
                 adapter.submitList(list);
                 rv.setVisibility(View.VISIBLE);
@@ -67,6 +73,6 @@ public class FriendRequestsFragment extends Fragment {
             }
         });
 
-        accountViewModel.listenForFriendRequestsRealtime();
+        myFriendsViewModel.listenForFriendRequestsRealtime();
     }
 }

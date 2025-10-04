@@ -17,12 +17,16 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.presentation.adapters.FriendsAdapter;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
+import com.example.habitquest.presentation.viewmodels.MyFriendsViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.MyFriendsViewModelFactory;
 
 public class MyFriendsFragment extends Fragment {
 
-    private AccountViewModel accountViewModel;
+    private MyFriendsViewModel myFriendsViewModel;
     private FriendsAdapter friendsAdapter;
 
     @Override
@@ -35,7 +39,9 @@ public class MyFriendsFragment extends Fragment {
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
-        accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
+        myFriendsViewModel = new ViewModelProvider(requireActivity(),
+                new MyFriendsViewModelFactory(new AppPreferences(requireContext()), new UserRepository(requireContext()))
+        ).get(MyFriendsViewModel.class);
 
         TextView placeholder = v.findViewById(R.id.tvFriendsPlaceholder);
         RecyclerView rv = v.findViewById(R.id.rvFriends);
@@ -45,7 +51,7 @@ public class MyFriendsFragment extends Fragment {
         friendsAdapter = new FriendsAdapter();
         rv.setAdapter(friendsAdapter);
 
-        accountViewModel.friends.observe(getViewLifecycleOwner(), list -> {
+        myFriendsViewModel.friends.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
                 friendsAdapter.submitList(list);
                 rv.setVisibility(View.VISIBLE);
@@ -57,7 +63,7 @@ public class MyFriendsFragment extends Fragment {
             }
         });
 
-        accountViewModel.listenForFriendsRealtime();
+        myFriendsViewModel.listenForFriendsRealtime();
 
         btnRequests.setOnClickListener(view ->
                 Navigation.findNavController(view).navigate(R.id.friendRequestsFragment)
