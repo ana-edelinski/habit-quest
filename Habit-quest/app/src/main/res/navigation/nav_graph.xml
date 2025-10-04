@@ -119,4 +119,11 @@
             app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/friendRequestsFragment"
+        android:name="com.example.habitquest.presentation.fragments.FriendRequestsFragment"
+        android:label="Friend Requests"
+        tools:layout="@layout/fragment_friend_requests" />
+
+
 </navigation>
