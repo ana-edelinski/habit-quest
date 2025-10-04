@@ -99,7 +99,7 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
         if (indexToRemove != -1) {
             users.remove(indexToRemove);
             notifyItemRemoved(indexToRemove);
-            if (users.isEmpty()) notifyDataSetChanged(); // osveži placeholder
+            if (users.isEmpty()) notifyDataSetChanged();
         }
     }
 

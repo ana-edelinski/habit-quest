@@ -40,17 +40,16 @@ public class FriendRequestsFragment extends Fragment {
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
 
-        // 🔹 Ovde dodaj ovaj deo (tačno ovde!)
         adapter.setOnRequestActionListener(new FriendRequestsAdapter.OnRequestActionListener() {
             @Override
             public void onAccept(String requesterUid) {
-                adapter.removeByUid(requesterUid); // 🧩 odmah izbaci iz UI
+                adapter.removeByUid(requesterUid);
                 accountViewModel.acceptFriendRequest(requesterUid);
             }
 
             @Override
             public void onReject(String requesterUid) {
-                adapter.removeByUid(requesterUid); // 🧩 odmah izbaci iz UI
+                adapter.removeByUid(requesterUid);
                 accountViewModel.rejectFriendRequest(requesterUid);
             }
         });
@@ -68,7 +67,6 @@ public class FriendRequestsFragment extends Fragment {
             }
         });
 
-        // 🔹 realtime update zahteva
         accountViewModel.listenForFriendRequestsRealtime();
     }
 }

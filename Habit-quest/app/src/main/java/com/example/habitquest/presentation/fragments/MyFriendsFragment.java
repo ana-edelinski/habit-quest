@@ -45,7 +45,6 @@ public class MyFriendsFragment extends Fragment {
         friendsAdapter = new FriendsAdapter();
         rv.setAdapter(friendsAdapter);
 
-        // 🔹 Observe friends list
         accountViewModel.friends.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
                 friendsAdapter.submitList(list);
@@ -58,10 +57,8 @@ public class MyFriendsFragment extends Fragment {
             }
         });
 
-        // 🔹 Listen for realtime updates
         accountViewModel.listenForFriendsRealtime();
 
-        // 🔹 Open Friend Requests fragment
         btnRequests.setOnClickListener(view ->
                 Navigation.findNavController(view).navigate(R.id.friendRequestsFragment)
         );
