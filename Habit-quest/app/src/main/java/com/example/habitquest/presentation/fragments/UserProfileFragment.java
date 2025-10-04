@@ -105,11 +105,18 @@ public class UserProfileFragment extends Fragment {
 
         viewModel.currentUser.observe(getViewLifecycleOwner(), currentUser -> {
             if (currentUser == null) return;
-            boolean isRequestSent = currentUser.getFriendRequestsSent().contains(userId);
-            btnAddFriend.setText(isRequestSent ? "Request Sent" : "Add Friend");
 
-            btnAddFriend.setOnClickListener(v -> {
-                if (isRequestSent) {
+            boolean isAlreadyFriend = currentUser.getFriends() != null && currentUser.getFriends().contains(userId);
+            boolean isRequestSent = currentUser.getFriendRequestsSent() != null && currentUser.getFriendRequestsSent().contains(userId);
+            boolean isRequestReceived = currentUser.getFriendRequestsReceived() != null && currentUser.getFriendRequestsReceived().contains(userId);
+
+            if (isAlreadyFriend) {
+                btnAddFriend.setText("Friends");
+                btnAddFriend.setEnabled(false);
+            } else if (isRequestSent) {
+                btnAddFriend.setText("Request Sent");
+                btnAddFriend.setEnabled(true);
+                btnAddFriend.setOnClickListener(v -> {
                     viewModel.cancelFriendRequest(currentUid, userId, new RepositoryCallback<Void>() {
                         @Override
                         public void onSuccess(Void result) {
@@ -122,7 +129,14 @@ public class UserProfileFragment extends Fragment {
                             Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
-                } else {
+                });
+            } else if (isRequestReceived) {
+                btnAddFriend.setText("Request Received");
+                btnAddFriend.setEnabled(false);
+            } else {
+                btnAddFriend.setText("Add Friend");
+                btnAddFriend.setEnabled(true);
+                btnAddFriend.setOnClickListener(v -> {
                     viewModel.sendFriendRequest(currentUid, userId, new RepositoryCallback<Void>() {
                         @Override
                         public void onSuccess(Void result) {
@@ -135,9 +149,10 @@ public class UserProfileFragment extends Fragment {
                             Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
-                }
-            });
+                });
+            }
         });
+
 
         viewModel.loadUser(userId);
         viewModel.loadCurrentUser(currentUid);

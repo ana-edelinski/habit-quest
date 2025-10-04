@@ -61,7 +61,7 @@ public class MyFriendsFragment extends Fragment {
 
         friendsAdapter.setOnFriendClickListener(friend -> {
             Bundle bundle = new Bundle();
-            bundle.putString("uid", friend.getUid());
+            bundle.putString("userId", friend.getUid());
             Navigation.findNavController(v).navigate(R.id.nav_user_profile, bundle);
         });
 

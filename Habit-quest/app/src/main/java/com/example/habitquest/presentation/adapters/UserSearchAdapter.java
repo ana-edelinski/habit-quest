@@ -22,10 +22,11 @@ import java.util.List;
 public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.UserViewHolder> {
 
     private List<User> users = new ArrayList<>();
-    private List<String> currentUserSentRequests = new ArrayList<>();
+    private User currentUser; // 🔹 kompletan ulogovani korisnik
+    private String currentUid;
 
     private OnAddFriendClickListener listener;
-    private String currentUid;
+    private OnCancelFriendRequestClickListener onCancelFriendRequestClickListener;
 
     public interface OnAddFriendClickListener {
         void onAddFriendClicked(User user);
@@ -35,7 +36,9 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
         void onCancelFriendRequestClicked(User user);
     }
 
-    private OnCancelFriendRequestClickListener onCancelFriendRequestClickListener;
+    public UserSearchAdapter(OnAddFriendClickListener listener) {
+        this.listener = listener;
+    }
 
     public void setOnCancelFriendRequestClickListener(OnCancelFriendRequestClickListener listener) {
         this.onCancelFriendRequestClickListener = listener;
@@ -45,20 +48,15 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
         this.currentUid = currentUid;
     }
 
-    public UserSearchAdapter(OnAddFriendClickListener listener) {
-        this.listener = listener;
-    }
-
     public void setUsers(List<User> users) {
         this.users = users != null ? users : new ArrayList<>();
         notifyDataSetChanged();
     }
 
-    public void setCurrentUserSentRequests(List<String> sentRequests) {
-        this.currentUserSentRequests = sentRequests != null ? sentRequests : new ArrayList<>();
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
         notifyDataSetChanged();
     }
-
 
     @NonNull
     @Override
@@ -77,49 +75,58 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
         switch (user.getAvatar()) {
             case 1: resId = R.drawable.avatar1; break;
             case 2: resId = R.drawable.avatar2; break;
+            case 3: resId = R.drawable.avatar3; break;
+            case 4: resId = R.drawable.avatar4; break;
+            case 5: resId = R.drawable.avatar5; break;
             default: resId = R.drawable.avatar5;
         }
         holder.imgAvatar.setImageResource(resId);
 
         boolean isSelf = user.getUid().equals(currentUid);
-
         if (isSelf) {
             holder.btnAddFriend.setVisibility(View.GONE);
+            return;
         } else {
             holder.btnAddFriend.setVisibility(View.VISIBLE);
         }
 
-        boolean isRequestSent = currentUserSentRequests.contains(user.getUid());
-        holder.btnAddFriend.setText(isRequestSent ? "Request Sent" : "Add Friend");
+        boolean isFriend = currentUser != null && currentUser.getFriends() != null && currentUser.getFriends().contains(user.getUid());
+        boolean isRequestSent = currentUser != null && currentUser.getFriendRequestsSent() != null && currentUser.getFriendRequestsSent().contains(user.getUid());
+        boolean isRequestReceived = currentUser != null && currentUser.getFriendRequestsReceived() != null && currentUser.getFriendRequestsReceived().contains(user.getUid());
 
-        holder.btnAddFriend.setOnClickListener(v -> {
-            if (isRequestSent) {
-                if (onCancelFriendRequestClickListener != null) {
+        if (isFriend) {
+            holder.btnAddFriend.setText("Friends");
+            holder.btnAddFriend.setEnabled(false);
+        } else if (isRequestSent) {
+            holder.btnAddFriend.setText("Request Sent");
+            holder.btnAddFriend.setEnabled(true);
+            holder.btnAddFriend.setOnClickListener(v -> {
+                if (onCancelFriendRequestClickListener != null)
                     onCancelFriendRequestClickListener.onCancelFriendRequestClicked(user);
-                }
-            } else {
-                if (listener != null) {
-                    listener.onAddFriendClicked(user);
-                }
-            }
-        });
+            });
+        } else if (isRequestReceived) {
+            holder.btnAddFriend.setText("Request Received");
+            holder.btnAddFriend.setEnabled(false);
+        } else {
+            holder.btnAddFriend.setText("Add Friend");
+            holder.btnAddFriend.setEnabled(true);
+            holder.btnAddFriend.setOnClickListener(v -> {
+                if (listener != null) listener.onAddFriendClicked(user);
+            });
+        }
 
+        // 🔹 Klik na korisnika otvara profil
         holder.itemView.setOnClickListener(v -> {
-            String currentUid = this.currentUid;
+            NavController navController = Navigation.findNavController(v);
             if (user.getUid().equals(currentUid)) {
-                NavController navController = Navigation.findNavController(v);
                 navController.navigate(R.id.nav_account);
             } else {
                 Bundle args = new Bundle();
                 args.putString("userId", user.getUid());
-                NavController navController = Navigation.findNavController(v);
                 navController.navigate(R.id.nav_user_profile, args);
             }
         });
-
     }
-
-
 
     @Override
     public int getItemCount() {

@@ -23,11 +23,20 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
         void onReject(String requesterUid);
     }
 
+    public interface OnUserClickListener {
+        void onUserClicked(String userId);
+    }
+
     private List<User> users = new ArrayList<>();
-    private OnRequestActionListener listener;
+    private OnRequestActionListener onRequestActionListener;
+    private OnUserClickListener onUserClickListener;
 
     public void setOnRequestActionListener(OnRequestActionListener listener) {
-        this.listener = listener;
+        this.onRequestActionListener = listener;
+    }
+
+    public void setOnUserClickListener(OnUserClickListener listener) {
+        this.onUserClickListener = listener;
     }
 
     public void submitList(List<User> list) {
@@ -40,6 +49,10 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_friend_request, parent, false);
+
+        v.setForeground(v.getContext().getResources().getDrawable(
+                android.R.drawable.list_selector_background, v.getContext().getTheme()));
+
         return new VH(v);
     }
 
@@ -50,11 +63,18 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
         holder.ivAvatar.setImageResource(getAvatarRes(user.getAvatar()));
 
         holder.btnAccept.setOnClickListener(v -> {
-            if (listener != null) listener.onAccept(user.getUid());
+            if (onRequestActionListener != null)
+                onRequestActionListener.onAccept(user.getUid());
         });
 
         holder.btnReject.setOnClickListener(v -> {
-            if (listener != null) listener.onReject(user.getUid());
+            if (onRequestActionListener != null)
+                onRequestActionListener.onReject(user.getUid());
+        });
+
+        holder.itemView.setOnClickListener(v -> {
+            if (onUserClickListener != null)
+                onUserClickListener.onUserClicked(user.getUid());
         });
     }
 
@@ -102,5 +122,4 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
             if (users.isEmpty()) notifyDataSetChanged();
         }
     }
-
 }

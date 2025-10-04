@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -59,6 +60,13 @@ public class FriendRequestsFragment extends Fragment {
                 myFriendsViewModel.rejectFriendRequest(requesterUid);
             }
         });
+
+        adapter.setOnUserClickListener(userId -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("userId", userId);
+            Navigation.findNavController(v).navigate(R.id.nav_user_profile, bundle);
+        });
+
 
         TextView placeholder = v.findViewById(R.id.tvRequestsPlaceholder);
 

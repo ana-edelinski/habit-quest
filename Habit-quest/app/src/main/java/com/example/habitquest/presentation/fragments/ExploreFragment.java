@@ -87,11 +87,12 @@ public class ExploreFragment extends Fragment {
         adapter.setCurrentUid(currentUid);
         exploreViewModel.loadCurrentUser(currentUid);
 
-        exploreViewModel.currentUser.observe(getViewLifecycleOwner(), user -> {
-            if (user != null) {
-                adapter.setCurrentUserSentRequests(user.getFriendRequestsSent());
-            }
+        exploreViewModel.currentUser.observe(getViewLifecycleOwner(), currentUser -> {
+            if (currentUser == null) return;
+
+            adapter.setCurrentUser(currentUser); // sada adapter zna i prijatelje, ne samo sent requests
         });
+
 
         exploreViewModel.userSearchResults.observe(getViewLifecycleOwner(), adapter::setUsers);
 
