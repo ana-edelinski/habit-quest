@@ -116,32 +116,66 @@ public class AccountViewModel extends ViewModel {
     }
 
     public void acceptFriendRequest(String requesterUid) {
+        List<User> currentRequests = _friendRequestsUsers.getValue();
+        if (currentRequests != null) {
+            List<User> updated = new ArrayList<>(currentRequests);
+            updated.removeIf(u -> u.getUid().equals(requesterUid));
+            _friendRequestsUsers.setValue(updated); // ✅ odmah ažurira UI
+        }
+
         userRepository.acceptFriendRequest(remoteUid, requesterUid, new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                loadFriendRequestsReceived(); // osveži listu zahteva
                 loadFriends(); // osveži listu prijatelja
             }
 
             @Override
-            public void onFailure(Exception e) {
-                // opciono: možeš dodati toast poruku kasnije
-            }
+            public void onFailure(Exception e) { }
         });
     }
 
     public void rejectFriendRequest(String requesterUid) {
+        List<User> currentRequests = _friendRequestsUsers.getValue();
+        if (currentRequests != null) {
+            List<User> updated = new ArrayList<>(currentRequests);
+            updated.removeIf(u -> u.getUid().equals(requesterUid));
+            _friendRequestsUsers.setValue(updated); // ✅ odmah ažurira UI
+        }
+
         userRepository.rejectFriendRequest(remoteUid, requesterUid, new RepositoryCallback<Void>() {
             @Override
-            public void onSuccess(Void result) {
-                loadFriendRequestsReceived(); // samo osveži listu zahteva
+            public void onSuccess(Void result) { }
+            @Override
+            public void onFailure(Exception e) { }
+        });
+    }
+
+
+
+    public void listenForFriendsRealtime() {
+        userRepository.listenForFriends(remoteUid, new RepositoryCallback<List<String>>() {
+            @Override
+            public void onSuccess(List<String> friendList) {
+                _friends.postValue(friendList);
             }
 
             @Override
-            public void onFailure(Exception e) {
-                // opciono: možeš dodati toast poruku kasnije
-            }
+            public void onFailure(Exception e) { }
         });
     }
+
+    public void listenForFriendRequestsRealtime() {
+        userRepository.listenForFriendRequests(remoteUid, new RepositoryCallback<List<User>>() {
+            @Override
+            public void onSuccess(List<User> list) {
+                _friendRequestsUsers.postValue(list);
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+    }
+
+
 
 }

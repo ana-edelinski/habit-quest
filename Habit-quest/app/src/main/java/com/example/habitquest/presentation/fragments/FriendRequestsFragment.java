@@ -40,18 +40,20 @@ public class FriendRequestsFragment extends Fragment {
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
 
+        // 🔹 Ovde dodaj ovaj deo (tačno ovde!)
         adapter.setOnRequestActionListener(new FriendRequestsAdapter.OnRequestActionListener() {
             @Override
             public void onAccept(String requesterUid) {
+                adapter.removeByUid(requesterUid); // 🧩 odmah izbaci iz UI
                 accountViewModel.acceptFriendRequest(requesterUid);
             }
 
             @Override
             public void onReject(String requesterUid) {
+                adapter.removeByUid(requesterUid); // 🧩 odmah izbaci iz UI
                 accountViewModel.rejectFriendRequest(requesterUid);
             }
         });
-
 
         TextView placeholder = v.findViewById(R.id.tvRequestsPlaceholder);
 
@@ -66,6 +68,7 @@ public class FriendRequestsFragment extends Fragment {
             }
         });
 
-        accountViewModel.loadFriendRequestsReceived();
+        // 🔹 realtime update zahteva
+        accountViewModel.listenForFriendRequestsRealtime();
     }
 }

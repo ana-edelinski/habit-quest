@@ -87,4 +87,20 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
             default: return R.drawable.avatar1;
         }
     }
+
+    public void removeByUid(String uid) {
+        int indexToRemove = -1;
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).getUid().equals(uid)) {
+                indexToRemove = i;
+                break;
+            }
+        }
+        if (indexToRemove != -1) {
+            users.remove(indexToRemove);
+            notifyItemRemoved(indexToRemove);
+            if (users.isEmpty()) notifyDataSetChanged(); // osveži placeholder
+        }
+    }
+
 }

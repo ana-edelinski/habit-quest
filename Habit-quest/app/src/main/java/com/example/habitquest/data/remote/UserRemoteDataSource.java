@@ -16,6 +16,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -28,6 +30,8 @@ public class UserRemoteDataSource {
 
     private static final String COLLECTION_NAME = "users";
     private final FirebaseFirestore db;
+    private ListenerRegistration friendsListener;
+    private ListenerRegistration friendRequestsListener;
 
     public UserRemoteDataSource() {
         db = FirebaseFirestore.getInstance();
@@ -314,6 +318,55 @@ public class UserRemoteDataSource {
                 }).addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void listenForFriends(String uid, RepositoryCallback<List<String>> callback) {
+        if (friendsListener != null) friendsListener.remove();
+
+        friendsListener = db.collection(COLLECTION_NAME)
+                .document(uid)
+                .addSnapshotListener((DocumentSnapshot snapshot, FirebaseFirestoreException e) -> {
+                    if (e != null) {
+                        callback.onFailure(e);
+                        return;
+                    }
+                    if (snapshot != null && snapshot.exists()) {
+                        List<String> friends = (List<String>) snapshot.get("friends");
+                        callback.onSuccess(friends != null ? friends : new ArrayList<>());
+                    }
+                });
+    }
+
+    public void listenForFriendRequests(String uid, RepositoryCallback<List<User>> callback) {
+        if (friendRequestsListener != null) friendRequestsListener.remove();
+
+        friendRequestsListener = db.collection(COLLECTION_NAME)
+                .document(uid)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null || !snapshot.exists()) return;
+
+                    List<String> requestUids = (List<String>) snapshot.get("friendRequestsReceived");
+                    if (requestUids == null || requestUids.isEmpty()) {
+                        callback.onSuccess(new ArrayList<>());
+                        return;
+                    }
+
+                    db.collection(COLLECTION_NAME)
+                            .whereIn(com.google.firebase.firestore.FieldPath.documentId(), requestUids)
+                            .get()
+                            .addOnSuccessListener(query -> {
+                                List<User> list = new ArrayList<>();
+                                for (DocumentSnapshot doc : query.getDocuments()) {
+                                    User u = doc.toObject(User.class);
+                                    if (u != null) {
+                                        u.setUid(doc.getId());
+                                        list.add(u);
+                                    }
+                                }
+                                callback.onSuccess(list);
+                            });
+                });
+    }
+
 
 
 }

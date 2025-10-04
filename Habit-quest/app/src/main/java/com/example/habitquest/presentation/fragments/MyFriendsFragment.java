@@ -17,13 +17,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.habitquest.R;
-//import com.example.habitquest.presentation.adapters.FriendsAdapter;
+import com.example.habitquest.presentation.adapters.FriendsAdapter;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 
 public class MyFriendsFragment extends Fragment {
 
     private AccountViewModel accountViewModel;
-    //private FriendsAdapter friendsAdapter;
+    private FriendsAdapter friendsAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -42,13 +42,13 @@ public class MyFriendsFragment extends Fragment {
         Button btnRequests = v.findViewById(R.id.btnFriendRequests);
 
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        //friendsAdapter = new FriendsAdapter();
-        //rv.setAdapter(friendsAdapter);
+        friendsAdapter = new FriendsAdapter();
+        rv.setAdapter(friendsAdapter);
 
-        // Observe existing friends list
+        // 🔹 Observe friends list
         accountViewModel.friends.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
-                //friendsAdapter.submitList(list);
+                friendsAdapter.submitList(list);
                 rv.setVisibility(View.VISIBLE);
                 placeholder.setVisibility(View.GONE);
             } else {
@@ -58,10 +58,10 @@ public class MyFriendsFragment extends Fragment {
             }
         });
 
-        // Load friends from Firestore
-        accountViewModel.loadFriends();
+        // 🔹 Listen for realtime updates
+        accountViewModel.listenForFriendsRealtime();
 
-        // Open Friend Requests fragment on button click
+        // 🔹 Open Friend Requests fragment
         btnRequests.setOnClickListener(view ->
                 Navigation.findNavController(view).navigate(R.id.friendRequestsFragment)
         );

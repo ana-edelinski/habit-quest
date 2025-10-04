@@ -157,5 +157,12 @@ public class UserRepository implements IUserRepository {
         remoteDataSource.rejectFriendRequest(currentUid, requesterUid, callback);
     }
 
+    public void listenForFriends(String uid, RepositoryCallback<List<String>> callback) {
+        remoteDataSource.listenForFriends(uid, callback);
+    }
+
+    public void listenForFriendRequests(String uid, RepositoryCallback<List<User>> callback) {
+        remoteDataSource.listenForFriendRequests(uid, callback);
+    }
 
 }
