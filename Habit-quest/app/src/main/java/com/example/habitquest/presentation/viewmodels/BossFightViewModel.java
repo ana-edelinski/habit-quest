@@ -107,6 +107,7 @@ public class BossFightViewModel extends ViewModel {
                     @Override
                     public void onSuccess(Boss boss) {
                         if (boss != null) {
+                            boss.setHp(boss.getMaxHp());
                             _currentBoss.postValue(boss);
                         } else {
                             // Ako nema bossa u bazi, napravi ga
