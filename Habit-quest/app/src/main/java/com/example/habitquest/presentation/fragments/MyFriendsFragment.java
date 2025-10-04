@@ -41,7 +41,7 @@ public class MyFriendsFragment extends Fragment {
         requestsAdapter = new FriendRequestsAdapter();
         rv.setAdapter(requestsAdapter);
 
-        accountViewModel.friendRequestsReceived.observe(getViewLifecycleOwner(), list -> {
+        accountViewModel.friendRequestsUsers.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
                 requestsAdapter.submitList(list);
                 rv.setVisibility(View.VISIBLE);
@@ -53,7 +53,7 @@ public class MyFriendsFragment extends Fragment {
             }
         });
 
-        // Start loading (real-time)
         accountViewModel.loadFriendRequestsReceived();
+
     }
 }

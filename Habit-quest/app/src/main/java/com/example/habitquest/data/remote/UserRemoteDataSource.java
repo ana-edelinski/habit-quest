@@ -186,21 +186,40 @@ public class UserRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void getFriendRequestsReceived(String uid, RepositoryCallback<List<String>> callback) {
-        db.collection(COLLECTION_NAME).document(uid)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        List<String> requests = (List<String>) documentSnapshot.get("friendRequestsReceived");
-                        if (requests == null) requests = new ArrayList<>();
-                        callback.onSuccess(requests);
-                    } else {
+    public void getFriendRequestsReceived(String uid, RepositoryCallback<List<User>> callback) {
+        db.collection(COLLECTION_NAME).document(uid).get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.exists()) {
                         callback.onSuccess(new ArrayList<>());
+                        return;
                     }
+
+                    List<String> requestUids = (List<String>) snapshot.get("friendRequestsReceived");
+                    if (requestUids == null || requestUids.isEmpty()) {
+                        callback.onSuccess(new ArrayList<>());
+                        return;
+                    }
+
+                    db.collection(COLLECTION_NAME)
+                            .whereIn(com.google.firebase.firestore.FieldPath.documentId(), requestUids)
+                            .get()
+                            .addOnSuccessListener(query -> {
+                                List<User> list = new ArrayList<>();
+                                for (DocumentSnapshot doc : query.getDocuments()) {
+                                    User u = doc.toObject(User.class);
+                                    if (u != null) {
+                                        u.setUid(doc.getId());
+                                        list.add(u);
+                                    }
+                                }
+                                callback.onSuccess(list);
+                            })
+                            .addOnFailureListener(callback::onFailure);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
 
+    //vrv ne treba
     public void getFriendRequestsSent(String uid, RepositoryCallback<List<String>> callback) {
         db.collection(COLLECTION_NAME).document(uid)
                 .get()

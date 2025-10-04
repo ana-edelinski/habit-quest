@@ -32,6 +32,8 @@ public class AccountViewModel extends ViewModel {
 
     private final MutableLiveData<List<String>> _friendRequestsSent = new MutableLiveData<>();
     public LiveData<List<String>> friendRequestsSent = _friendRequestsSent;
+    private final MutableLiveData<List<User>> _friendRequestsUsers = new MutableLiveData<>();
+    public LiveData<List<User>> friendRequestsUsers = _friendRequestsUsers;
 
 
     public AccountViewModel(AppPreferences prefs, UserRepository repo) {
@@ -85,15 +87,15 @@ public class AccountViewModel extends ViewModel {
 
     // 🔹 Nova metoda: učitavanje primljenih zahteva
     public void loadFriendRequestsReceived() {
-        userRepository.getFriendRequestsReceived(remoteUid, new RepositoryCallback<List<String>>() {
+        userRepository.getFriendRequestsReceived(remoteUid, new RepositoryCallback<List<User>>() {
             @Override
-            public void onSuccess(List<String> requests) {
-                _friendRequestsReceived.postValue(requests);
+            public void onSuccess(List<User> list) {
+                _friendRequestsUsers.postValue(list);
             }
 
             @Override
             public void onFailure(Exception e) {
-                _friendRequestsReceived.postValue(new ArrayList<>());
+                _friendRequestsUsers.postValue(new ArrayList<>());
             }
         });
     }
