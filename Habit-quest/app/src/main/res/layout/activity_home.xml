@@ -22,6 +22,7 @@
             android:paddingTop="24dp"
             android:background="@color/greenShadeDark"
             app:title="@string/app_name"
+            app:titleCentered="false"
             app:titleTextColor="@android:color/white"
             app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             app:navigationIcon="@drawable/ic_menu"
