@@ -28,4 +28,11 @@
         <item>@color/greenShadeLight</item>
     </array>
 
+    <color name="chart_blue">#4A90E2</color>
+    <color name="chart_green">#7ED321</color>
+    <color name="chart_orange">#F5A623</color>
+    <color name="chart_red">#D0021B</color>
+    <color name="chart_gray">#9B9B9B</color>
+    <color name="chart_background">#FFFFFF</color>
+
 </resources>

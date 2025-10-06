@@ -166,6 +166,29 @@ public class TaskRemoteDataSource {
                 .addOnFailureListener(cb::onFailure);
     }
 
+    /**
+     * Fetches all tasks from Firestore only for the given firebaseUid (filtered).
+     * Does not modify local storage — used for analytics/statistics only.
+     */
+    public void fetchAllForUser(@NonNull String firebaseUid, @NonNull RepositoryCallback<List<Task>> cb) {
+        tasks(firebaseUid)
+                .whereEqualTo("firebaseUid", firebaseUid)  // ✅ filter by user UID
+                .orderBy("date", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    List<Task> out = new ArrayList<>();
+                    for (DocumentSnapshot d : snap.getDocuments()) {
+                        Task t = d.toObject(Task.class);
+                        if (t != null) {
+                            t.setId(d.getId());
+                            t = applyExpirationLogic(t, d.getReference());
+                        }
+                        out.add(t);
+                    }
+                    cb.onSuccess(out);
+                })
+                .addOnFailureListener(cb::onFailure);
+    }
 
 
 

@@ -123,4 +123,9 @@ public class TaskRepository implements ITaskRepository {
     public void countOneTimeTasksInPeriod(String firebaseUid, long start, long end, RepositoryCallback<Integer> cb) {
         remote.countOneTimeTasksInPeriod(firebaseUid, start, end, cb);
     }
+
+    public void fetchAllForUser(String firebaseUid, RepositoryCallback<List<Task>> cb) {
+        remote.fetchAllForUser(firebaseUid, cb);
+    }
+
 }

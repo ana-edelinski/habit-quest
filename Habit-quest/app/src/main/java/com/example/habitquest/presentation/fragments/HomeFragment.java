@@ -33,18 +33,22 @@ public class HomeFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        // 🔹 Initialize UI elements
         ivAvatar = view.findViewById(R.id.ivAvatar);
         tvHello = view.findViewById(R.id.tvHello);
         tvMotivation = view.findViewById(R.id.tvMotivation);
-
-        MaterialCardView levelCard = view.findViewById(R.id.levelCard);
         ivTitleIcon = view.findViewById(R.id.ivTitleIcon);
         tvTitle = view.findViewById(R.id.tvTitle);
         tvLevel = view.findViewById(R.id.tvLevel);
 
+        MaterialCardView levelCard = view.findViewById(R.id.levelCard);
+        MaterialCardView cardStatistics = view.findViewById(R.id.cardStatistics);
+
+        // 🔹 ViewModel setup
         AccountViewModelFactory factory = new AccountViewModelFactory(requireContext());
         accountViewModel = new ViewModelProvider(requireActivity(), factory).get(AccountViewModel.class);
 
+        // 🔹 Observe user data
         accountViewModel.user.observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 tvHello.setText("Hello, " + user.getUsername() + "!");
@@ -78,9 +82,19 @@ public class HomeFragment extends Fragment {
 
         accountViewModel.loadUser();
 
+        // 🔹 Open Level Progress on click
         levelCard.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)
                     .navigate(R.id.action_nav_home_to_levelProgressFragment);
+        });
+
+        // 🔹 Open Statistics on click with animation
+        cardStatistics.setOnClickListener(v -> {
+            v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100).withEndAction(() -> {
+                v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.statisticsFragment);
+            }).start();
         });
 
         return view;

@@ -62,4 +62,11 @@
     <string name="coinsProfile">Coins: </string>
     <string name="badges">Badges</string>
     <string name="addFriend">Add Friend</string>
+
+    <!-- Statistics screen -->
+    <string name="statistics_title">Statistics</string>
+    <string name="active_streak">Active streak: -</string>
+    <string name="longest_streak">Longest streak: -</string>
+    <string name="special_missions">Special missions: -</string>
+
 </resources>
