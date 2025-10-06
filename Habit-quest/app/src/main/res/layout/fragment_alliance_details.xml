@@ -57,4 +57,15 @@
         android:layout_marginTop="12dp"
         android:visibility="gone"
         android:backgroundTint="@color/darkGreen" />
+
+    <Button
+        android:id="@+id/btnDisbandAlliance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Disband Alliance"
+        android:textAllCaps="false"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/darkGreen"
+        android:visibility="gone" />
+
 </LinearLayout>

@@ -232,4 +232,38 @@ public class AllianceRemoteDataSource {
                             .update("allianceAcceptedNotifications", new ArrayList<>());
                 });
     }
+
+    public void disbandAlliance(String allianceId, RepositoryCallback<Void> callback) {
+        DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
+        allianceRef.get().addOnSuccessListener(doc -> {
+            if (!doc.exists()) {
+                callback.onFailure(new Exception("Alliance not found"));
+                return;
+            }
+
+            Alliance alliance = doc.toObject(Alliance.class);
+            if (alliance == null) {
+                callback.onFailure(new Exception("Invalid alliance data"));
+                return;
+            }
+
+            if (alliance.isMissionActive()) {
+                callback.onFailure(new Exception("Cannot disband while a mission is active."));
+                return;
+            }
+
+            List<String> allMembers = alliance.getMembers();
+            if (allMembers != null) {
+                for (String uid : allMembers) {
+                    db.collection("users").document(uid).update("allianceId", null);
+                }
+            }
+
+            allianceRef.delete()
+                    .addOnSuccessListener(unused -> callback.onSuccess(null))
+                    .addOnFailureListener(callback::onFailure);
+
+        }).addOnFailureListener(callback::onFailure);
+    }
+
 }

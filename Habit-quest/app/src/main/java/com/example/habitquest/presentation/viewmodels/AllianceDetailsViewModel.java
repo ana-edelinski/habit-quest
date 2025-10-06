@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class AllianceDetailsViewModel extends ViewModel {
 
@@ -22,6 +23,7 @@ public class AllianceDetailsViewModel extends ViewModel {
     public LiveData<List<User>> members = _members;
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final AllianceRepository repo = new AllianceRepository();
 
     public void loadAlliance(String allianceId) {
         db.collection("alliances").document(allianceId)
@@ -49,5 +51,33 @@ public class AllianceDetailsViewModel extends ViewModel {
                         _members.postValue(new ArrayList<>(users));
                     });
         }
+    }
+
+    public void leaveAlliance(String allianceId, String userId, Consumer<Boolean> callback) {
+        repo.leaveAlliance(allianceId, userId, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                callback.accept(true);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.accept(false);
+            }
+        });
+    }
+
+    public void disbandAlliance(String allianceId, Consumer<Boolean> callback) {
+        repo.disbandAlliance(allianceId, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                callback.accept(true);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.accept(false);
+            }
+        });
     }
 }

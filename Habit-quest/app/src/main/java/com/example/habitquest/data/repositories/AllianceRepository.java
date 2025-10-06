@@ -18,6 +18,11 @@ public class AllianceRepository {
         this.remoteDataSource = new AllianceRemoteDataSource();
     }
 
+    public AllianceRepository() {
+        this.context = null;
+        this.remoteDataSource = new AllianceRemoteDataSource();
+    }
+
     public void createAlliance(Alliance alliance, RepositoryCallback<Void> callback) {
         remoteDataSource.createAlliance(alliance, callback);
     }
@@ -37,4 +42,13 @@ public class AllianceRepository {
         String userId = user.getUid();
         remoteDataSource.rejectAllianceInvite(allianceId, userId, callback);
     }
+
+    public void leaveAlliance(String allianceId, String userId, RepositoryCallback<Void> callback) {
+        remoteDataSource.leaveAlliance(allianceId, userId, callback);
+    }
+
+    public void disbandAlliance(String allianceId, RepositoryCallback<Void> callback) {
+        remoteDataSource.disbandAlliance(allianceId, callback);
+    }
+
 }
