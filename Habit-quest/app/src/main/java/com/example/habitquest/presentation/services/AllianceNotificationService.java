@@ -98,28 +98,6 @@ public class AllianceNotificationService extends Service {
             startForeground(BASE_NOTIFICATION_ID + allianceId.hashCode(), notification);
         }
 
-        Handler handler = new Handler(Looper.getMainLooper());
-        Runnable keepAlive = new Runnable() {
-            @Override
-            public void run() {
-                if (activeServices.contains(allianceId)) {
-                    handler.postDelayed(this, 10000);
-                }
-            }
-        };
-        handler.post(keepAlive);
-
-        new Thread(() -> {
-            try {
-                while (activeServices.contains(allianceId)) {
-                    synchronized (activeServices) {
-                        activeServices.wait(10000);
-                    }
-                }
-                stopSelf();
-            } catch (InterruptedException ignored) {}
-        }).start();
-
         return START_STICKY;
     }
 
