@@ -32,20 +32,86 @@ public class AllianceRemoteDataSource {
                 .addOnSuccessListener(aVoid -> {
                     for (String friendUid : alliance.getRequests()) {
                         if (friendUid.equals(alliance.getLeaderId())) continue;
-
                         db.collection("users").document(friendUid)
                                 .update("allianceInvites", FieldValue.arrayUnion(alliance.getId()))
                                 .addOnFailureListener(e -> Log.w("Alliance", "Invite add failed", e));
                     }
-
                     callback.onSuccess(null);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void acceptAllianceInvite(Context context, String allianceId, String userId, String username, RepositoryCallback<Void> callback) {
-        DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
+    public void getUserAlliance(String userId, RepositoryCallback<Alliance> callback) {
+        db.collection(COLLECTION_NAME)
+                .whereArrayContains("members", userId)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        Alliance alliance = query.getDocuments().get(0).toObject(Alliance.class);
+                        callback.onSuccess(alliance);
+                    } else {
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
 
+    public void leaveAlliance(String allianceId, String userId, RepositoryCallback<Void> callback) {
+        DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
+        allianceRef.get().addOnSuccessListener(doc -> {
+            Alliance alliance = doc.toObject(Alliance.class);
+            if (alliance == null) {
+                callback.onFailure(new Exception("Alliance not found."));
+                return;
+            }
+            if (alliance.isMissionActive()) {
+                callback.onFailure(new Exception("You cannot leave the alliance while a mission is active."));
+                return;
+            }
+            alliance.getMembers().remove(userId);
+            allianceRef.update("members", alliance.getMembers())
+                    .addOnSuccessListener(aVoid -> db.collection("users").document(userId)
+                            .update("allianceId", null)
+                            .addOnSuccessListener(v -> callback.onSuccess(null))
+                            .addOnFailureListener(callback::onFailure))
+                    .addOnFailureListener(callback::onFailure);
+        }).addOnFailureListener(callback::onFailure);
+    }
+
+    public void acceptAllianceInvite(Context context, String allianceId, String userId, String username, RepositoryCallback<Void> callback) {
+        getUserAlliance(userId, new RepositoryCallback<Alliance>() {
+            @Override
+            public void onSuccess(Alliance currentAlliance) {
+                if (currentAlliance != null) {
+                    if (currentAlliance.isMissionActive()) {
+                        callback.onFailure(new Exception("You cannot leave your current alliance while a mission is active."));
+                        return;
+                    }
+                    leaveAlliance(currentAlliance.getId(), userId, new RepositoryCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            joinNewAlliance(context, allianceId, userId, username, callback);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            callback.onFailure(e);
+                        }
+                    });
+                } else {
+                    joinNewAlliance(context, allianceId, userId, username, callback);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
+    private void joinNewAlliance(Context context, String allianceId, String userId, String username, RepositoryCallback<Void> callback) {
+        DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
         db.runTransaction(transaction -> {
                     transaction.update(allianceRef, "requests", FieldValue.arrayRemove(userId));
                     transaction.update(allianceRef, "members", FieldValue.arrayUnion(userId));
@@ -53,27 +119,20 @@ public class AllianceRemoteDataSource {
                 })
                 .addOnSuccessListener(aVoid -> {
                     db.collection("users").document(userId)
-                            .update("allianceInvites", FieldValue.arrayRemove(allianceId))
-                            .addOnSuccessListener(v -> Log.d("Alliance", "Invite removed for " + userId));
-
+                            .update("allianceId", allianceId, "allianceInvites", FieldValue.arrayRemove(allianceId))
+                            .addOnSuccessListener(v -> Log.d("Alliance", "Joined new alliance: " + allianceId));
                     allianceRef.get().addOnSuccessListener(snapshot -> {
                         if (snapshot.exists()) {
                             String leaderId = snapshot.getString("leaderId");
                             String allianceName = snapshot.getString("name");
-
                             if (leaderId != null && !leaderId.equals(userId)) {
                                 db.collection("users").document(leaderId)
                                         .update("allianceAcceptedNotifications", FieldValue.arrayUnion(
                                                 username + " accepted invite to " + allianceName
-                                        ))
-                                        .addOnSuccessListener(v ->
-                                                Log.d("Alliance", "Leader notified: " + leaderId))
-                                        .addOnFailureListener(e ->
-                                                Log.w("Alliance", "Leader notify failed", e));
+                                        ));
                             }
                         }
                     });
-
                     callback.onSuccess(null);
                 })
                 .addOnFailureListener(callback::onFailure);
@@ -82,18 +141,13 @@ public class AllianceRemoteDataSource {
     public void rejectAllianceInvite(String allianceId, String userId, RepositoryCallback<Void> callback) {
         DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
         allianceRef.update("requests", FieldValue.arrayRemove(userId))
-                .addOnSuccessListener(aVoid -> {
-                    db.collection("users").document(userId)
-                            .update("allianceInvites", FieldValue.arrayRemove(allianceId))
-                            .addOnSuccessListener(v -> {
-                                Log.d("Alliance", "Invite fully removed for " + userId);
-                                callback.onSuccess(null);
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.w("Alliance", "Failed to remove invite from user doc", e);
-                                callback.onFailure(e);
-                            });
-                })
+                .addOnSuccessListener(aVoid -> db.collection("users").document(userId)
+                        .update("allianceInvites", FieldValue.arrayRemove(allianceId))
+                        .addOnSuccessListener(v -> {
+                            Log.d("Alliance", "Invite fully removed for " + userId);
+                            callback.onSuccess(null);
+                        })
+                        .addOnFailureListener(callback::onFailure))
                 .addOnFailureListener(callback::onFailure);
     }
 
@@ -101,23 +155,19 @@ public class AllianceRemoteDataSource {
         db.collection("users").document(uid)
                 .addSnapshotListener((snapshot, e) -> {
                     if (e != null || snapshot == null || !snapshot.exists()) return;
-
                     List<String> invites = (List<String>) snapshot.get("allianceInvites");
                     if (invites == null || invites.isEmpty()) return;
-
                     for (String allianceId : invites) {
                         db.collection(COLLECTION_NAME).document(allianceId)
                                 .get()
                                 .addOnSuccessListener(doc -> {
                                     Alliance alliance = doc.toObject(Alliance.class);
                                     if (alliance == null) return;
-
                                     if (!AllianceNotificationService.isRunning(allianceId)) {
                                         Intent serviceIntent = new Intent(context, AllianceNotificationService.class);
                                         serviceIntent.putExtra(AllianceNotificationService.EXTRA_ALLIANCE_ID, allianceId);
                                         serviceIntent.putExtra(AllianceNotificationService.EXTRA_ALLIANCE_NAME, alliance.getName());
                                         serviceIntent.putExtra(AllianceNotificationService.EXTRA_INVITER_NAME, alliance.getLeaderName());
-
                                         Context appContext = context.getApplicationContext();
                                         try {
                                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -130,9 +180,7 @@ public class AllianceRemoteDataSource {
                                         }
                                     }
                                 })
-                                .addOnFailureListener(ex ->
-                                        Log.e("Alliance", "Failed to fetch alliance details", ex)
-                                );
+                                .addOnFailureListener(ex -> Log.e("Alliance", "Failed to fetch alliance details", ex));
                     }
                 });
     }
@@ -141,16 +189,12 @@ public class AllianceRemoteDataSource {
         db.collection("users").document(uid)
                 .addSnapshotListener((snapshot, e) -> {
                     if (e != null || snapshot == null || !snapshot.exists()) return;
-
                     List<String> accepted = (List<String>) snapshot.get("allianceAcceptedNotifications");
                     if (accepted == null || accepted.isEmpty()) return;
-
                     for (String message : accepted) {
                         NotificationHelper.createChannel(context);
-
                         String memberName = "Someone";
                         String allianceName = "";
-
                         if (message.contains("accepted invite to")) {
                             String[] parts = message.split("accepted invite to");
                             memberName = parts[0].trim();
@@ -158,11 +202,8 @@ public class AllianceRemoteDataSource {
                                 allianceName = parts[1].trim();
                             }
                         }
-
                         NotificationHelper.showAllianceAccepted(context, memberName, allianceName);
                     }
-
-
                     db.collection("users").document(uid)
                             .update("allianceAcceptedNotifications", new ArrayList<>());
                 });
