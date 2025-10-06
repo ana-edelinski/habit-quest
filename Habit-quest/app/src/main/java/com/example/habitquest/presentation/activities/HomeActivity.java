@@ -1,25 +1,31 @@
 package com.example.habitquest.presentation.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.habitquest.R;
 import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.data.remote.AllianceRemoteDataSource;
 import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
 import com.example.habitquest.presentation.viewmodels.LoginViewModel;
@@ -30,14 +36,12 @@ import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.BadgeUtils;
 import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
-import androidx.core.view.GravityCompat;
-import androidx.navigation.ui.AppBarConfiguration;
-
 public class HomeActivity extends AppCompatActivity {
+
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
 
     private AppPreferences appPreferences;
     private LoginViewModel loginViewModel;
@@ -48,7 +52,6 @@ public class HomeActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private NavController navController;
     private BadgeDrawable cartBadge;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +78,45 @@ public class HomeActivity extends AppCompatActivity {
         setupToolbar();
         setupBottomNavigation();
 
+        requestNotificationPermission();
         handleDeepLink(getIntent());
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            String uid = auth.getCurrentUser().getUid();
+
+            AllianceRemoteDataSource allianceRemote = new AllianceRemoteDataSource();
+
+            allianceRemote.listenForAllianceInvites(uid, this);
+
+            allianceRemote.listenForAllianceAccepts(uid, this);
+        }
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        REQUEST_NOTIFICATION_PERMISSION
+                );
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notifications enabled!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Notifications permission denied.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
@@ -113,11 +154,9 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-
     private void initViewModel() {
         LoginViewModelFactory factory = new LoginViewModelFactory(this);
         loginViewModel = new ViewModelProvider(this, factory).get(LoginViewModel.class);
-
         cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
     }
 
@@ -132,7 +171,6 @@ public class HomeActivity extends AppCompatActivity {
             int count = (items != null) ? items.size() : 0;
             updateCartBadge(count);
         });
-
     }
 
     private void navigateToLogin() {
@@ -150,17 +188,13 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
-        //toolbar.setNavigationOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
     }
 
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-
         NavHostFragment navHostFragment =
                 (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         NavController navController = navHostFragment.getNavController();
-
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
     }
 
@@ -178,7 +212,6 @@ public class HomeActivity extends AppCompatActivity {
         badge.setNumber(0);
 
         BadgeUtils.attachBadgeDrawable(badge, findViewById(R.id.topAppBar), R.id.action_cart);
-
         this.cartBadge = badge;
 
         return true;
@@ -218,5 +251,4 @@ public class HomeActivity extends AppCompatActivity {
             cartBadge.setVisible(false);
         }
     }
-
 }

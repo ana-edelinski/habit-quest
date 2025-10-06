@@ -1,11 +1,15 @@
 package com.example.habitquest.domain.model;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentId;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Alliance {
 
+    @DocumentId
     private String id;
     private String name;
     private String leaderId;
@@ -17,6 +21,7 @@ public class Alliance {
     public Alliance() {}
 
     public Alliance(String name, String leaderId, String leaderName, List<String> requests) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.leaderId = leaderId;
         this.leaderName = leaderName;
