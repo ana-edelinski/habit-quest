@@ -22,18 +22,10 @@ public class AllianceRepository {
         remoteDataSource.createAlliance(alliance, callback);
     }
 
-    public void acceptAllianceInvite(String allianceId, RepositoryCallback<Void> callback) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            callback.onFailure(new Exception("User not logged in"));
-            return;
-        }
-
-        String userId = user.getUid();
-        String username = user.getDisplayName() != null ? user.getDisplayName() : "User";
-
+    public void acceptAllianceInvite(Context context, String allianceId, String userId, String username, RepositoryCallback<Void> callback) {
         remoteDataSource.acceptAllianceInvite(context, allianceId, userId, username, callback);
     }
+
 
     public void rejectAllianceInvite(String allianceId, RepositoryCallback<Void> callback) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

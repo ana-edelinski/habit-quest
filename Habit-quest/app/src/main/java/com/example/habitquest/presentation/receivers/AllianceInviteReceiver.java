@@ -10,6 +10,8 @@ import androidx.core.app.NotificationManagerCompat;
 import com.example.habitquest.data.repositories.AllianceRepository;
 import com.example.habitquest.presentation.services.AllianceNotificationService;
 import com.example.habitquest.utils.RepositoryCallback;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class AllianceInviteReceiver extends BroadcastReceiver {
 
@@ -22,26 +24,43 @@ public class AllianceInviteReceiver extends BroadcastReceiver {
 
         if (action == null || allianceId == null) return;
 
-        AllianceRepository repo = new AllianceRepository(context);
-
         if (action.equals("ACCEPT_INVITE")) {
-            repo.acceptAllianceInvite(allianceId, new RepositoryCallback<Void>() {
-                @Override
-                public void onSuccess(Void result) {
-                    Toast.makeText(context, "You joined the alliance!", Toast.LENGTH_SHORT).show();
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                    NotificationManagerCompat.from(context).cancel(allianceId.hashCode());
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(userId)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        String username = doc.getString("username");
+                        if (username == null || username.isEmpty()) {
+                            username = "User";
+                        }
 
-                    stopServiceSafely(context, allianceId);
-                }
+                        AllianceRepository repo = new AllianceRepository(context);
+                        repo.acceptAllianceInvite(context, allianceId, userId, username, new RepositoryCallback<Void>() {
+                            @Override
+                            public void onSuccess(Void result) {
+                                Toast.makeText(context, "You joined the alliance!", Toast.LENGTH_SHORT).show();
 
-                @Override
-                public void onFailure(Exception e) {
-                    Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+                                NotificationManagerCompat.from(context).cancel(allianceId.hashCode());
+                                stopServiceSafely(context, allianceId);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(context, "Failed to fetch username.", Toast.LENGTH_SHORT).show()
+                    );
 
         } else if (action.equals("REJECT_INVITE")) {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            AllianceRepository repo = new AllianceRepository(context);
             repo.rejectAllianceInvite(allianceId, new RepositoryCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
@@ -65,5 +84,4 @@ public class AllianceInviteReceiver extends BroadcastReceiver {
             context.stopService(serviceIntent);
         }
     }
-
 }

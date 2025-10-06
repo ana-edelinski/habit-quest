@@ -82,7 +82,18 @@ public class AllianceRemoteDataSource {
     public void rejectAllianceInvite(String allianceId, String userId, RepositoryCallback<Void> callback) {
         DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
         allianceRef.update("requests", FieldValue.arrayRemove(userId))
-                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnSuccessListener(aVoid -> {
+                    db.collection("users").document(userId)
+                            .update("allianceInvites", FieldValue.arrayRemove(allianceId))
+                            .addOnSuccessListener(v -> {
+                                Log.d("Alliance", "Invite fully removed for " + userId);
+                                callback.onSuccess(null);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.w("Alliance", "Failed to remove invite from user doc", e);
+                                callback.onFailure(e);
+                            });
+                })
                 .addOnFailureListener(callback::onFailure);
     }
 
@@ -136,8 +147,21 @@ public class AllianceRemoteDataSource {
 
                     for (String message : accepted) {
                         NotificationHelper.createChannel(context);
-                        NotificationHelper.showAllianceAccepted(context, message, "");
+
+                        String memberName = "Someone";
+                        String allianceName = "";
+
+                        if (message.contains("accepted invite to")) {
+                            String[] parts = message.split("accepted invite to");
+                            memberName = parts[0].trim();
+                            if (parts.length > 1) {
+                                allianceName = parts[1].trim();
+                            }
+                        }
+
+                        NotificationHelper.showAllianceAccepted(context, memberName, allianceName);
                     }
+
 
                     db.collection("users").document(uid)
                             .update("allianceAcceptedNotifications", new ArrayList<>());
