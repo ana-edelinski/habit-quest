@@ -24,6 +24,10 @@ public class MyFriendsViewModel extends ViewModel {
     private final MutableLiveData<Integer> _friendRequestsCount = new MutableLiveData<>(0);
     public LiveData<Integer> friendRequestsCount = _friendRequestsCount;
 
+    private final MutableLiveData<Boolean> _inAlliance = new MutableLiveData<>(false);
+    public LiveData<Boolean> inAlliance = _inAlliance;
+
+
     public MyFriendsViewModel(AppPreferences prefs, UserRepository repo) {
         this.userRepository = repo;
         this.remoteUid = prefs.getFirebaseUid();
@@ -104,6 +108,21 @@ public class MyFriendsViewModel extends ViewModel {
             public void onSuccess(Void result) { }
             @Override
             public void onFailure(Exception e) { }
+        });
+    }
+
+    public void checkIfInAlliance() {
+        userRepository.getUser(remoteUid, new RepositoryCallback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                boolean hasAlliance = user.getAllianceId() != null;
+                _inAlliance.postValue(hasAlliance);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                _inAlliance.postValue(false);
+            }
         });
     }
 

@@ -65,6 +65,23 @@ public class MyFriendsFragment extends Fragment {
             Navigation.findNavController(v).navigate(R.id.nav_user_profile, bundle);
         });
 
+        btnCreateAlliance.setEnabled(false);
+        btnCreateAlliance.setAlpha(0.5f);
+
+        myFriendsViewModel.inAlliance.observe(getViewLifecycleOwner(), inAlliance -> {
+            if (inAlliance != null && inAlliance) {
+                btnCreateAlliance.setEnabled(false);
+                btnCreateAlliance.setText("Already in an alliance");
+                btnCreateAlliance.setAlpha(0.5f);
+            } else {
+                btnCreateAlliance.setEnabled(true);
+                btnCreateAlliance.setAlpha(1f);
+            }
+        });
+
+        myFriendsViewModel.checkIfInAlliance();
+
+
         myFriendsViewModel.friends.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
                 friendsAdapter.submitList(list);
@@ -77,20 +94,24 @@ public class MyFriendsFragment extends Fragment {
             }
         });
 
-        myFriendsViewModel.friendRequestsUsers.observe(getViewLifecycleOwner(), list -> updateFriendRequestsUI(list, imgRequestsAvatar, placeholderCircle, tvBadge));
+        myFriendsViewModel.friendRequestsUsers.observe(getViewLifecycleOwner(),
+                list -> updateFriendRequestsUI(list, imgRequestsAvatar, placeholderCircle, tvBadge));
 
         layoutFriendRequests.setOnClickListener(view ->
                 Navigation.findNavController(view).navigate(R.id.friendRequestsFragment)
         );
 
-        btnCreateAlliance.setOnClickListener(view ->
+        btnCreateAlliance.setOnClickListener(view -> {
+            if (btnCreateAlliance.isEnabled()) {
                 Navigation.findNavController(view)
-                        .navigate(R.id.allianceCreateFragment)
-        );
+                        .navigate(R.id.allianceCreateFragment);
+            }
+        });
 
         myFriendsViewModel.listenForFriendsRealtime();
         myFriendsViewModel.listenForFriendRequestsRealtime();
     }
+
 
     private void updateFriendRequestsUI(List<User> requests, ImageView imgAvatar, View placeholder, TextView badge) {
         if (requests != null && !requests.isEmpty()) {

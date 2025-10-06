@@ -71,10 +71,16 @@ public class AllianceNotificationService extends Service {
                         FirebaseFirestore.getInstance().collection("alliances").document(currentAllianceId).get()
                                 .addOnSuccessListener(doc -> {
                                     String currentAllianceName = doc.exists() ? doc.getString("name") : "your current alliance";
-                                    String text = "You are already a member of \"" + currentAllianceName +
-                                            "\". Joining \"" + allianceName + "\" will remove you from your current alliance.";
+                                    String text;
+                                    if (doc.exists() && doc.getString("leaderId").equals(user.getUid())) {
+                                        text = "You are the leader of \"" + currentAllianceName + "\" and cannot join another alliance.";
+                                    } else {
+                                        text = "You are already a member of \"" + currentAllianceName +
+                                                "\". Joining \"" + allianceName + "\" will remove you from your current alliance.";
+                                    }
                                     showNotification(allianceId, allianceName, inviterName, text);
                                 })
+
                                 .addOnFailureListener(e -> {
                                     String text = inviterName + " invited you to join \"" + allianceName + "\".";
                                     showNotification(allianceId, allianceName, inviterName, text);

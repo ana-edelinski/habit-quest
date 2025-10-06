@@ -26,20 +26,37 @@ public class AllianceRemoteDataSource {
     }
 
     public void createAlliance(Alliance alliance, RepositoryCallback<Void> callback) {
-        db.collection(COLLECTION_NAME)
-                .document(alliance.getId())
-                .set(alliance)
-                .addOnSuccessListener(aVoid -> {
-                    for (String friendUid : alliance.getRequests()) {
-                        if (friendUid.equals(alliance.getLeaderId())) continue;
-                        db.collection("users").document(friendUid)
-                                .update("allianceInvites", FieldValue.arrayUnion(alliance.getId()))
-                                .addOnFailureListener(e -> Log.w("Alliance", "Invite add failed", e));
+        String leaderId = alliance.getLeaderId();
+
+        db.collection("users").document(leaderId).get()
+                .addOnSuccessListener(userDoc -> {
+                    String currentAllianceId = userDoc.getString("allianceId");
+                    if (currentAllianceId != null) {
+                        callback.onFailure(new Exception("You are already a member of another alliance and cannot create a new one."));
+                        return;
                     }
-                    callback.onSuccess(null);
+
+                    db.collection(COLLECTION_NAME)
+                            .document(alliance.getId())
+                            .set(alliance)
+                            .addOnSuccessListener(aVoid -> {
+                                for (String friendUid : alliance.getRequests()) {
+                                    if (friendUid.equals(alliance.getLeaderId())) continue;
+                                    db.collection("users").document(friendUid)
+                                            .update("allianceInvites", FieldValue.arrayUnion(alliance.getId()))
+                                            .addOnFailureListener(e -> Log.w("Alliance", "Invite add failed", e));
+                                }
+
+                                db.collection("users").document(leaderId)
+                                        .update("allianceId", alliance.getId())
+                                        .addOnSuccessListener(x -> callback.onSuccess(null))
+                                        .addOnFailureListener(callback::onFailure);
+                            })
+                            .addOnFailureListener(callback::onFailure);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
     public void getUserAlliance(String userId, RepositoryCallback<Alliance> callback) {
         db.collection(COLLECTION_NAME)
@@ -83,10 +100,16 @@ public class AllianceRemoteDataSource {
             @Override
             public void onSuccess(Alliance currentAlliance) {
                 if (currentAlliance != null) {
+                    if (currentAlliance.getLeaderId().equals(userId)) {
+                        callback.onFailure(new Exception("You are the leader of your current alliance and cannot leave it."));
+                        return;
+                    }
+
                     if (currentAlliance.isMissionActive()) {
                         callback.onFailure(new Exception("You cannot leave your current alliance while a mission is active."));
                         return;
                     }
+
                     leaveAlliance(currentAlliance.getId(), userId, new RepositoryCallback<Void>() {
                         @Override
                         public void onSuccess(Void result) {
@@ -109,6 +132,7 @@ public class AllianceRemoteDataSource {
             }
         });
     }
+
 
     private void joinNewAlliance(Context context, String allianceId, String userId, String username, RepositoryCallback<Void> callback) {
         DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
