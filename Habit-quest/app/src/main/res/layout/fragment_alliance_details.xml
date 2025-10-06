@@ -46,5 +46,5 @@
         android:textAllCaps="false"
         android:layout_marginTop="12dp"
         android:visibility="gone"
-        android:backgroundTint="@color/red" />
+        android:backgroundTint="@color/darkGreen" />
 </LinearLayout>

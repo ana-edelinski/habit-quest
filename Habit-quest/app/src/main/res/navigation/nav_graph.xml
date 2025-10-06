@@ -154,7 +154,7 @@
     <fragment
         android:id="@+id/allianceDetailsFragment"
         android:name="com.example.habitquest.presentation.fragments.AllianceDetailsFragment"
-        android:label="Alliance Details"
+        android:label="My Alliance"
         tools:layout="@layout/fragment_alliance_details">
 
         <argument
