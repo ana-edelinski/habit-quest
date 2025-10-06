@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.example.habitquest.data.repositories.AllianceRepository;
+import com.example.habitquest.presentation.activities.HomeActivity;
 import com.example.habitquest.presentation.services.AllianceNotificationService;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,6 +46,8 @@ public class AllianceInviteReceiver extends BroadcastReceiver {
 
                                 NotificationManagerCompat.from(context).cancel(allianceId.hashCode());
                                 stopServiceSafely(context, allianceId);
+
+                                openAllianceDetailsScreen(context, allianceId);
                             }
 
                             @Override
@@ -84,4 +87,12 @@ public class AllianceInviteReceiver extends BroadcastReceiver {
             context.stopService(serviceIntent);
         }
     }
+    private void openAllianceDetailsScreen(Context context, String allianceId) {
+        Intent intent = new Intent(context, HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("navigateToAllianceDetails", true);
+        intent.putExtra("allianceId", allianceId);
+        context.startActivity(intent);
+    }
+
 }
