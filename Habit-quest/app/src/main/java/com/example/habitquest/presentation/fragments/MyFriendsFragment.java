@@ -70,14 +70,29 @@ public class MyFriendsFragment extends Fragment {
 
         myFriendsViewModel.inAlliance.observe(getViewLifecycleOwner(), inAlliance -> {
             if (inAlliance != null && inAlliance) {
-                btnCreateAlliance.setEnabled(false);
-                btnCreateAlliance.setText("Already in an alliance");
-                btnCreateAlliance.setAlpha(0.5f);
+                btnCreateAlliance.setEnabled(true);
+                btnCreateAlliance.setText("My Alliance");
+                btnCreateAlliance.setAlpha(1f);
+                btnCreateAlliance.setOnClickListener(view -> {
+                    String allianceId = myFriendsViewModel.getCurrentAllianceId();
+                    if (allianceId != null) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("allianceId", allianceId);
+                        Navigation.findNavController(view)
+                                .navigate(R.id.allianceDetailsFragment, bundle);
+                    }
+                });
             } else {
                 btnCreateAlliance.setEnabled(true);
+                btnCreateAlliance.setText("Create Alliance");
                 btnCreateAlliance.setAlpha(1f);
+                btnCreateAlliance.setOnClickListener(view ->
+                        Navigation.findNavController(view)
+                                .navigate(R.id.allianceCreateFragment)
+                );
             }
         });
+
 
         myFriendsViewModel.checkIfInAlliance();
 
