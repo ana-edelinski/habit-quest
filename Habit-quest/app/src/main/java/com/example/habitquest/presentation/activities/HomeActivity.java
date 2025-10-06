@@ -191,6 +191,9 @@ public class HomeActivity extends AppCompatActivity {
         if (id == R.id.action_cart) {
             navController.navigate(R.id.cartFragment);
             return true;
+        } else if (id == R.id.action_notifications) {
+            navController.navigate(R.id.notificationsFragment);
+            return true;
         } else if (id == R.id.action_logout) {
             loginViewModel.logout();
             return true;

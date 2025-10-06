@@ -151,4 +151,10 @@
         android:label="Create Alliance"
         tools:layout="@layout/fragment_alliance_create" />
 
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.habitquest.presentation.fragments.NotificationsFragment"
+        android:label="Notifications"
+        tools:layout="@layout/fragment_notifications" />
+
 </navigation>
