@@ -22,6 +22,15 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
 
     private List<ShopItem> items = new ArrayList<>();
     private OnItemClickListener listener;
+    private boolean isCompact = false;
+
+    public EquipmentAdapter() {
+        this(false);
+    }
+
+    public EquipmentAdapter(boolean isCompact) {
+        this.isCompact = isCompact;
+    }
 
     public interface OnItemClickListener {
         void onActivateClick(ShopItem item);
@@ -32,7 +41,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
     }
 
     public void setItems(List<ShopItem> items) {
-        // sortiramo tako da aktivirani idu prvi
+        if (items == null) items = new ArrayList<>();
         Collections.sort(items, Comparator.comparing(ShopItem::isActive).reversed());
         this.items = items;
         notifyDataSetChanged();
@@ -41,9 +50,9 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
     @NonNull
     @Override
     public EquipmentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_equipment, parent, false);
-        return new EquipmentViewHolder(v);
+        int layoutId = isCompact ? R.layout.item_equipment_small : R.layout.item_equipment;
+        View v = LayoutInflater.from(parent.getContext()).inflate(layoutId, parent, false);
+        return new EquipmentViewHolder(v, isCompact);
     }
 
     @Override
@@ -60,17 +69,27 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
         ImageView ivItemImage;
         TextView tvName;
         Button btnActivate;
+        boolean isCompact;
 
-        public EquipmentViewHolder(@NonNull View itemView) {
+        public EquipmentViewHolder(@NonNull View itemView, boolean isCompact) {
             super(itemView);
+            this.isCompact = isCompact;
+
             ivItemImage = itemView.findViewById(R.id.ivItemImage);
             tvName = itemView.findViewById(R.id.tvName);
+
             btnActivate = itemView.findViewById(R.id.btnActivate);
         }
 
         public void bind(ShopItem item, OnItemClickListener listener) {
             ivItemImage.setImageResource(item.getImageResId());
             tvName.setText(item.getName());
+
+            if (isCompact) {
+                if (tvName != null) tvName.setVisibility(View.GONE);
+                if (btnActivate != null) btnActivate.setVisibility(View.GONE);
+                return;
+            }
 
             if (item.isActive()) {
                 btnActivate.setText("Activated");
@@ -83,5 +102,6 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
                 });
             }
         }
+
     }
 }

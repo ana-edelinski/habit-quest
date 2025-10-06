@@ -56,4 +56,9 @@
     <string name="allianceName">Enter Alliance Name</string>
 
     <string name="notifications">Notifications</string>
+    <string name="username">Username</string>
+    <string name="xp">XP: </string>
+    <string name="pp">PP: </string>
+    <string name="coinsProfile">Coins: </string>
+    <string name="badges">Badges</string>
 </resources>

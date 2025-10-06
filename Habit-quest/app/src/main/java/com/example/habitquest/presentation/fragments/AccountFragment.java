@@ -1,7 +1,7 @@
 package com.example.habitquest.presentation.fragments;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,9 +15,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitquest.R;
-import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.presentation.adapters.EquipmentAdapter;
 import com.example.habitquest.presentation.viewmodels.AccountViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.AccountViewModelFactory;
 import com.google.firebase.auth.FirebaseAuth;
@@ -55,6 +57,14 @@ public class AccountFragment extends Fragment {
         txtCoins = view.findViewById(R.id.tvCoins);
         ImageView imgQrCode = view.findViewById(R.id.imgQRCode);
 
+        RecyclerView rvEquipment = view.findViewById(R.id.rvEquipmentProfile);
+        rvEquipment.setLayoutManager(
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
+        );
+        EquipmentAdapter equipmentAdapter = new EquipmentAdapter(true);
+        rvEquipment.setAdapter(equipmentAdapter);
+        equipmentAdapter.setOnItemClickListener(null);
+
         View btnSettings = view.findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
@@ -67,6 +77,14 @@ public class AccountFragment extends Fragment {
             navController.navigate(R.id.myFriendsFragment);
         });
 
+        TextView tvEquipmentLabel = view.findViewById(R.id.tvEquipmentLabel);
+        tvEquipmentLabel.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+            navController.navigate(R.id.nav_equipment);
+        });
+        tvEquipmentLabel.setPaintFlags(tvEquipmentLabel.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+
+        // ViewModel
         AccountViewModelFactory factory = new AccountViewModelFactory(requireContext());
         viewModel = new ViewModelProvider(this, factory).get(AccountViewModel.class);
 
@@ -89,7 +107,10 @@ public class AccountFragment extends Fragment {
                 }
                 imgAvatar.setImageResource(resId);
 
-                // QR kod za uid
+                if (user.getEquipment() != null) {
+                    equipmentAdapter.setItems(user.getEquipment());
+                }
+
                 FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (firebaseUser != null) {
                     try {
@@ -113,8 +134,6 @@ public class AccountFragment extends Fragment {
             txtXp.setText("XP: " + totalXp);
         });
 
-        // sada pozivamo user repo (remote + local)
         viewModel.loadUser();
     }
-
 }
