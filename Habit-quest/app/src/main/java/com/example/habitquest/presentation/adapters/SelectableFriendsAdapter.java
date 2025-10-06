@@ -14,15 +14,24 @@ import com.example.habitquest.R;
 import com.example.habitquest.domain.model.User;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SelectableFriendsAdapter extends RecyclerView.Adapter<SelectableFriendsAdapter.VH> {
 
     private List<User> friends = new ArrayList<>();
     private final List<User> selected = new ArrayList<>();
+    private final Set<String> disabledIds = new HashSet<>();
 
     public SelectableFriendsAdapter(List<User> friends) {
         this.friends = friends != null ? friends : new ArrayList<>();
+    }
+
+    public void setDisabled(List<String> disabledUids) {
+        disabledIds.clear();
+        if (disabledUids != null) disabledIds.addAll(disabledUids);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -40,12 +49,21 @@ public class SelectableFriendsAdapter extends RecyclerView.Adapter<SelectableFri
         holder.tvName.setText(friend.getUsername());
         holder.imgAvatar.setImageResource(getAvatarRes(friend.getAvatar()));
 
+        boolean isDisabled = disabledIds.contains(friend.getUid());
+        holder.checkBox.setEnabled(!isDisabled);
         holder.checkBox.setOnCheckedChangeListener(null);
-        holder.checkBox.setChecked(selected.contains(friend));
-        holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) selected.add(friend);
-            else selected.remove(friend);
-        });
+
+        if (isDisabled) {
+            holder.checkBox.setChecked(true);
+            holder.tvName.setAlpha(0.5f);
+        } else {
+            holder.tvName.setAlpha(1f);
+            holder.checkBox.setChecked(selected.contains(friend));
+            holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) selected.add(friend);
+                else selected.remove(friend);
+            });
+        }
     }
 
     @Override

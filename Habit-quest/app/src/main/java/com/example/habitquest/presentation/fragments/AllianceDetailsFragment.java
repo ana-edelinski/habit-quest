@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -40,6 +41,7 @@ public class AllianceDetailsFragment extends Fragment {
         TextView tvLeader = v.findViewById(R.id.tvAllianceLeader);
         RecyclerView rvMembers = v.findViewById(R.id.rvAllianceMembers);
         Button btnLeave = v.findViewById(R.id.btnLeaveAlliance);
+        Button btnInvite = v.findViewById(R.id.btnInviteMembers);
 
         adapter = new AllianceMemberAdapter();
         rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -62,6 +64,13 @@ public class AllianceDetailsFragment extends Fragment {
                 } else {
                     btnLeave.setVisibility(View.GONE);
                 }
+
+                if (user != null && alliance.getLeaderId().equals(user.getUid())) {
+                    btnInvite.setVisibility(View.VISIBLE);
+                } else {
+                    btnInvite.setVisibility(View.GONE);
+                }
+
             }
         });
 
@@ -70,5 +79,14 @@ public class AllianceDetailsFragment extends Fragment {
         btnLeave.setOnClickListener(v1 -> {
             // Ovdje kasnije dodajemo logiku leaveAlliance()
         });
+
+        btnInvite.setOnClickListener(view -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("allianceId", viewModel.alliance.getValue().getId());
+            Navigation.findNavController(view)
+                    .navigate(R.id.allianceInviteFragment, bundle);
+        });
+
+
     }
 }

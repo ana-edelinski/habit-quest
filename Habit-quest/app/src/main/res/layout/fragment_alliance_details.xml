@@ -39,6 +39,16 @@
         android:scrollbars="vertical" />
 
     <Button
+        android:id="@+id/btnInviteMembers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Invite Members"
+        android:textAllCaps="false"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        android:backgroundTint="@color/darkGreen" />
+
+    <Button
         android:id="@+id/btnLeaveAlliance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -162,4 +162,15 @@
             app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/allianceInviteFragment"
+        android:name="com.example.habitquest.presentation.fragments.AllianceInviteFragment"
+        android:label="Invite Members"
+        tools:layout="@layout/fragment_alliance_invite">
+        <argument
+            android:name="allianceId"
+            app:argType="string" />
+    </fragment>
+
+
 </navigation>
