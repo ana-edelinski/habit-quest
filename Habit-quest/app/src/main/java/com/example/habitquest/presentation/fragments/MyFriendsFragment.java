@@ -83,9 +83,10 @@ public class MyFriendsFragment extends Fragment {
                 Navigation.findNavController(view).navigate(R.id.friendRequestsFragment)
         );
 
-        btnCreateAlliance.setOnClickListener(view -> {
-            // TODO
-        });
+        btnCreateAlliance.setOnClickListener(view ->
+                Navigation.findNavController(view)
+                        .navigate(R.id.allianceCreateFragment)
+        );
 
         myFriendsViewModel.listenForFriendsRealtime();
         myFriendsViewModel.listenForFriendRequestsRealtime();

@@ -51,4 +51,7 @@
     <string name="friendRequests">Friend Requests</string>
     <string name="myFriends">My Friends</string>
     <string name="approveIgnoreRequests">Approve or ignore requests</string>
+    <string name="create">Create</string>
+    <string name="selectFriends">Select Friends to add:</string>
+    <string name="allianceName">Enter Alliance Name</string>
 </resources>
