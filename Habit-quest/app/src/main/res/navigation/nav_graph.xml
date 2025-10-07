@@ -66,6 +66,9 @@
         <action
             android:id="@+id/action_taskDetailFragment_to_bossFightFragment"
             app:destination="@id/bossFightFragment" />
+        <action
+            android:id="@+id/action_taskDetailFragment_to_equipmentFragment"
+            app:destination="@id/nav_equipment" />
     </fragment>
 
     <fragment

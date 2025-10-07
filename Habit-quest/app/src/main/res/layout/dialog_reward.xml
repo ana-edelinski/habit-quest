@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/bg_reward_card"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <!-- 🔹 Animacija kovčežića -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottieChest"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        app:lottie_rawRes="@raw/chest_opening"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="false" />
+
+    <!-- 🔹 Naslov -->
+    <TextView
+        android:id="@+id/tvRewardTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reward Unlocked!"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginTop="8dp" />
+
+    <!-- 🔹 Coin prikaz (ikona + broj) -->
+    <LinearLayout
+        android:id="@+id/layoutCoinReward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp">
+
+        <ImageView
+            android:id="@+id/ivCoinIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_coin"
+            android:contentDescription="Coins" />
+
+        <TextView
+            android:id="@+id/tvCoinsReward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="× 240"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- 🔹 Equipment tekstualni reward -->
+    <TextView
+        android:id="@+id/tvEquipmentReward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="You found new armor!"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:layout_marginTop="8dp"
+        android:gravity="center" />
+
+    <!-- 🔹 Dugme za nastavak -->
+    <Button
+        android:id="@+id/btnCloseReward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Continue"
+        android:textAllCaps="false"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="20dp" />
+</LinearLayout>

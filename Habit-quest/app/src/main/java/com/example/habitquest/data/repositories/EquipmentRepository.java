@@ -38,6 +38,35 @@ public class EquipmentRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getActiveEffects(RepositoryCallback<ActiveEffects> callback) {
+        effectsRef.get()
+                .addOnSuccessListener(snapshot -> {
+                    ActiveEffects effects = snapshot.toObject(ActiveEffects.class);
+                    if (effects == null) effects = new ActiveEffects();
+                    callback.onSuccess(effects);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void resetAfterBattle(RepositoryCallback<Void> callback) {
+        getActiveEffects(new RepositoryCallback<ActiveEffects>() {
+            @Override
+            public void onSuccess(ActiveEffects effects) {
+                effects.afterBattle();
+                effectsRef.set(effects)
+                        .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                        .addOnFailureListener(callback::onFailure);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
+
+
     public DocumentReference getUserRef() { return userRef; }
     public DocumentReference getEffectsRef() { return effectsRef; }
 }

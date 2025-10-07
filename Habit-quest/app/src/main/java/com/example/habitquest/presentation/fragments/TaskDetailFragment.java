@@ -411,7 +411,7 @@ public class TaskDetailFragment extends Fragment {
         TextView tvTitle = bossDialog.findViewById(R.id.tvBossTitle);
         TextView tvDescription = bossDialog.findViewById(R.id.tvBossDescription);
         Button btnFight = bossDialog.findViewById(R.id.btnFightNow);
-        Button btnLater = bossDialog.findViewById(R.id.btnLater);
+        Button btnActivateEquipment = bossDialog.findViewById(R.id.btnActivateEquipment);
         ImageView imgBoss = bossDialog.findViewById(R.id.imgBoss);
 
         tvTitle.setText("⚔️ New Boss Challenge!");
@@ -424,7 +424,11 @@ public class TaskDetailFragment extends Fragment {
                     .navigate(R.id.action_taskDetailFragment_to_bossFightFragment);
         });
 
-        btnLater.setOnClickListener(v -> bossDialog.dismiss());
+        btnActivateEquipment.setOnClickListener(v -> {
+            bossDialog.dismiss();
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_taskDetailFragment_to_equipmentFragment);
+        });
 
         bossDialog.show();
     }

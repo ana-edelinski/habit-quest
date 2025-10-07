@@ -1,6 +1,11 @@
 package com.example.habitquest.domain.model;
 
 public class BattleStats {
+
+    private String firebaseUid;
+    private String bossId;
+    private long createdAt;
+    private boolean rewardGranted;
     private int totalAttempts;        // ukupno pokušaja (uvek 5)
     private int remainingAttempts;    // preostali napadi
     private double successRate;       // uspešnost (npr. 67.5%)
@@ -13,13 +18,17 @@ public class BattleStats {
 
     public BattleStats() {}
 
-    public BattleStats(int totalAttempts, double successRate, int userPP, int bossMaxHP) {
+    public BattleStats(String firebaseUid, String bossId, long createdAt, boolean rewardGranted, int totalAttempts, double successRate, int userPP, int bossMaxHP, int bossHP) {
+        this.firebaseUid = firebaseUid;
+        this.bossId = bossId;
+        this.createdAt = createdAt;
+        this.rewardGranted = rewardGranted;
         this.totalAttempts = totalAttempts;
         this.remainingAttempts = totalAttempts;
         this.successRate = successRate;
         this.userPP = userPP;
         this.bossMaxHP = bossMaxHP;
-        this.bossHP = bossMaxHP;
+        this.bossHP = bossHP;
         this.hitsLanded = 0;
         this.battleOver = false;
         this.victory = false;
@@ -52,4 +61,36 @@ public class BattleStats {
 
     public boolean isVictory() { return victory; }
     public void setVictory(boolean victory) { this.victory = victory; }
+
+    public String getFirebaseUid() {
+        return firebaseUid;
+    }
+
+    public void setFirebaseUid(String firebaseUid) {
+        this.firebaseUid = firebaseUid;
+    }
+
+    public String getBossId() {
+        return bossId;
+    }
+
+    public void setBossId(String bossId) {
+        this.bossId = bossId;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isRewardGranted() {
+        return rewardGranted;
+    }
+
+    public void setRewardGranted(boolean rewardGranted) {
+        this.rewardGranted = rewardGranted;
+    }
 }

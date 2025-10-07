@@ -21,6 +21,7 @@ import com.example.habitquest.utils.TitleUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class UserRepository implements IUserRepository {
 
@@ -165,5 +166,10 @@ public class UserRepository implements IUserRepository {
     public void listenForFriendRequests(String uid, RepositoryCallback<List<User>> callback) {
         remoteDataSource.listenForFriendRequests(uid, callback);
     }
+
+    public void updateUserFields(String uid, Map<String, Object> updates, RepositoryCallback<Void> callback) {
+        remoteDataSource.updateUserFields(uid, updates, callback);
+    }
+
 
 }

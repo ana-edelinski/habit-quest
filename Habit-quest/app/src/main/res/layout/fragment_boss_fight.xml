@@ -21,6 +21,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- 🔹 Ikonica kovčežića za prikaz nagrada -->
+    <ImageButton
+        android:id="@+id/btnRewards"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_treasure_chest"
+        android:contentDescription="Rewards"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp" />
+
+
+
     <!-- 🔹 Slika bossa -->
     <ImageView
         android:id="@+id/imgBoss"
@@ -31,7 +47,7 @@
         app:layout_constraintTop_toBottomOf="@id/tvBossTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="12dp"/>
 
     <!-- 🔹 Tekst "Boss HP" + numerička vrednost -->
     <LinearLayout
@@ -43,7 +59,7 @@
         app:layout_constraintTop_toBottomOf="@id/imgBoss"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp">
+        android:layout_marginTop="5dp">
 
         <TextView
             android:id="@+id/tvBossHpLabel"
@@ -159,13 +175,35 @@
         app:layout_constraintTop_toBottomOf="@id/layoutBattleInfo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"/>
+
+
+
+
+    <!-- 🔹 Lista aktivne opreme -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvActiveEquipment"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tvBattleFeedback"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnAttack"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="60dp"
+        android:clipToPadding="false"
+        android:padding="8dp"
+        android:scrollbars="none"
+        tools:listitem="@layout/item_equipment_small" />
+
+
 
     <!-- 🔹 Dugme za napad -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAttack"
         android:layout_width="200dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:text="ATTACK"
         android:textAllCaps="false"
         android:textSize="20sp"
@@ -173,5 +211,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="32dp"/>
+        android:layout_marginBottom="12dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

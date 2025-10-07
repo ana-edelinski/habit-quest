@@ -407,6 +407,15 @@ public class UserRemoteDataSource {
                 });
     }
 
+    public void updateUserFields(String uid, Map<String, Object> updates, RepositoryCallback<Void> callback) {
+        db.collection("users")
+                .document(uid)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 
 
 }

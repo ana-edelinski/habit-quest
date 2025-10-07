@@ -7,10 +7,18 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.habitquest.data.prefs.AppPreferences;
+import com.example.habitquest.data.repositories.BattleStatsRepository;
 import com.example.habitquest.data.repositories.BossRepository;
+import com.example.habitquest.data.repositories.EquipmentRepository;
 import com.example.habitquest.data.repositories.UserRepository;
 import com.example.habitquest.domain.managers.StagePerformanceCalculator;
+import com.example.habitquest.domain.model.ActiveEffects;
+import com.example.habitquest.domain.model.EquipmentType;
+import com.example.habitquest.domain.model.PotentialRewards;
+import com.example.habitquest.domain.model.ShopData;
+import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.domain.model.User;
+import com.example.habitquest.domain.repositoryinterfaces.IBattleStatsRepository;
 import com.example.habitquest.domain.repositoryinterfaces.IBossRepository;
 import com.example.habitquest.domain.model.Boss;
 import com.example.habitquest.domain.model.BossFightResult;
@@ -18,13 +26,21 @@ import com.example.habitquest.domain.model.BattleStats;
 import com.example.habitquest.domain.repositoryinterfaces.IUserRepository;
 import com.example.habitquest.utils.RepositoryCallback;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+
+
 
 public class BossFightViewModel extends ViewModel {
 
     private final IBossRepository bossRepository;
+    private final IBattleStatsRepository battleStatsRepository;
     private final UserRepository userRepository;
-    private final StagePerformanceCalculator stagePerformanceCalculator; // 🆕 novi menadžer
+    private final EquipmentRepository equipmentRepository;
+    private final StagePerformanceCalculator stagePerformanceCalculator;
 
     private final MutableLiveData<Boss> _currentBoss = new MutableLiveData<>();
     public LiveData<Boss> currentBoss = _currentBoss;
@@ -35,21 +51,31 @@ public class BossFightViewModel extends ViewModel {
     private final MutableLiveData<BossFightResult> _battleResult = new MutableLiveData<>();
     public LiveData<BossFightResult> battleResult = _battleResult;
 
+    private final MutableLiveData<List<ShopItem>> _activeEquipment = new MutableLiveData<>(new ArrayList<>());
+    public LiveData<List<ShopItem>> activeEquipment = _activeEquipment;
+
+    private final MutableLiveData<PotentialRewards> _potentialRewards = new MutableLiveData<>();
+    public LiveData<PotentialRewards> potentialRewards = _potentialRewards;
+
+
+
     private final Random random = new Random();
     private final AppPreferences prefs;
 
-    // 🔹 Konstruktor sada prima i StagePerformanceCalculator
     public BossFightViewModel(
             AppPreferences prefs,
             BossRepository bossRepository,
             UserRepository userRepository,
+            BattleStatsRepository battleStatsRepository,
+            EquipmentRepository equipmentRepository,
             StagePerformanceCalculator stagePerformanceCalculator
     ) {
         this.prefs = prefs;
         this.bossRepository = bossRepository;
         this.userRepository = userRepository;
+        this.battleStatsRepository = battleStatsRepository;
+        this.equipmentRepository = equipmentRepository;
         this.stagePerformanceCalculator = stagePerformanceCalculator;
-
     }
 
     // ------------------ Inicijalizacija borbe ------------------
@@ -57,26 +83,72 @@ public class BossFightViewModel extends ViewModel {
     public void prepareBattleData() {
         String uid = prefs.getFirebaseUid();
 
-        // 1️⃣ prvo dohvatimo usera da bismo dobili njegov PP i lokalni ID
+        // 🔹 prvo proveri da li već postoji aktivna borba
+        battleStatsRepository.getActiveBattle(uid, new RepositoryCallback<BattleStats>() {
+            @Override
+            public void onSuccess(BattleStats activeBattle) {
+                if (activeBattle != null && !activeBattle.isBattleOver()) {
+                    // ✅ postojeća borba — nastavi odavde
+                    recalculateStatsForActiveBattle(activeBattle);
+                    _battleStats.postValue(activeBattle);
+                } else {
+                    // 🔹 nema aktivne borbe — započni novu
+                    loadAndStartNewBattle(uid);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                e.printStackTrace();
+                // ako dohvatanje ne uspe, fallback — pokreni novu
+                loadAndStartNewBattle(uid);
+            }
+        });
+    }
+
+    private void loadAndStartNewBattle(String uid) {
         userRepository.getUser(uid, new RepositoryCallback<User>() {
             @Override
             public void onSuccess(User user) {
-                int userPP = user.getPp();
-                long localUserId = user.getId(); // koristi se u XP log repo-u
+                if (user == null) return;
+                long localUserId = user.getId();
+                _potentialRewards.postValue(new PotentialRewards(user.getPreviousBossReward()));
 
-                // 2️⃣ izračunamo success rate preko StagePerformanceCalculator
+                // 🔹 Sačuvaj aktivnu opremu u LiveData
+                if (user.getEquipment() != null) {
+                    List<ShopItem> active = new ArrayList<>();
+                    for (ShopItem item : user.getEquipment()) {
+                        if (item.isActive()) {
+                            active.add(item);
+                        }
+                    }
+                    _activeEquipment.postValue(active);
+                }
+
+                // 🔹 prvo izračunaj osnovni success rate
                 stagePerformanceCalculator.calculateStageSuccessRate(uid, localUserId, new RepositoryCallback<Double>() {
                     @Override
                     public void onSuccess(Double successRate) {
-                        // 3️⃣ kada dobijemo uspešnost, započinjemo borbu
-                        startBattle(successRate, userPP);
+                        // 🔹 zatim primeni aktivne efekte (bonusi iz opreme, napitaka...)
+                        applyActiveEffects(uid, user, successRate, new RepositoryCallback<ActiveEffectsResult>() {
+                            @Override
+                            public void onSuccess(ActiveEffectsResult result) {
+                                // koristi pojačani PP i korigovan success rate
+                                startBattle(result.adjustedSuccess, result.effectivePp);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                e.printStackTrace();
+                                startBattle(successRate, user.getPp());
+                            }
+                        });
                     }
 
                     @Override
                     public void onFailure(Exception e) {
                         e.printStackTrace();
-                        // fallback ako izračun ne uspe
-                        startBattle(0.0, userPP);
+                        startBattle(0.0, user.getPp());
                     }
                 });
             }
@@ -88,32 +160,47 @@ public class BossFightViewModel extends ViewModel {
         });
     }
 
+
     // ------------------ Učitavanje trenutnog bosa ------------------
 
     public void loadCurrentBoss() {
         String uid = prefs.getFirebaseUid();
 
-        // 1️⃣ Dohvati usera da vidiš koji je njegov trenutni level
         userRepository.getUser(uid, new RepositoryCallback<User>() {
             @Override
             public void onSuccess(User user) {
                 if (user == null) return;
+                _potentialRewards.postValue(new PotentialRewards(user.getPreviousBossReward()));
 
-                // 2️⃣ Na osnovu levela formiraj bossId (npr. boss_1, boss_2, ...)
+                // 🔹 Sačuvaj aktivnu opremu u LiveData
+                if (user.getEquipment() != null) {
+                    List<ShopItem> active = new ArrayList<>();
+                    for (ShopItem item : user.getEquipment()) {
+                        if (item.isActive()) {
+                            active.add(item);
+                        }
+                    }
+                    _activeEquipment.postValue(active);
+                }
+
                 String bossId = "boss_" + user.getLevel();
 
-                // 3️⃣ Sada dohvati odgovarajućeg bossa
                 bossRepository.getCurrentBoss(bossId, new RepositoryCallback<Boss>() {
                     @Override
                     public void onSuccess(Boss boss) {
                         if (boss != null) {
-                            boss.setHp(boss.getMaxHp());
+                            // Ako postoji aktivna borba, koristi HP iz nje
+                            BattleStats active = _battleStats.getValue();
+                            if (active != null && active.getBossId().equals(bossId)) {
+                                boss.setHp(active.getBossHP());
+                            } else {
+                                boss.setHp(boss.getMaxHp());
+                            }
                             _currentBoss.postValue(boss);
                         } else {
-                            // Ako nema bossa u bazi, napravi ga
+                            // Ako nema bossa, napravi prvog
                             Boss firstBoss = new Boss(user.getLevel(), 100, 200);
                             firstBoss.setId(bossId);
-
                             bossRepository.saveBoss(firstBoss, new RepositoryCallback<Void>() {
                                 @Override
                                 public void onSuccess(Void data) {
@@ -142,7 +229,6 @@ public class BossFightViewModel extends ViewModel {
         });
     }
 
-
     // ------------------ Početak borbe ------------------
 
     public void startBattle(double successRate, int userPP) {
@@ -150,13 +236,30 @@ public class BossFightViewModel extends ViewModel {
         if (boss == null) return;
 
         BattleStats stats = new BattleStats(
+                prefs.getFirebaseUid(),
+                boss.getId(),
+                System.currentTimeMillis(),
+                false,
                 5,              // broj napada
-                successRate,    // šansa za uspeh napada (0–100)
-                userPP,         // snaga korisnika
-                boss.getMaxHp() // HP bosa
+                successRate,    // uspešnost
+                userPP,         // PP korisnika
+                boss.getMaxHp(),
+                boss.getMaxHp()
         );
 
-        _battleStats.setValue(stats);
+        // 🔹 Sačuvaj borbu u repo
+        battleStatsRepository.saveBattle(stats, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void data) {
+                _battleStats.postValue(stats);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                e.printStackTrace();
+                _battleStats.postValue(stats);
+            }
+        });
     }
 
     // ------------------ Logika napada ------------------
@@ -166,7 +269,7 @@ public class BossFightViewModel extends ViewModel {
         Boss boss = _currentBoss.getValue();
         if (stats == null || boss == null || stats.isBattleOver()) return;
 
-        int roll = random.nextInt(100); // 0–99
+        int roll = random.nextInt(100);
         boolean hitSuccess = roll < stats.getSuccessRate();
 
         if (hitSuccess) {
@@ -177,6 +280,14 @@ public class BossFightViewModel extends ViewModel {
         }
 
         stats.setRemainingAttempts(stats.getRemainingAttempts() - 1);
+
+        // 🔹 Čuvaj svaku promenu
+        battleStatsRepository.updateBattle(stats, new RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void data) { }
+            @Override
+            public void onFailure(Exception e) { e.printStackTrace(); }
+        });
 
         if (stats.getRemainingAttempts() == 0 || boss.getHp() <= 0) {
             stats.setBattleOver(true);
@@ -191,41 +302,136 @@ public class BossFightViewModel extends ViewModel {
 
     private void handleBattleEnd(BattleStats stats, Boss boss) {
         boolean victory = stats.isVictory();
-        int earnedCoins = 0;
-        String equipmentId = null;
+        stats.setBattleOver(true);
+        stats.setRewardGranted(true);
 
-        if (victory) {
-            earnedCoins = boss.getRewardCoins();
+        String uid = prefs.getFirebaseUid();
 
-            // 20% šansa da dobije opremu (95% odeća, 5% oružje)
-            if (random.nextInt(100) < 20) {
-                equipmentId = (random.nextInt(100) < 95)
-                        ? "equipment_clothing"
-                        : "equipment_weapon";
-            }
-
-            boss.setDefeated(true);
-        } else if (boss.getHp() <= boss.getMaxHp() / 2) {
-            earnedCoins = boss.getRewardCoins() / 2;
-        }
-
-        BossFightResult result = new BossFightResult(
-                boss.getId(),
-                prefs.getFirebaseUid(),
-                victory,
-                earnedCoins,
-                equipmentId
-        );
-
-        bossRepository.saveBattleResult(result, new RepositoryCallback<Void>() {
+        userRepository.getUser(uid, new RepositoryCallback<User>() {
             @Override
-            public void onSuccess(Void data) {
-                _battleResult.postValue(result);
-                bossRepository.updateBoss(boss, new RepositoryCallback<Void>() {
+            public void onSuccess(User user) {
+                if (user == null) return;
+
+                int baseReward = user.getPreviousBossReward() > 0
+                        ? (int) Math.round(user.getPreviousBossReward() * 1.2)
+                        : 200; // prvi boss = 200
+
+                int earnedCoins = 0;
+                boolean equipmentWon = false;
+                ShopItem rewardItem = null;
+
+                // ------------------ Odredi nagradu ------------------
+                if (victory) {
+                    earnedCoins = baseReward;
+
+                    // 20% šansa da dobije opremu
+                    if (random.nextInt(100) < 20) {
+                        equipmentWon = true;
+                    }
+
+                    boss.setDefeated(true);
+                } else {
+                    // ako nije pobedio, ali je skinuo ≥50% HP-a
+                    if (stats.getBossHP() <= boss.getMaxHp() / 2) {
+                        earnedCoins = baseReward / 2;
+
+                        // polovi i šansu
+                        if (random.nextInt(100) < 10) {
+                            equipmentWon = true;
+                        }
+                    }
+                }
+
+                // ------------------ Ako je dobio opremu ------------------
+                if (equipmentWon) {
+                    // 95% odeća, 5% oružje
+                    EquipmentType type = (random.nextInt(100) < 95)
+                            ? EquipmentType.CLOTHING
+                            : EquipmentType.WEAPON;
+
+                    // Učitaj dostupne iteme
+                    List<ShopItem> allItems = ShopData.ITEMS;
+                    List<ShopItem> eligible = new ArrayList<>();
+                    for (ShopItem item : allItems) {
+                        if (item.getType() == type) eligible.add(item);
+                    }
+
+                    if (!eligible.isEmpty()) {
+                        rewardItem = new ShopItem(
+                                eligible.get(random.nextInt(eligible.size())),
+                                user.getPreviousBossReward()
+                        );
+                        rewardItem.setActive(false);
+
+                        List<ShopItem> equipment = user.getEquipment() != null
+                                ? new ArrayList<>(user.getEquipment())
+                                : new ArrayList<>();
+                        equipment.add(rewardItem);
+                        user.setEquipment(equipment);
+                    }
+                }
+
+                // ------------------ Ažuriraj korisnika ------------------
+                Map<String, Object> updates = new HashMap<>();
+                updates.put("coins", user.getCoins() + earnedCoins);
+                updates.put("previousBossReward", baseReward);
+                if (victory) {
+                    updates.put("bossesDefeated", user.getBossesDefeated() + 1);
+                }
+                if (user.getEquipment() != null) {
+                    updates.put("equipment", user.getEquipment());
+                }
+
+                final int earnedCoinsFinal = earnedCoins;
+                final String rewardItemName  = rewardItem != null ? rewardItem.getName() : null;
+
+
+                userRepository.updateUserFields(uid, updates, new RepositoryCallback<Void>() {
                     @Override
-                    public void onSuccess(Void data) { /* OK */ }
+                    public void onSuccess(Void data) {
+                        // 🔹 Sačuvaj rezultat borbe
+                        BossFightResult result = new BossFightResult(
+                                boss.getId(),
+                                uid,
+                                victory,
+                                earnedCoinsFinal,
+                                rewardItemName
+                        );
+
+                        bossRepository.saveBattleResult(result, new RepositoryCallback<Void>() {
+                            @Override
+                            public void onSuccess(Void data) {
+                                _battleResult.postValue(result);
+
+                                // ažuriraj bossa
+                                bossRepository.updateBoss(boss, new RepositoryCallback<Void>() {
+                                    @Override
+                                    public void onSuccess(Void data) {
+                                        // obriši aktivnu sesiju borbe
+                                        battleStatsRepository.deleteBattle(uid, new RepositoryCallback<Void>() {
+                                            @Override
+                                            public void onSuccess(Void data) { }
+                                            @Override
+                                            public void onFailure(Exception e) { e.printStackTrace(); }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) { e.printStackTrace(); }
+                                });
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    }
+
                     @Override
-                    public void onFailure(Exception e) { e.printStackTrace(); }
+                    public void onFailure(Exception e) {
+                        e.printStackTrace();
+                    }
                 });
             }
 
@@ -234,16 +440,20 @@ public class BossFightViewModel extends ViewModel {
                 e.printStackTrace();
             }
         });
+
+        equipmentRepository.resetAfterBattle(new RepositoryCallback<Void>() {
+            @Override public void onSuccess(Void data) { }
+            @Override public void onFailure(Exception e) { e.printStackTrace(); }
+        });
+
     }
 
 
-    /**
-     * Kreira sledećeg bossa kada korisnik dostigne novi nivo.
-     */
+    // ------------------ Sledeći boss ------------------
+
     public void createNextBoss(RepositoryCallback<Boss> callback) {
         String uid = prefs.getFirebaseUid();
 
-        // 1️⃣ Prvo dohvati korisnika da saznaš njegov trenutni level
         userRepository.getUser(uid, new RepositoryCallback<User>() {
             @Override
             public void onSuccess(User user) {
@@ -252,15 +462,12 @@ public class BossFightViewModel extends ViewModel {
                     return;
                 }
 
-                // 2️⃣ Formiraj bossId na osnovu njegovog trenutnog levela
                 String bossId = "boss_" + user.getLevel();
 
-                // 3️⃣ Dohvati trenutnog bossa po tom ID-ju (ako postoji)
                 bossRepository.getCurrentBoss(bossId, new RepositoryCallback<Boss>() {
                     @Override
                     public void onSuccess(Boss currentBoss) {
                         if (currentBoss != null) {
-                            // ✅ Kreiraj sledećeg bossa na osnovu prethodnog
                             bossRepository.createNextBoss(currentBoss, new RepositoryCallback<Boss>() {
                                 @Override
                                 public void onSuccess(Boss newBoss) {
@@ -275,12 +482,7 @@ public class BossFightViewModel extends ViewModel {
                                 }
                             });
                         } else {
-                            // ✅ Ako nema trenutnog, kreiraj prvog
-                            Boss firstBoss = new Boss(
-                                    1,      // level
-                                    100,    // HP
-                                    200     // rewardCoins
-                            );
+                            Boss firstBoss = new Boss(1, 100, 200);
                             firstBoss.setId("boss_1");
 
                             bossRepository.saveBoss(firstBoss, new RepositoryCallback<Void>() {
@@ -316,5 +518,134 @@ public class BossFightViewModel extends ViewModel {
     }
 
 
+    private void recalculateStatsForActiveBattle(BattleStats activeBattle) {
+        String uid = prefs.getFirebaseUid();
+
+        userRepository.getUser(uid, new RepositoryCallback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                if (user == null) return;
+
+                long localUserId = user.getId();
+
+                // 🔹 ponovo izračunaj osnovni success rate iz performansi korisnika
+                stagePerformanceCalculator.calculateStageSuccessRate(uid, localUserId, new RepositoryCallback<Double>() {
+                    @Override
+                    public void onSuccess(Double successRate) {
+                        // 🔹 primeni aktivne efekte (bonusi iz ActiveEffects)
+                        applyActiveEffects(uid, user, successRate, new RepositoryCallback<ActiveEffectsResult>() {
+                            @Override
+                            public void onSuccess(ActiveEffectsResult result) {
+                                activeBattle.setUserPP(result.effectivePp);
+                                activeBattle.setSuccessRate(result.adjustedSuccess);
+
+                                // 🔹 sačuvaj osvežene vrednosti u repo
+                                battleStatsRepository.updateBattle(activeBattle, new RepositoryCallback<Void>() {
+                                    @Override
+                                    public void onSuccess(Void data) {
+                                        _battleStats.postValue(activeBattle);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        e.printStackTrace();
+                                        _battleStats.postValue(activeBattle);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                e.printStackTrace();
+                                // fallback ako ne uspe učitavanje efekata
+                                activeBattle.setUserPP(user.getPp());
+                                activeBattle.setSuccessRate(successRate);
+
+                                battleStatsRepository.updateBattle(activeBattle, new RepositoryCallback<Void>() {
+                                    @Override
+                                    public void onSuccess(Void data) {
+                                        _battleStats.postValue(activeBattle);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception ex) {
+                                        ex.printStackTrace();
+                                        _battleStats.postValue(activeBattle);
+                                    }
+                                });
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        e.printStackTrace();
+                        // fallback ako ne uspe kalkulacija success rate-a
+                        activeBattle.setUserPP(user.getPp());
+                        battleStatsRepository.updateBattle(activeBattle, new RepositoryCallback<Void>() {
+                            @Override
+                            public void onSuccess(Void data) {
+                                _battleStats.postValue(activeBattle);
+                            }
+
+                            @Override
+                            public void onFailure(Exception ex) {
+                                ex.printStackTrace();
+                                _battleStats.postValue(activeBattle);
+                            }
+                        });
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+
+
+    private void applyActiveEffects(String uid, User user, double baseSuccessRate, RepositoryCallback<ActiveEffectsResult> callback) {
+        equipmentRepository.getActiveEffects(new RepositoryCallback<ActiveEffects>() {
+            @Override
+            public void onSuccess(ActiveEffects effects) {
+                int effectivePp = effects.calculateEffectivePp(user.getPp());
+                double adjustedSuccess = baseSuccessRate;
+
+                // 🔹 ako ima bonus iz odeće, povećaj successRate (npr. +10%)
+                if (effects.getEquipmentBonus() > 0) {
+                    adjustedSuccess += adjustedSuccess * effects.getEquipmentBonus();
+                }
+
+                // 🔹 garantuj da ne prelazi 100%
+                if (adjustedSuccess > 100) adjustedSuccess = 100;
+
+                callback.onSuccess(new ActiveEffectsResult(effectivePp, adjustedSuccess, effects));
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                e.printStackTrace();
+                callback.onFailure(e);
+            }
+        });
+    }
+
+    private static class ActiveEffectsResult {
+        int effectivePp;
+        double adjustedSuccess;
+        ActiveEffects effects;
+
+        ActiveEffectsResult(int effectivePp, double adjustedSuccess, ActiveEffects effects) {
+            this.effectivePp = effectivePp;
+            this.adjustedSuccess = adjustedSuccess;
+            this.effects = effects;
+        }
+    }
+
+
 }
+
 
