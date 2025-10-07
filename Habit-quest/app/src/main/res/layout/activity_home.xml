@@ -32,7 +32,7 @@
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavigation"
             android:layout_width="0dp"
-            android:layout_height="88dp"
+            android:layout_height="130dp"
             android:background="@color/white"
             app:menu="@menu/bottom_nav_menu"
             app:itemIconTint="@color/black"

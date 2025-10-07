@@ -18,9 +18,9 @@
         android:title="@string/store"/>
 
     <item
-        android:id="@+id/nav_equipment"
-        android:icon="@drawable/ic_equipment"
-        android:title="@string/equipment" />
+        android:id="@+id/calendarFragment"
+        android:icon="@drawable/ic_calendar"
+        android:title="Calendar" />
 
     <item
         android:id="@+id/nav_account"
