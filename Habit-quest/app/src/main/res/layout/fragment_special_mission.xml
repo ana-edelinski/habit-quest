@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <!-- Poruka kad nije u savezu -->
+    <LinearLayout
+        android:id="@+id/layoutNoAlliance"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvNoAllianceMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Join an alliance to solve special missions."
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:padding="16dp" />
+
+        <Button
+            android:id="@+id/btnJoinAlliance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Join Alliance"
+            android:textAllCaps="false"
+            android:backgroundTint="@color/colorPrimary" />
+    </LinearLayout>
+
+    <!-- Poruka kad postoji savez ali nema aktivne misije -->
+    <LinearLayout
+        android:id="@+id/layoutNoMission"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvNoMissionMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contact your alliance leader to start a mission."
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:padding="16dp" />
+    </LinearLayout>
+
+    <!-- Ostatak za prikaz aktivne misije dodaćemo kasnije -->
+    <LinearLayout
+        android:id="@+id/layoutMissionActive"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvMissionActivePlaceholder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Mission active view coming soon)"
+            android:textAlignment="center" />
+    </LinearLayout>
+
+</FrameLayout>

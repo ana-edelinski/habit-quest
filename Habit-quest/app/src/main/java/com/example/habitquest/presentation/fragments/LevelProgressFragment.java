@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -47,6 +48,8 @@ public class LevelProgressFragment extends Fragment {
         tvCoins = view.findViewById(R.id.tvCoins);
         ivTitleIcon = view.findViewById(R.id.ivTitleIcon);
         progressXP = view.findViewById(R.id.progressXP);
+        MaterialButton btnBossFight = view.findViewById(R.id.btnEnterBossFight);
+
 
         AccountViewModelFactory factory = new AccountViewModelFactory(requireContext());
         viewModel = new ViewModelProvider(this, factory).get(AccountViewModel.class);
@@ -75,13 +78,18 @@ public class LevelProgressFragment extends Fragment {
 
                 tvPoints.setText("Points: " + user.getPp());
                 tvCoins.setText("Coins: " + user.getCoins());
+                if(user.getLevel() < 1){
+                    btnBossFight.setVisibility(View.GONE);
+                } else {
+                    btnBossFight.setVisibility(View.VISIBLE);
+                }
+
             }
         });
 
         viewModel.loadUser();
 
         // dugme za bossa
-        MaterialButton btnBossFight = view.findViewById(R.id.btnEnterBossFight);
         btnBossFight.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
             navController.navigate(R.id.action_levelProgressFragment_to_bossFightFragment);

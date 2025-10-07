@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,13 +21,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.habitquest.R;
 import com.example.habitquest.presentation.adapters.AllianceMemberAdapter;
 import com.example.habitquest.presentation.viewmodels.AllianceDetailsViewModel;
+import com.example.habitquest.presentation.viewmodels.AllianceMissionViewModel;
+import com.example.habitquest.presentation.viewmodels.BossFightViewModel;
+import com.example.habitquest.presentation.viewmodels.factories.AllianceMissionViewModelFactory;
+import com.example.habitquest.presentation.viewmodels.factories.BossFightViewModelFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class AllianceDetailsFragment extends Fragment {
 
     private AllianceDetailsViewModel viewModel;
+    private AllianceMissionViewModel missionViewModel;
     private AllianceMemberAdapter adapter;
+    private boolean missionDialogShown = false;
+
 
     @Nullable
     @Override
@@ -45,12 +53,17 @@ public class AllianceDetailsFragment extends Fragment {
         Button btnLeave = v.findViewById(R.id.btnLeaveAlliance);
         Button btnInvite = v.findViewById(R.id.btnInviteMembers);
         Button btnDisband = v.findViewById(R.id.btnDisbandAlliance);
+        Button btnStartMission = v.findViewById(R.id.btnStartMission);
 
         adapter = new AllianceMemberAdapter();
         rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvMembers.setAdapter(adapter);
 
         viewModel = new ViewModelProvider(this).get(AllianceDetailsViewModel.class);
+        AllianceMissionViewModelFactory factory = new AllianceMissionViewModelFactory(requireContext());
+        missionViewModel = new ViewModelProvider(this, factory).get(AllianceMissionViewModel.class);
+        missionViewModel.loadAllianceForUser();
+
 
         String allianceId = getArguments() != null ? getArguments().getString("allianceId") : null;
         if (allianceId != null) viewModel.loadAlliance(allianceId);
@@ -69,8 +82,25 @@ public class AllianceDetailsFragment extends Fragment {
                 btnInvite.setVisibility(isLeader ? View.VISIBLE : View.GONE);
                 btnDisband.setVisibility(isLeader ? View.VISIBLE : View.GONE);
                 btnLeave.setVisibility(!isLeader ? View.VISIBLE : View.GONE);
+                boolean hasActiveMission = alliance.isMissionActive();
+
+                btnStartMission.setVisibility(isLeader && !hasActiveMission ? View.VISIBLE : View.GONE);
             }
         });
+
+        //zapocinjanje misije
+        btnStartMission.setOnClickListener(v1 -> {
+            missionViewModel.startMission();
+        });
+
+        missionViewModel.missionJustStarted.observe(getViewLifecycleOwner(), started -> {
+            if (Boolean.TRUE.equals(started)) {
+                showMissionStartedDialog();
+                btnStartMission.setVisibility(View.GONE);
+                missionViewModel.resetMissionJustStarted();
+            }
+        });
+
 
         viewModel.members.observe(getViewLifecycleOwner(), adapter::setMembers);
 
@@ -124,4 +154,26 @@ public class AllianceDetailsFragment extends Fragment {
                     .navigate(R.id.allianceInviteFragment, bundle);
         });
     }
+
+    private void showMissionStartedDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_mission_started, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        Button btnGoToMission = dialogView.findViewById(R.id.btnGoToMission);
+        Button btnLater = dialogView.findViewById(R.id.btnLater);
+
+        btnGoToMission.setOnClickListener(v -> {
+            dialog.dismiss();
+            // Navigacija do ekrana specijalnih misija
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_allianceFragment_to_specialMissionFragment);
+        });
+
+        btnLater.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
 }

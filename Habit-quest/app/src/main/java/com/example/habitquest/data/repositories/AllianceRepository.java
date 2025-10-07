@@ -51,4 +51,14 @@ public class AllianceRepository {
         remoteDataSource.disbandAlliance(allianceId, callback);
     }
 
+    public void getAllianceByMember(String userId, RepositoryCallback<Alliance> callback) {
+        remoteDataSource.getUserAlliance(userId, callback);
+    }
+
+    public void updateAlliance(Alliance alliance, RepositoryCallback<Void> callback) {
+        remoteDataSource.updateAlliance(alliance, callback);
+    }
+
+
+
 }

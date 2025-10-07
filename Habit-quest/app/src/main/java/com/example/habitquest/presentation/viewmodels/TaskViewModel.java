@@ -376,6 +376,8 @@ public class TaskViewModel extends ViewModel {
         if(task.isRecurring()) {
             log.setOccurrenceId(occurrenceId);
         }
+        task.setUserId(Long.parseLong( prefs.getUserId()));
+        log.setUserId(Long.parseLong( prefs.getUserId()));
         
         insertXpLogAndUpdateUser(log, user, task, firebaseUid);
     }

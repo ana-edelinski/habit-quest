@@ -73,6 +73,20 @@ public class AllianceRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void updateAlliance(Alliance alliance, RepositoryCallback<Void> callback) {
+        if (alliance == null || alliance.getId() == null) {
+            callback.onFailure(new Exception("Alliance or ID is null"));
+            return;
+        }
+
+        db.collection(COLLECTION_NAME)
+                .document(alliance.getId())
+                .set(alliance)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
     public void leaveAlliance(String allianceId, String userId, RepositoryCallback<Void> callback) {
         DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
         allianceRef.get().addOnSuccessListener(doc -> {

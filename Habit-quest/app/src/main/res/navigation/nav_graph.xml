@@ -159,6 +159,9 @@
         android:name="com.example.habitquest.presentation.fragments.AllianceDetailsFragment"
         android:label="My Alliance"
         tools:layout="@layout/fragment_alliance_details">
+        <action
+            android:id="@+id/action_allianceFragment_to_specialMissionFragment"
+            app:destination="@id/specialMission" />
 
         <argument
             android:name="allianceId"
@@ -173,6 +176,17 @@
         <argument
             android:name="allianceId"
             app:argType="string" />
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/specialMission"
+        android:name="com.example.habitquest.presentation.fragments.SpecialMissionFragment"
+        android:label="Alliance Mission"
+        tools:layout="@layout/fragment_special_mission">
+        <action
+            android:id="@+id/action_specialMissionFragment_to_myFriendsFragment"
+            app:destination="@id/myFriendsFragment" />
     </fragment>
 
 

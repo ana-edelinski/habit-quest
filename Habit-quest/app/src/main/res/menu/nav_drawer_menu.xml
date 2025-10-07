@@ -25,5 +25,9 @@
         android:id="@+id/levelProgressFragment"
         android:title="@string/nav_level_progress"
         android:icon="@drawable/ic_progress" />
+    <item
+        android:id="@+id/specialMission"
+        android:title="Special Mission"
+        android:icon="@drawable/ic_mission" />
 
 </menu>

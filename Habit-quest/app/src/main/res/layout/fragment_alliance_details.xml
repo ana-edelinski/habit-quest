@@ -39,6 +39,16 @@
         android:scrollbars="vertical" />
 
     <Button
+        android:id="@+id/btnStartMission"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Special Mission"
+        android:textAllCaps="false"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/darkGreen"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/btnInviteMembers"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
