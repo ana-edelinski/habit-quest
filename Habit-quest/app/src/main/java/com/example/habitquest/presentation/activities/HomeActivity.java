@@ -203,7 +203,8 @@ public class HomeActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(getString(R.string.app_name));
         }
 
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        toolbar.setNavigationIcon(R.drawable.ic_menu);
+        toolbar.setNavigationOnClickListener(v -> drawerLayout.open());
     }
 
     private void setupBottomNavigation() {
@@ -246,12 +247,6 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
     }
 
     public void updateCartBadge(int count) {
