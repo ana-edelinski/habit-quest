@@ -212,8 +212,24 @@ public class HomeActivity extends AppCompatActivity {
         NavHostFragment navHostFragment =
                 (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         NavController navController = navHostFragment.getNavController();
+
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
+
+        bottomNavigationView.setOnItemReselectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_home) {
+                navController.popBackStack(R.id.nav_home, false);
+            } else if (id == R.id.nav_explore) {
+                navController.popBackStack(R.id.nav_explore, false);
+            } else if (id == R.id.nav_store) {
+                navController.popBackStack(R.id.nav_store, false);
+            } else if (id == R.id.nav_account) {
+                navController.popBackStack(R.id.nav_account, false);
+            }
+        });
     }
+
 
     @OptIn(markerClass = ExperimentalBadgeUtils.class)
     @Override
