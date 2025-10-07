@@ -225,6 +225,7 @@ public class HomeActivity extends AppCompatActivity {
     private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.topAppBar);
         setSupportActionBar(toolbar);
+        toolbar.getOverflowIcon().setTint(ContextCompat.getColor(this, android.R.color.white));
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(getString(R.string.app_name));
         }
