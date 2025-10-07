@@ -2,12 +2,6 @@ package com.example.habitquest.presentation.fragments;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,18 +10,29 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.habitquest.R;
-import com.example.habitquest.data.repositories.UserRepository;
-import com.example.habitquest.domain.model.User;
+import com.example.habitquest.domain.model.ShopItem;
+import com.example.habitquest.presentation.adapters.EquipmentAdapter;
 import com.example.habitquest.presentation.viewmodels.UserProfileViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.UserProfileViewModelFactory;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class UserProfileFragment extends Fragment {
 
     private ImageView imgAvatar, imgQrCode;
-    private TextView txtUsername, txtXp, txtLevel, txtTitle, txtPp, txtCoins;
+    private TextView txtUsername, txtXp, txtLevel, txtTitle;
     private UserProfileViewModel viewModel;
 
     @Nullable
@@ -47,9 +52,15 @@ public class UserProfileFragment extends Fragment {
         txtXp = view.findViewById(R.id.tvXP);
         txtLevel = view.findViewById(R.id.tvLevel);
         txtTitle = view.findViewById(R.id.tvTitle);
-        txtPp = view.findViewById(R.id.tvPP);
-        txtCoins = view.findViewById(R.id.tvCoins);
         Button btnAddFriend = view.findViewById(R.id.btnAddFriend);
+
+        RecyclerView rvEquipment = view.findViewById(R.id.rvUserEquipment);
+        rvEquipment.setLayoutManager(
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
+        );
+        EquipmentAdapter equipmentAdapter = new EquipmentAdapter(true);
+        rvEquipment.setAdapter(equipmentAdapter);
+        equipmentAdapter.setOnItemClickListener(null);
 
         String currentUid = com.google.firebase.auth.FirebaseAuth.getInstance()
                 .getCurrentUser()
@@ -70,8 +81,6 @@ public class UserProfileFragment extends Fragment {
             txtUsername.setText(user.getUsername());
             txtLevel.setText("Level " + user.getLevel());
             txtTitle.setText(user.getTitle() != null ? user.getTitle() : "Beginner");
-            txtPp.setText("PP: " + user.getPp());
-            txtCoins.setText("Coins: " + user.getCoins());
             txtXp.setText("XP: " + user.getTotalXp());
 
             int resId;
@@ -85,10 +94,17 @@ public class UserProfileFragment extends Fragment {
             }
             imgAvatar.setImageResource(resId);
 
+            if (user.getEquipment() != null) {
+                List<ShopItem> activeItems = new ArrayList<>();
+                for (ShopItem item : user.getEquipment()) {
+                    if (item.isActive()) activeItems.add(item);
+                }
+                equipmentAdapter.setItems(activeItems);
+            }
+
             // QR kod
             try {
                 String qrContent = "habitquest://addfriend?uid=" + user.getUid();
-
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                 Bitmap bitmap = barcodeEncoder.encodeBitmap(
                         qrContent,
@@ -100,12 +116,10 @@ public class UserProfileFragment extends Fragment {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         });
 
         viewModel.currentUser.observe(getViewLifecycleOwner(), currentUser -> {
             if (currentUser == null) return;
-
             boolean isAlreadyFriend = currentUser.getFriends() != null && currentUser.getFriends().contains(userId);
             boolean isRequestSent = currentUser.getFriendRequestsSent() != null && currentUser.getFriendRequestsSent().contains(userId);
             boolean isRequestReceived = currentUser.getFriendRequestsReceived() != null && currentUser.getFriendRequestsReceived().contains(userId);
@@ -153,9 +167,7 @@ public class UserProfileFragment extends Fragment {
             }
         });
 
-
         viewModel.loadUser(userId);
         viewModel.loadCurrentUser(currentUid);
-
     }
 }

@@ -86,10 +86,17 @@ public class HomeActivity extends AppCompatActivity {
             String uid = auth.getCurrentUser().getUid();
 
             AllianceRemoteDataSource allianceRemote = new AllianceRemoteDataSource();
-
             allianceRemote.listenForAllianceInvites(uid, this);
-
             allianceRemote.listenForAllianceAccepts(uid, this);
+        }
+
+        if (getIntent() != null && getIntent().getBooleanExtra("navigateToAllianceDetails", false)) {
+            String allianceId = getIntent().getStringExtra("allianceId");
+            if (allianceId != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("allianceId", allianceId);
+                navController.navigate(R.id.allianceDetailsFragment, bundle);
+            }
         }
     }
 
@@ -123,6 +130,15 @@ public class HomeActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         handleDeepLink(intent);
+
+        if (intent != null && intent.getBooleanExtra("navigateToAllianceDetails", false)) {
+            String allianceId = intent.getStringExtra("allianceId");
+            if (allianceId != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("allianceId", allianceId);
+                navController.navigate(R.id.allianceDetailsFragment, bundle);
+            }
+        }
     }
 
     private void handleDeepLink(Intent intent) {

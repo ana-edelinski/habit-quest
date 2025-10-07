@@ -154,4 +154,26 @@
         android:label="Create Alliance"
         tools:layout="@layout/fragment_alliance_create" />
 
+    <fragment
+        android:id="@+id/allianceDetailsFragment"
+        android:name="com.example.habitquest.presentation.fragments.AllianceDetailsFragment"
+        android:label="My Alliance"
+        tools:layout="@layout/fragment_alliance_details">
+
+        <argument
+            android:name="allianceId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/allianceInviteFragment"
+        android:name="com.example.habitquest.presentation.fragments.AllianceInviteFragment"
+        android:label="Invite Members"
+        tools:layout="@layout/fragment_alliance_invite">
+        <argument
+            android:name="allianceId"
+            app:argType="string" />
+    </fragment>
+
+
 </navigation>

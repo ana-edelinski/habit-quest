@@ -8,9 +8,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -18,6 +16,9 @@ import androidx.core.app.NotificationCompat;
 import com.example.habitquest.R;
 import com.example.habitquest.presentation.receivers.AllianceInviteReceiver;
 import com.example.habitquest.presentation.receivers.NotificationDismissReceiver;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -60,6 +61,44 @@ public class AllianceNotificationService extends Service {
 
         activeServices.add(allianceId);
 
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return START_NOT_STICKY;
+
+        FirebaseFirestore.getInstance().collection("users").document(user.getUid()).get()
+                .addOnSuccessListener(snapshot -> {
+                    String currentAllianceId = snapshot.getString("allianceId");
+                    if (currentAllianceId != null) {
+                        FirebaseFirestore.getInstance().collection("alliances").document(currentAllianceId).get()
+                                .addOnSuccessListener(doc -> {
+                                    String currentAllianceName = doc.exists() ? doc.getString("name") : "your current alliance";
+                                    String text;
+                                    if (doc.exists() && doc.getString("leaderId").equals(user.getUid())) {
+                                        text = "You are the leader of \"" + currentAllianceName + "\" and cannot join another alliance.";
+                                    } else {
+                                        text = "You are already a member of \"" + currentAllianceName +
+                                                "\". Joining \"" + allianceName + "\" will remove you from your current alliance.";
+                                    }
+                                    showNotification(allianceId, allianceName, inviterName, text);
+                                })
+
+                                .addOnFailureListener(e -> {
+                                    String text = inviterName + " invited you to join \"" + allianceName + "\".";
+                                    showNotification(allianceId, allianceName, inviterName, text);
+                                });
+                    } else {
+                        String text = inviterName + " invited you to join \"" + allianceName + "\".";
+                        showNotification(allianceId, allianceName, inviterName, text);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    String text = inviterName + " invited you to join \"" + allianceName + "\".";
+                    showNotification(allianceId, allianceName, inviterName, text);
+                });
+
+        return START_STICKY;
+    }
+
+    private void showNotification(String allianceId, String allianceName, String inviterName, String message) {
         PendingIntent acceptPending = getAcceptPendingIntent(allianceId, allianceName, inviterName);
         PendingIntent rejectPending = getRejectPendingIntent(allianceId, allianceName, inviterName);
 
@@ -79,7 +118,7 @@ public class AllianceNotificationService extends Service {
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("Alliance Invitation")
-                .setContentText("You have been invited to join \"" + allianceName + "\" by " + inviterName)
+                .setContentText(message)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -97,8 +136,6 @@ public class AllianceNotificationService extends Service {
         } else {
             startForeground(BASE_NOTIFICATION_ID + allianceId.hashCode(), notification);
         }
-
-        return START_STICKY;
     }
 
     private PendingIntent getAcceptPendingIntent(String id, String name, String inviter) {

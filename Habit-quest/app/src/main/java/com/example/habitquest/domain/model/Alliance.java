@@ -16,6 +16,7 @@ public class Alliance {
     private String leaderName;
     private List<String> members;
     private List<String> requests;
+    private boolean missionActive;
     private Timestamp createdAt;
 
     public Alliance() {}
@@ -27,6 +28,7 @@ public class Alliance {
         this.leaderName = leaderName;
         this.members = new ArrayList<>();
         this.requests = new ArrayList<>(requests);
+        this.missionActive = false;
         this.members.add(leaderId);
         this.createdAt = Timestamp.now();
     }
@@ -78,6 +80,9 @@ public class Alliance {
     public void setRequests(List<String> requests) {
         this.requests = requests;
     }
+
+    public boolean isMissionActive() { return missionActive; }
+    public void setMissionActive(boolean missionActive) { this.missionActive = missionActive; }
 
     public Timestamp getCreatedAt() {
         return createdAt;

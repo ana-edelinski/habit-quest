@@ -27,6 +27,7 @@ public class User implements Parcelable {
     private List<String> friends = new ArrayList<>();
     private List<String> friendRequestsSent = new ArrayList<>();
     private List<String> friendRequestsReceived = new ArrayList<>();
+    private String allianceId;
 
 
     public User(Long id, String email, String username, int avatar, int totalXp, int level, String title, int pp, int coins, int bossesDefeated) {
@@ -55,6 +56,7 @@ public class User implements Parcelable {
         this.coins = 0;
         this.pp = 0;
         this.bossesDefeated = 0;
+        this.allianceId = null;
     }
 
     // Konstruktor za citanje iz Parcel objekta
@@ -73,6 +75,7 @@ public class User implements Parcelable {
         in.readList(cart, ShopItem.class.getClassLoader());
         equipment = new ArrayList<>();
         in.readList(equipment, ShopItem.class.getClassLoader());
+        allianceId = in.readString();
     }
 
     // GET / SET
@@ -128,6 +131,14 @@ public class User implements Parcelable {
     public List<String> getFriendRequestsReceived() { return friendRequestsReceived; }
     public void setFriendRequestsReceived(List<String> friendRequestsReceived) { this.friendRequestsReceived = friendRequestsReceived; }
 
+    public String getAllianceId() {
+        return allianceId;
+    }
+
+    public void setAllianceId(String allianceId) {
+        this.allianceId = allianceId;
+    }
+
 
     @Override
     public String toString() {
@@ -161,6 +172,7 @@ public class User implements Parcelable {
         dest.writeList(cart);
         dest.writeList(equipment);
         dest.writeInt(bossesDefeated);
+        dest.writeString(allianceId);
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
