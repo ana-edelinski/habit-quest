@@ -28,7 +28,7 @@ public class ActiveEquipmentAdapter extends RecyclerView.Adapter<ActiveEquipment
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_equipment_small, parent, false);
+                .inflate(R.layout.item_equipment_small_fight, parent, false);
         return new VH(v);
     }
 
