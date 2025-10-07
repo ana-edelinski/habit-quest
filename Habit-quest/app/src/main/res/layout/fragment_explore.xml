@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
+    android:gravity="center_horizontal"
     tools:context=".presentation.fragments.ExploreFragment">
 
-    <!-- Search input -->
+    <!-- 🔹 Search input -->
     <EditText
         android:id="@+id/etSearchUser"
         android:layout_width="match_parent"
@@ -17,13 +19,48 @@
         android:inputType="text"
         android:drawableStart="@android:drawable/ic_menu_search"
         android:padding="12dp" />
-<!--    android:background="@drawable/bg_input" -->
 
-    <!-- Search results -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvUsers"
+    <!-- 🔹 Središnji deo koji zauzima prostor -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingTop="12dp"/>
+        android:gravity="center">
+
+        <!-- RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvUsers"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:scrollbars="vertical" />
+
+        <!-- Lottie animacija i poruka, centrirane -->
+        <LinearLayout
+            android:id="@+id/emptyStateContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_gravity="center">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/lottieExplore"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                app:lottie_rawRes="@raw/friends_anim"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/explorePage"
+                android:textColor="#555555"
+                android:textStyle="italic"
+                android:textSize="15sp"
+                android:gravity="center" />
+        </LinearLayout>
+    </FrameLayout>
 </LinearLayout>
