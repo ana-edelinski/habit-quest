@@ -170,21 +170,23 @@ public class BossFightViewModel extends ViewModel {
             @Override
             public void onSuccess(User user) {
                 if (user == null) return;
+
+                // 🔹 Postavi potencijalne nagrade
                 _potentialRewards.postValue(new PotentialRewards(user.getPreviousBossReward()));
 
                 // 🔹 Sačuvaj aktivnu opremu u LiveData
                 if (user.getEquipment() != null) {
                     List<ShopItem> active = new ArrayList<>();
                     for (ShopItem item : user.getEquipment()) {
-                        if (item.isActive()) {
-                            active.add(item);
-                        }
+                        if (item.isActive()) active.add(item);
                     }
                     _activeEquipment.postValue(active);
                 }
 
+                // 🔹 Formiraj bossId na osnovu nivoa korisnika
                 String bossId = "boss_" + user.getLevel();
 
+                // 🔹 Prvo dohvati samog bossa
                 bossRepository.getCurrentBoss(bossId, new RepositoryCallback<Boss>() {
                     @Override
                     public void onSuccess(Boss boss) {
@@ -196,11 +198,30 @@ public class BossFightViewModel extends ViewModel {
                             } else {
                                 boss.setHp(boss.getMaxHp());
                             }
+
                             _currentBoss.postValue(boss);
+
+                            //proveri da li već postoji rezultat borbe za ovog bossa
+                            bossRepository.getBattleResultForBoss(bossId, uid, new RepositoryCallback<BossFightResult>() {
+                                @Override
+                                public void onSuccess(BossFightResult result) {
+                                    if (result != null) {
+                                        // Ako postoji rezultat, postavi ga
+                                        _battleResult.postValue(result);
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    e.printStackTrace();
+                                }
+                            });
+
                         } else {
                             // Ako nema bossa, napravi prvog
                             Boss firstBoss = new Boss(user.getLevel(), 100, 200);
                             firstBoss.setId(bossId);
+
                             bossRepository.saveBoss(firstBoss, new RepositoryCallback<Void>() {
                                 @Override
                                 public void onSuccess(Void data) {
@@ -228,6 +249,7 @@ public class BossFightViewModel extends ViewModel {
             }
         });
     }
+
 
     // ------------------ Početak borbe ------------------
 
@@ -379,6 +401,31 @@ public class BossFightViewModel extends ViewModel {
                     updates.put("bossesDefeated", user.getBossesDefeated() + 1);
                 }
                 if (user.getEquipment() != null) {
+                    // 🔹 Resetuj opremu posle borbe
+                    List<ShopItem> updatedEquipment = new ArrayList<>();
+
+                    for (ShopItem item : user.getEquipment()) {
+                        if (item.isPermanent()) {
+                            updatedEquipment.add(item);
+
+                        } else if (item.getType() == EquipmentType.CLOTHING) {
+                            // 👕 odeća traje više borbi
+                            int remaining = item.getRemainingBattles();
+
+                            if (remaining > 1) {
+                                item.setRemainingBattles(remaining - 1);
+                                updatedEquipment.add(item); // još traje, zadrži
+                            }
+                            // ako remaining == 1 → ne dodajemo, ističe posle ove borbe
+
+                        } else {
+                            // ❌ sve ostalo (npr. napici) — jednokratno, briše se odmah
+                            // ništa ne dodajemo u updated listu
+                        }
+                    }
+
+                    user.setEquipment(updatedEquipment);
+
                     updates.put("equipment", user.getEquipment());
                 }
 

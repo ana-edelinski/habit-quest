@@ -12,5 +12,7 @@ public interface IBossRepository {
     void updateBoss(Boss boss, RepositoryCallback<Void> callback);
     void saveBattleResult(BossFightResult result, RepositoryCallback<Void> callback);
     void saveBoss(Boss boss, RepositoryCallback<Void> callback);
+    void getBattleResultForBoss(String bossId, String userId, RepositoryCallback<BossFightResult> callback);
+
 }
 

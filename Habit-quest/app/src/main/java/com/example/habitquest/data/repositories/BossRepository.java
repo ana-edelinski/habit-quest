@@ -60,6 +60,12 @@ public class BossRepository implements IBossRepository {
         });
     }
 
+    @Override
+    public void getBattleResultForBoss(String bossId, String userId, RepositoryCallback<BossFightResult> callback) {
+        remoteDataSource.getBattleResultForBoss(bossId, userId, callback);
+    }
+
+
 
 
 

@@ -9,6 +9,7 @@ public class ShopItem {
     private boolean active;
     private boolean permanent;
     private int imageResId;
+    private int remainingBattles; // da znamo koliko je puta koristena odeca i da mozemo da je uklonimo
 
     public ShopItem() {}
 
@@ -22,6 +23,7 @@ public class ShopItem {
         this.permanent = permanent;
         this.active = false;
         this.imageResId = imageResId;
+        this.remainingBattles = 2;
     }
 
     //sa izracunatom cenom za prikaz
@@ -34,6 +36,7 @@ public class ShopItem {
         this.active = base.active;
         this.imageResId = base.imageResId;
         this.calculatedPrice = (int) (previousBossReward * base.priceFactor);
+        this.remainingBattles = 2;
     }
 
 
@@ -80,5 +83,13 @@ public class ShopItem {
     }
     public void setCalculatedPrice(int calculatedPrice) {
         this.calculatedPrice = calculatedPrice;
+    }
+
+    public int getRemainingBattles() {
+        return remainingBattles;
+    }
+
+    public void setRemainingBattles(int remainingBattles) {
+        this.remainingBattles = remainingBattles;
     }
 }

@@ -1,9 +1,16 @@
 package com.example.habitquest.presentation.fragments;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,10 +66,21 @@ public class BossFightFragment extends Fragment {
 
     private ImageButton btnRewards;
     private PopupWindow rewardsPopup;
-
+    private MediaPlayer hitSound;
 
 
     private int lastBossHp = 0;
+
+
+    // --- 🔹 Shake sensor polja ---
+    private SensorManager sensorManager;
+    private float accelCurrent;
+    private float accelLast;
+    private float shake;
+    private static final float SHAKE_THRESHOLD = 12f; // prag za prepoznavanje treskanja
+    private long lastShakeTime = 0;
+    private static final int SHAKE_COOLDOWN_MS = 1000;
+
 
     @Nullable
     @Override
@@ -78,6 +96,11 @@ public class BossFightFragment extends Fragment {
         // 🔹 Učitaj bossa i pripremi podatke za borbu
         viewModel.loadCurrentBoss();
         viewModel.prepareBattleData();
+
+        hitSound = MediaPlayer.create(requireContext(), R.raw.hit_sound);
+        sensorManager = (SensorManager) requireContext().getSystemService(Context.SENSOR_SERVICE);
+
+
 
         return v;
     }
@@ -156,10 +179,12 @@ public class BossFightFragment extends Fragment {
 
         viewModel.battleResult.observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
+                btnAttack.setEnabled(false);
+
                 if (result.isVictory()) {
                     showRewardDialog(result);
                 } else {
-                    Toast.makeText(requireContext(), "Defeat! Try again.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Defeat! Level up to fight again.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -186,8 +211,15 @@ public class BossFightFragment extends Fragment {
         if (usedAttacks > 0) { // prikazuj feedback tek posle prvog napada
             int hpDiff = lastBossHp - stats.getBossHP();
             if (hpDiff > 0) {
+                hitSound.start();
                 tvBattleFeedback.setText("Hit!");
                 tvBattleFeedback.setTextColor(getResources().getColor(R.color.green));
+                imgBoss.setImageResource(R.drawable.boss_take_hit);
+                new Handler().postDelayed(() ->
+                                imgBoss.setImageResource(R.drawable.boss_idle),
+                        300
+                );
+
             } else {
                 tvBattleFeedback.setText("Miss!");
                 tvBattleFeedback.setTextColor(getResources().getColor(R.color.red));
@@ -291,11 +323,65 @@ public class BossFightFragment extends Fragment {
      */
     private int getBossImageRes(int level) {
         switch (level) {
-            case 1: return R.drawable.boss_level_1;
+            case 1: return R.drawable.boss_idle;
             case 2: return R.drawable.boss_level_2;
             case 3: return R.drawable.boss_level_3;
             case 4: return R.drawable.boss_level_4;
-            default: return R.drawable.boss_level_1;
+            default: return R.drawable.boss_idle;
         }
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (sensorManager != null) {
+            sensorManager.registerListener(sensorListener,
+                    sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                    SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(sensorListener);
+        }
+        super.onPause();
+    }
+
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (hitSound != null) {
+            hitSound.release();
+            hitSound = null;
+        }
+    }
+
+
+    private final SensorEventListener sensorListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+
+            accelLast = accelCurrent;
+            accelCurrent = (float) Math.sqrt(x * x + y * y + z * z);
+            float delta = accelCurrent - accelLast;
+            shake = shake * 0.9f + delta;
+
+            long now = System.currentTimeMillis();
+            if (shake > SHAKE_THRESHOLD && (now - lastShakeTime > SHAKE_COOLDOWN_MS)) {
+                lastShakeTime = now;
+                viewModel.performAttack();
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+    };
+
+
 }

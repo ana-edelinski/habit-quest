@@ -59,5 +59,22 @@ public class BossRemoteDataSource {
                 .addOnSuccessListener(unused -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void getBattleResultForBoss(String bossId, String userId, RepositoryCallback<BossFightResult> callback) {
+        db.collection("boss_results")
+                .whereEqualTo("bossId", bossId)
+                .whereEqualTo("firestoreUid", userId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        BossFightResult result = query.getDocuments().get(0).toObject(BossFightResult.class);
+                        callback.onSuccess(result);
+                    } else {
+                        callback.onSuccess(null); // nema rezultata
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
 }
 
