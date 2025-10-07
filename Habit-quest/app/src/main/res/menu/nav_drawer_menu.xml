@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:title="@string/nav_home"
+        android:icon="@drawable/ic_home" />
+
     <item
         android:id="@+id/categoryListFragment"
-        android:title="Categories" />
+        android:title="@string/nav_categories"
+        android:icon="@drawable/ic_category" />
+
     <item
         android:id="@+id/taskListFragment"
-        android:title="Tasks" />
+        android:title="@string/nav_tasks"
+        android:icon="@drawable/ic_task" />
+
     <item
         android:id="@+id/calendarFragment"
-        android:title="Calendar" />
+        android:title="@string/nav_calendar"
+        android:icon="@drawable/ic_calendar" />
+
     <item
         android:id="@+id/levelProgressFragment"
-        android:title="Level Progress" /> <!--  android:icon="@drawable/ic_progress" -->
+        android:title="@string/nav_level_progress"
+        android:icon="@drawable/ic_progress" />
+
 </menu>

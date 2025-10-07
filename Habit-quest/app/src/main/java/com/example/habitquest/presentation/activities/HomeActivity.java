@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +29,7 @@ import com.example.habitquest.R;
 import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.data.remote.AllianceRemoteDataSource;
 import com.example.habitquest.data.repositories.UserRepository;
+import com.example.habitquest.domain.model.User;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
 import com.example.habitquest.presentation.viewmodels.LoginViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.LoginViewModelFactory;
@@ -71,6 +74,31 @@ public class HomeActivity extends AppCompatActivity {
 
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        View headerView = navigationView.getHeaderView(0);
+        ImageView imgAvatar = headerView.findViewById(R.id.imgAvatarHeader);
+        TextView tvUsername = headerView.findViewById(R.id.tvUsernameHeader);
+        TextView tvTitle = headerView.findViewById(R.id.tvTitleHeader);
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            String uid = auth.getCurrentUser().getUid();
+            UserRepository repo = new UserRepository(this);
+            repo.getUser(uid, new RepositoryCallback<User>() {
+                @Override
+                public void onSuccess(User user) {
+                    tvUsername.setText(user.getUsername());
+                    tvTitle.setText(user.getTitle());
+                    imgAvatar.setImageResource(getAvatarResource(user.getAvatar()));
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    tvUsername.setText("Unknown user");
+                    tvTitle.setText("");
+                }
+            });
+        }
+
         appPreferences = new AppPreferences(this);
 
         initViewModel();
@@ -81,10 +109,8 @@ public class HomeActivity extends AppCompatActivity {
         requestNotificationPermission();
         handleDeepLink(getIntent());
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
             String uid = auth.getCurrentUser().getUid();
-
             AllianceRemoteDataSource allianceRemote = new AllianceRemoteDataSource();
             allianceRemote.listenForAllianceInvites(uid, this);
             allianceRemote.listenForAllianceAccepts(uid, this);
@@ -230,7 +256,6 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-
     @OptIn(markerClass = ExperimentalBadgeUtils.class)
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -273,6 +298,17 @@ public class HomeActivity extends AppCompatActivity {
             cartBadge.setNumber(count);
         } else {
             cartBadge.setVisible(false);
+        }
+    }
+
+    private int getAvatarResource(int index) {
+        switch (index) {
+            case 1: return R.drawable.avatar1;
+            case 2: return R.drawable.avatar2;
+            case 3: return R.drawable.avatar3;
+            case 4: return R.drawable.avatar4;
+            case 5: return R.drawable.avatar5;
+            default: return R.drawable.avatar1;
         }
     }
 }

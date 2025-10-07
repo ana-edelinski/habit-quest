@@ -63,4 +63,11 @@
     <string name="badges">Badges</string>
     <string name="addFriend">Add Friend</string>
     <string name="explorePage">Find allies and grow your habit guild!</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_categories">Categories</string>
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_level_progress">Level Progress</string>
+
 </resources>
