@@ -54,6 +54,7 @@ public class AllianceDetailsFragment extends Fragment {
         Button btnInvite = v.findViewById(R.id.btnInviteMembers);
         Button btnDisband = v.findViewById(R.id.btnDisbandAlliance);
         Button btnStartMission = v.findViewById(R.id.btnStartMission);
+        Button btnOpenChat = v.findViewById(R.id.btnOpenChat);
 
         adapter = new AllianceMemberAdapter();
         rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -153,6 +154,16 @@ public class AllianceDetailsFragment extends Fragment {
             Navigation.findNavController(view)
                     .navigate(R.id.allianceInviteFragment, bundle);
         });
+
+        btnOpenChat.setOnClickListener(view -> {
+            if (viewModel.alliance.getValue() == null) return;
+
+            Bundle bundle = new Bundle();
+            bundle.putString("allianceId", viewModel.alliance.getValue().getId());
+            Navigation.findNavController(view)
+                    .navigate(R.id.allianceChatFragment, bundle);
+        });
+
     }
 
     private void showMissionStartedDialog() {

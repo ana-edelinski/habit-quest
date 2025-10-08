@@ -94,4 +94,26 @@ public class NotificationHelper {
 
         NotificationManagerCompat.from(context).notify((int) System.currentTimeMillis(), builder.build());
     }
+
+    public static void showAllianceChatMessage(Context context, String senderName, String messageText) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("Nova poruka od " + senderName)
+                .setContentText(messageText)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setOnlyAlertOnce(true);
+
+        NotificationManagerCompat.from(context)
+                .notify((int) System.currentTimeMillis(), builder.build());
+    }
+
 }

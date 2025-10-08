@@ -195,5 +195,10 @@
             app:destination="@id/myFriendsFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/allianceChatFragment"
+        android:name="com.example.habitquest.presentation.fragments.AllianceChatFragment"
+        android:label="Alliance Chat"
+        tools:layout="@layout/fragment_alliance_chat" />
 
 </navigation>
