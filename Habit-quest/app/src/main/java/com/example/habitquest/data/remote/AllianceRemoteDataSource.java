@@ -230,7 +230,7 @@ public class AllianceRemoteDataSource {
                     List<String> accepted = (List<String>) snapshot.get("allianceAcceptedNotifications");
                     if (accepted == null || accepted.isEmpty()) return;
                     for (String message : accepted) {
-                        NotificationHelper.createChannel(context);
+                        NotificationHelper.createChannels(context);
                         String memberName = "Someone";
                         String allianceName = "";
                         if (message.contains("accepted invite to")) {

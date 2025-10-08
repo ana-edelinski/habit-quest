@@ -18,23 +18,38 @@ import com.example.habitquest.presentation.receivers.AllianceInviteReceiver;
 
 public class NotificationHelper {
 
-    public static final String CHANNEL_ID = "alliance_notifications";
+    // 🔹 Posebni kanali
+    public static final String CHANNEL_INVITES = "alliance_invites_channel";
+    public static final String CHANNEL_CHAT = "alliance_chat_channel";
 
-    public static void createChannel(Context context) {
+    public static void createChannels(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Alliance Notifications",
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
+            if (manager == null) return;
+
+            // 🔹 Kanal za pozive / pozivnice
+            NotificationChannel invites = new NotificationChannel(
+                    CHANNEL_INVITES,
+                    "Alliance Invitations",
                     NotificationManager.IMPORTANCE_HIGH
             );
-            channel.setDescription("Notifications for alliance invitations and responses");
-            channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            invites.setDescription("Notifications for alliance invitations and responses");
+            invites.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            manager.createNotificationChannel(invites);
 
-            NotificationManager manager = context.getSystemService(NotificationManager.class);
-            if (manager != null) manager.createNotificationChannel(channel);
+            // 🔹 Kanal za chat poruke
+            NotificationChannel chat = new NotificationChannel(
+                    CHANNEL_CHAT,
+                    "Alliance Chat Messages",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            chat.setDescription("Notifications for new alliance chat messages");
+            chat.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            manager.createNotificationChannel(chat);
         }
     }
 
+    // 🔹 Pozivnica
     public static void showAllianceInvite(Context context, String inviterName, String allianceName, String allianceId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
@@ -55,11 +70,13 @@ public class NotificationHelper {
         rejectIntent.putExtra("inviterName", inviterName);
 
         PendingIntent acceptPending = PendingIntent.getBroadcast(
-                context, allianceId.hashCode(), acceptIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                context, allianceId.hashCode(), acceptIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         PendingIntent rejectPending = PendingIntent.getBroadcast(
-                context, allianceId.hashCode() + 1, rejectIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                context, allianceId.hashCode() + 1, rejectIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_INVITES)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("Alliance Invitation")
                 .setContentText("You have been invited to join \"" + allianceName + "\" by " + inviterName)
@@ -68,33 +85,14 @@ public class NotificationHelper {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true)
                 .setAutoCancel(false)
-                .setTimeoutAfter(0)
-                .setDeleteIntent(null)
                 .setOnlyAlertOnce(true)
                 .addAction(R.drawable.ic_check, "Accept", acceptPending)
                 .addAction(R.drawable.ic_close, "Reject", rejectPending);
 
-
         NotificationManagerCompat.from(context).notify(allianceId.hashCode(), builder.build());
     }
 
-    public static void showAllianceAccepted(Context context, String memberName, String allianceName) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-                        != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("Alliance Update")
-                .setContentText(memberName + " has joined \"" + allianceName + "\"")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
-
-        NotificationManagerCompat.from(context).notify((int) System.currentTimeMillis(), builder.build());
-    }
-
+    // 🔹 Chat poruka
     public static void showAllianceChatMessage(Context context, String senderName, String messageText) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
@@ -102,18 +100,36 @@ public class NotificationHelper {
             return;
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_CHAT)
                 .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("Nova poruka od " + senderName)
+                .setContentTitle(senderName)
                 .setContentText(messageText)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setAutoCancel(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setOnlyAlertOnce(true);
+                .setOnlyAlertOnce(false);
 
         NotificationManagerCompat.from(context)
                 .notify((int) System.currentTimeMillis(), builder.build());
     }
 
+    // 🔹 Kada neko prihvati pozivnicu
+    public static void showAllianceAccepted(Context context, String memberName, String allianceName) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_INVITES)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("Alliance Update")
+                .setContentText(memberName + " has joined \"" + allianceName + "\"")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat.from(context)
+                .notify((int) System.currentTimeMillis(), builder.build());
+    }
 }

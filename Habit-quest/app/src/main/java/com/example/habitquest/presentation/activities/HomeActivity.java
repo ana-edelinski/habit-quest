@@ -33,6 +33,7 @@ import com.example.habitquest.domain.model.User;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
 import com.example.habitquest.presentation.viewmodels.LoginViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.LoginViewModelFactory;
+import com.example.habitquest.utils.NotificationHelper;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.badge.BadgeDrawable;
@@ -61,6 +62,8 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        NotificationHelper.createChannels(this);
 
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
