@@ -156,20 +156,23 @@ public class StatisticsFragment extends Fragment {
 
             chartCategories.setData(barData);
 
-            // ✅ Nazivi kategorija ispod stubova (bez lambdi)
             viewModel.getCategoryLabels().observe(getViewLifecycleOwner(), labels -> {
                 if (labels != null) {
                     XAxis xAxis = chartCategories.getXAxis();
                     xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
                     xAxis.setGranularity(1f);
                     xAxis.setLabelCount(labels.size());
-                    xAxis.setTextSize(12f);
+                    xAxis.setTextSize(9f);              // 🔹 manji font
                     xAxis.setTextColor(Color.DKGRAY);
                     xAxis.setDrawGridLines(false);
-                    xAxis.setLabelRotationAngle(-25f);
+                    xAxis.setLabelRotationAngle(0f);    // 🔹 horizontalno
                     xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                    xAxis.setYOffset(20f);              // 🔹 više prostora ispod stubova
+
+                    chartCategories.setExtraBottomOffset(45f); // 🔹 dodatni prostor ispod grafa
                 }
             });
+
 
             chartCategories.invalidate();
         });
