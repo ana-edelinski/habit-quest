@@ -36,7 +36,7 @@ public class StatisticsFragment extends Fragment {
 
     private StatisticsViewModel viewModel;
 
-    private TextView txtActiveDays, txtLongestStreak;
+    private TextView txtActiveDays, txtLongestStreak, txtMissions;
     private PieChart chartTasks;
     private BarChart chartCategories;
     private LineChart chartAvgDifficulty, chartXP7Days;
@@ -50,6 +50,7 @@ public class StatisticsFragment extends Fragment {
 
         txtActiveDays = view.findViewById(R.id.txtActiveDays);
         txtLongestStreak = view.findViewById(R.id.txtLongestStreak);
+        txtMissions = view.findViewById(R.id.txtMissions);
         chartTasks = view.findViewById(R.id.chartTasks);
         chartCategories = view.findViewById(R.id.chartCategories);
         chartAvgDifficulty = view.findViewById(R.id.chartAvgDifficulty);
@@ -206,5 +207,16 @@ public class StatisticsFragment extends Fragment {
             chartXP7Days.setData(lineData);
             chartXP7Days.invalidate();
         });
+
+        viewModel.getAllianceMissionStats().observe(getViewLifecycleOwner(), missionStats -> {
+            if (missionStats != null && missionStats.size() >= 2) {
+                int started = missionStats.get(0);
+                int finished = missionStats.get(1);
+                txtMissions.setText("Special Missions: " + started + " started, " + finished + " finished");
+            } else {
+                txtMissions.setText("Special Missions: no data");
+            }
+        });
+
     }
 }
