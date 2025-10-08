@@ -50,7 +50,6 @@ public class StatisticsViewModel extends AndroidViewModel {
         this.taskRepo = new TaskRepository(application.getApplicationContext());
     }
 
-    /** Loads all tasks and prepares statistics data (with category colors). */
     public void loadStatistics(String firebaseUid, long localUserId) {
         taskRepo.fetchAllCategories(new RepositoryCallback<Map<String, Map<String, String>>>() {
             @Override
@@ -81,7 +80,6 @@ public class StatisticsViewModel extends AndroidViewModel {
         });
     }
 
-    /** Calculates active streak and longest streak (without breaking on days without tasks). */
     private void calculateActiveAndLongestStreak(List<Task> tasks) {
         Map<LocalDate, Boolean> tasksByDay = new HashMap<>();
         Map<LocalDate, Boolean> completedByDay = new HashMap<>();
@@ -116,7 +114,6 @@ public class StatisticsViewModel extends AndroidViewModel {
         longestStreak.postValue(longest);
     }
 
-    /** Generates PieChart data for task status distribution. */
     private void generateTaskStatusChart(List<Task> tasks) {
         int created = 0, completed = 0, notDone = 0, canceled = 0;
 
@@ -154,11 +151,10 @@ public class StatisticsViewModel extends AndroidViewModel {
         Map<String, Integer> categoryCount = new HashMap<>();
         Map<String, String> categoryColors = new HashMap<>();
 
-        // 🔹 Prebroj zadatke i zapamti boje
         for (Task t : tasks) {
             if (t.getStatus() == TaskStatus.COMPLETED) {
                 String categoryName = "Other";
-                String colorHex = "#9E9E9E"; // default siva
+                String colorHex = "#9E9E9E";
 
                 if (t.getCategoryId() != null && categoryMap.containsKey(t.getCategoryId())) {
                     Map<String, String> data = categoryMap.get(t.getCategoryId());
@@ -188,8 +184,8 @@ public class StatisticsViewModel extends AndroidViewModel {
 
         BarDataSet dataSet = new BarDataSet(entries, "");
         dataSet.setValueTextSize(12f);
-        dataSet.setColors(colors); // svaka kategorija u svojoj boji
-        dataSet.setDrawValues(true); // prikazuje vrednosti iznad stubova
+        dataSet.setColors(colors);
+        dataSet.setDrawValues(true);
         dataSet.setValueTextColor(Color.DKGRAY);
         dataSet.setBarBorderWidth(0f);
 
@@ -199,14 +195,13 @@ public class StatisticsViewModel extends AndroidViewModel {
         categoryData.postValue(barData);
         categoryLabels.postValue(labels);
 
-        Log.d("STATISTICS", "✅ Category chart generated with colors: " + colors);
     }
 
 
-    /** Generates LineChart data for average XP per day. */
     private void generateAvgDifficultyChart(List<Task> tasks) {
         Map<LocalDate, List<Integer>> xpByDay = new HashMap<>();
 
+        //zavrseni zadaci po datumu - grupisanje
         for (Task t : tasks) {
             if (t.getStatus() == TaskStatus.COMPLETED && t.getDate() != null) {
                 LocalDate date = Instant.ofEpochMilli(t.getDate())
@@ -215,6 +210,7 @@ public class StatisticsViewModel extends AndroidViewModel {
             }
         }
 
+        //prosecan xp za svaki dan
         List<Entry> entries = new ArrayList<>();
         int i = 0;
         for (Map.Entry<LocalDate, List<Integer>> e : xpByDay.entrySet()) {
@@ -227,7 +223,6 @@ public class StatisticsViewModel extends AndroidViewModel {
         avgDifficultyData.postValue(lineData);
     }
 
-    /** Generates LineChart data for total XP earned in the last 7 days. */
     private void generateXP7DaysChart(List<Task> tasks) {
         LocalDate today = LocalDate.now();
         List<Entry> entries = new ArrayList<>();
@@ -252,7 +247,6 @@ public class StatisticsViewModel extends AndroidViewModel {
         xp7DaysData.postValue(lineData);
     }
 
-    // --- Getters for LiveData ---
     public LiveData<Integer> getActiveDays() { return activeDays; }
     public LiveData<Integer> getLongestStreak() { return longestStreak; }
     public LiveData<PieData> getTaskStatusData() { return taskStatusData; }
