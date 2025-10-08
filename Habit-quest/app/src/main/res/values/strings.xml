@@ -40,6 +40,7 @@
     <string name="clothing">CLOTHING</string>
     <string name="potions">POTIONS</string>
 
+    <string name="chat">Chat</string>
     <string name="cart">Cart</string>
     <string name="logout">Logout</string>
     <string name="shopUnlock">Shop unlocks after the first boss victory!</string>
@@ -75,5 +76,7 @@
     <string name="active_streak">Active app usage days: %1$d days</string>
     <string name="longest_streak">Task success streak: %1$d days</string>
     <string name="special_missions">Special missions completed: %1$d</string>
+
+    <string name="sendMessage">Send a message... </string>
 
 </resources>

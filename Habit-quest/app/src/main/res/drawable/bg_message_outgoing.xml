@@ -2,10 +2,8 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <!-- Narandžasta pozadina za tvoje poruke -->
-    <solid android:color="#FF8C42" />
+    <solid android:color="#388E3C" />
 
-    <!-- Zaobljeni ivice balončića -->
     <corners
         android:radius="16dp"
         android:bottomRightRadius="0dp" />

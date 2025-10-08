@@ -41,6 +41,7 @@ import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.example.habitquest.data.prefs.AppPreferences;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -80,6 +81,8 @@ public class HomeActivity extends AppCompatActivity {
         TextView tvTitle = headerView.findViewById(R.id.tvTitleHeader);
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
+        appPreferences = new AppPreferences(this);
+
         if (auth.getCurrentUser() != null) {
             String uid = auth.getCurrentUser().getUid();
             UserRepository repo = new UserRepository(this);
@@ -89,6 +92,9 @@ public class HomeActivity extends AppCompatActivity {
                     tvUsername.setText(user.getUsername());
                     tvTitle.setText(user.getTitle());
                     imgAvatar.setImageResource(getAvatarResource(user.getAvatar()));
+
+                    appPreferences.saveUsername(user.getUsername());
+                    appPreferences.saveAvatarIndex(user.getAvatar());
                 }
 
                 @Override
@@ -97,9 +103,29 @@ public class HomeActivity extends AppCompatActivity {
                     tvTitle.setText("");
                 }
             });
-        }
 
-        appPreferences = new AppPreferences(this);
+            // 🔹 Automatski proveri u kom savezu je korisnik
+            AllianceRemoteDataSource allianceRemoteForId = new AllianceRemoteDataSource();
+            allianceRemoteForId.getUserAllianceId(uid, new RepositoryCallback<String>() {
+                @Override
+                public void onSuccess(String allianceId) {
+                    if (allianceId != null) {
+                        appPreferences.setCurrentAllianceId(allianceId);
+                        // Optionalno: log radi provere
+                        // Log.d("AlliancePrefs", "Loaded allianceId: " + allianceId);
+                    } else {
+                        appPreferences.setCurrentAllianceId(null);
+                        // Log.d("AlliancePrefs", "No alliance found for this user.");
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    // Log.e("AlliancePrefs", "Error loading allianceId", e);
+                }
+            });
+
+        }
 
         initViewModel();
         setupObservers();
@@ -283,6 +309,19 @@ public class HomeActivity extends AppCompatActivity {
         if (id == R.id.action_cart) {
             navController.navigate(R.id.cartFragment);
             return true;
+
+        } else if (id == R.id.action_chat) {
+            String allianceId = appPreferences.getCurrentAllianceId();
+
+            if (allianceId != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("allianceId", allianceId);
+                navController.navigate(R.id.allianceChatFragment, bundle);
+            } else {
+                Toast.makeText(this, "You are not in an alliance.", Toast.LENGTH_SHORT).show();
+            }
+
+            return true;
         } else if (id == R.id.action_logout) {
             loginViewModel.logout();
             return true;
@@ -290,6 +329,7 @@ public class HomeActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 
     public void updateCartBadge(int count) {
         if (cartBadge == null) return;

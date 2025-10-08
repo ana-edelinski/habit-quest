@@ -5,8 +5,10 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,14 +18,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.domain.model.AllianceMessage;
 import com.example.habitquest.presentation.adapters.AllianceChatAdapter;
 import com.example.habitquest.presentation.viewmodels.AllianceChatViewModel;
+import com.example.habitquest.utils.NotificationHelper;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
-
-import com.example.habitquest.utils.NotificationHelper;
 
 public class AllianceChatFragment extends Fragment {
 
@@ -35,8 +38,7 @@ public class AllianceChatFragment extends Fragment {
 
     private EditText etMessage;
     private ImageButton btnSend;
-    private List<AllianceMessage> previousMessages = null;
-
+    private List<AllianceMessage> previousMessages;
 
     @Nullable
     @Override
@@ -48,9 +50,16 @@ public class AllianceChatFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        requireActivity().findViewById(R.id.bottomNavigation).setVisibility(View.GONE);
+
         allianceId = getArguments().getString("allianceId");
         currentUserId = FirebaseAuth.getInstance().getUid();
-        currentUsername = "Player"; // kasnije povući iz profila
+
+        // ✅ 1. Učitaj iz lokalnih preferences odmah
+        AppPreferences prefs = new AppPreferences(requireContext());
+        currentUsername = prefs.getUsername();
+        if (TextUtils.isEmpty(currentUsername)) currentUsername = "Player";
 
         RecyclerView recyclerView = view.findViewById(R.id.recyclerMessages);
         etMessage = view.findViewById(R.id.etMessage);
@@ -63,13 +72,29 @@ public class AllianceChatFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(AllianceChatViewModel.class);
         viewModel.messages.observe(getViewLifecycleOwner(), this::updateMessages);
 
+        viewModel.currentUsername.observe(getViewLifecycleOwner(), username -> {
+            if (!TextUtils.isEmpty(username)) {
+                currentUsername = username;
+            }
+        });
+
+        viewModel.loadUsername(currentUserId);
+
         btnSend.setOnClickListener(v -> sendMessage());
+
+        setupToolbar();
+        requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    }
+
+    private void setupToolbar() {
+        MaterialToolbar toolbar = requireActivity().findViewById(R.id.topAppBar);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
     }
 
     private void updateMessages(List<AllianceMessage> messages) {
         adapter.setMessages(messages);
 
-        // 🔹 Provera da li je stigla nova poruka
         if (previousMessages != null && messages.size() > previousMessages.size()) {
             AllianceMessage lastMessage = messages.get(messages.size() - 1);
             if (!lastMessage.getSenderId().equals(currentUserId)) {
@@ -87,13 +112,24 @@ public class AllianceChatFragment extends Fragment {
         String text = etMessage.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
 
+        if (TextUtils.isEmpty(currentUsername)) {
+            Toast.makeText(getContext(), "Loading your profile...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AppPreferences prefs = new AppPreferences(requireContext());
+        int avatarIndex = prefs.getAvatarIndex();
+
         AllianceMessage msg = new AllianceMessage(
                 null,
                 currentUserId,
                 currentUsername,
                 text,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                avatarIndex
         );
+
+
         viewModel.sendMessage(allianceId, msg);
         etMessage.setText("");
     }
@@ -108,5 +144,18 @@ public class AllianceChatFragment extends Fragment {
     public void onStop() {
         super.onStop();
         viewModel.stopListening();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        requireActivity().findViewById(R.id.bottomNavigation).setVisibility(View.VISIBLE);
+
+        MaterialToolbar toolbar = requireActivity().findViewById(R.id.topAppBar);
+        toolbar.setNavigationIcon(R.drawable.ic_menu);
+        toolbar.setNavigationOnClickListener(v -> {
+            androidx.drawerlayout.widget.DrawerLayout drawer = requireActivity().findViewById(R.id.drawerLayout);
+            drawer.open();
+        });
     }
 }

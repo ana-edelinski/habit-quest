@@ -41,8 +41,17 @@ public class AllianceChatRemoteDataSource {
                     List<AllianceMessage> list = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshots.getDocuments()) {
                         AllianceMessage msg = doc.toObject(AllianceMessage.class);
-                        list.add(msg);
+                        if (msg != null) {
+                            Object avatarObj = doc.get("senderAvatar");
+                            if (avatarObj instanceof Long) {
+                                msg.setSenderAvatar(((Long) avatarObj).intValue());
+                            }
+
+                            msg.setId(doc.getId());
+                            list.add(msg);
+                        }
                     }
+
                     cb.onSuccess(list);
                 });
     }

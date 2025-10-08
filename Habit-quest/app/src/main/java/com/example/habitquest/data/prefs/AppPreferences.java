@@ -47,5 +47,14 @@ public class AppPreferences {
 
     public void saveAvatarIndex(int index) { prefs.edit().putInt("avatar", index).apply(); }
     public int getAvatarIndex() { return prefs.getInt("avatar", 0); }
+
+    public void setCurrentAllianceId(String id) {
+        prefs.edit().putString("current_alliance_id", id).apply();
+    }
+
+    public String getCurrentAllianceId() {
+        return prefs.getString("current_alliance_id", null);
+    }
+
 }
 

@@ -280,4 +280,21 @@ public class AllianceRemoteDataSource {
         }).addOnFailureListener(callback::onFailure);
     }
 
+    public void getUserAllianceId(String userId, RepositoryCallback<String> cb) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("alliances")
+                .whereArrayContains("members", userId)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        String allianceId = query.getDocuments().get(0).getId();
+                        cb.onSuccess(allianceId);
+                    } else {
+                        cb.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(cb::onFailure);
+    }
+
+
 }

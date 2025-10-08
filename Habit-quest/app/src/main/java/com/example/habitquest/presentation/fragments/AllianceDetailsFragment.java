@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.presentation.adapters.AllianceMemberAdapter;
 import com.example.habitquest.presentation.viewmodels.AllianceDetailsViewModel;
 import com.example.habitquest.presentation.viewmodels.AllianceMissionViewModel;
@@ -54,7 +55,6 @@ public class AllianceDetailsFragment extends Fragment {
         Button btnInvite = v.findViewById(R.id.btnInviteMembers);
         Button btnDisband = v.findViewById(R.id.btnDisbandAlliance);
         Button btnStartMission = v.findViewById(R.id.btnStartMission);
-        Button btnOpenChat = v.findViewById(R.id.btnOpenChat);
 
         adapter = new AllianceMemberAdapter();
         rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -75,6 +75,9 @@ public class AllianceDetailsFragment extends Fragment {
             if (alliance != null) {
                 tvName.setText(alliance.getName());
                 tvLeader.setText("Leader: " + alliance.getLeaderName());
+
+                AppPreferences prefs = new AppPreferences(requireContext());
+                prefs.setCurrentAllianceId(alliance.getId());
 
                 if (user == null) return;
 
@@ -153,15 +156,6 @@ public class AllianceDetailsFragment extends Fragment {
             bundle.putString("allianceId", viewModel.alliance.getValue().getId());
             Navigation.findNavController(view)
                     .navigate(R.id.allianceInviteFragment, bundle);
-        });
-
-        btnOpenChat.setOnClickListener(view -> {
-            if (viewModel.alliance.getValue() == null) return;
-
-            Bundle bundle = new Bundle();
-            bundle.putString("allianceId", viewModel.alliance.getValue().getId());
-            Navigation.findNavController(view)
-                    .navigate(R.id.allianceChatFragment, bundle);
         });
 
     }
