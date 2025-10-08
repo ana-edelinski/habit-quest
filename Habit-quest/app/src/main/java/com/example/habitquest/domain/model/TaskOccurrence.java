@@ -9,6 +9,7 @@ public class TaskOccurrence  implements Parcelable {
     private TaskStatus status;   // koristi isti enum kao parent Task
     private Long date;  // datum (i vreme ako treba) kada se occurrence dešava
     private String firebaseUid;
+    private Long lastModified;
 
     public TaskOccurrence() {}
 
@@ -59,6 +60,14 @@ public class TaskOccurrence  implements Parcelable {
     public void setFirebaseUid(String firebaseUid) {
         this.firebaseUid = firebaseUid;
     }
+    public Long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Long lastModified) {
+        this.lastModified = lastModified;
+    }
+
 
     protected TaskOccurrence(Parcel in) {
         id = in.readString();

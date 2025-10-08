@@ -1,74 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".presentation.fragments.HomeFragment">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <ImageView
-                android:id="@+id/ivAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="12dp"/>
-
+            <!-- 🔹 Greeting Section -->
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
 
-                <TextView
-                    android:id="@+id/tvHello"
+                <ImageView
+                    android:id="@+id/ivAvatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp" />
+
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvMotivation"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="14sp"
-                    android:textColor="@color/grayDark"/>
+                    <TextView
+                        android:id="@+id/tvHello"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:id="@+id/tvMotivation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:textColor="@color/grayDark" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 🔹 Level + Statistics Cards Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:baselineAligned="false"
+                android:gravity="fill">
+
+                <!-- Left: Level Card -->
+                <include
+                    layout="@layout/view_level_card"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp" />
+
+                <!-- Right: Statistics Card -->
+                <!-- Right: Statistics Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardStatistics"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="@color/grayLight"
+                    app:strokeWidth="1dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="12dp">
+
+                        <!-- 🔹 Large Icon -->
+                        <ImageView
+                            android:id="@+id/imgStatisticsIcon"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:src="@drawable/statistics"
+                            android:contentDescription="@string/statistics_title"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toTopOf="@id/tvStatisticsTitle"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintVertical_chainStyle="packed"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"/>
+
+                        <!-- 🔹 Title -->
+                        <TextView
+                            android:id="@+id/tvStatisticsTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/statistics_title"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/black"
+                            app:layout_constraintTop_toBottomOf="@id/imgStatisticsIcon"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintBottom_toTopOf="@id/tvViewProgress" />
+
+                        <!-- 🔹 Subtitle (View progress) -->
+                        <TextView
+                            android:id="@+id/tvViewProgress"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="View progress"
+                            android:textSize="13sp"
+                            android:textColor="@color/grayDark"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            android:layout_marginBottom="8dp" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
         </LinearLayout>
-
-        <!-- Kartica za Level -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <!-- Level kartica levo -->
-            <include
-                layout="@layout/view_level_card"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"/>
-
-            <!-- Placeholder za nešto drugo desno -->
-            <FrameLayout
-                android:id="@+id/rightPlaceholder"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@color/selectedBackground"/>
-        </LinearLayout>
-
-
-
-    </LinearLayout>
+    </ScrollView>
 </FrameLayout>

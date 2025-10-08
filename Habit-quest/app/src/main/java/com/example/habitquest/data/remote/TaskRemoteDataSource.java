@@ -1,10 +1,13 @@
 package com.example.habitquest.data.remote;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
 import com.example.habitquest.utils.RepositoryCallback;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -15,7 +18,9 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TaskRemoteDataSource {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -49,6 +54,7 @@ public class TaskRemoteDataSource {
         DocumentReference docRef = tasks(firebaseUid).document();
         String newId = docRef.getId();
         task.setId(newId);
+        task.setLastModified(System.currentTimeMillis());
 
         docRef.set(task)
                 .addOnSuccessListener(v -> cb.onSuccess(task))
@@ -61,6 +67,8 @@ public class TaskRemoteDataSource {
             cb.onFailure(new IllegalArgumentException("Task id is null"));
             return;
         }
+        task.setLastModified(System.currentTimeMillis());
+
         tasks(firebaseUid).document(task.getId())
                 .set(task, SetOptions.merge())
                 .addOnSuccessListener(v -> cb.onSuccess(null))
@@ -165,6 +173,69 @@ public class TaskRemoteDataSource {
                 })
                 .addOnFailureListener(cb::onFailure);
     }
+
+    /**
+     * Fetches all tasks from Firestore only for the given firebaseUid (filtered).
+     * Does not modify local storage — used for analytics/statistics only.
+     */
+    public void fetchAllForUser(@NonNull String firebaseUid, @NonNull RepositoryCallback<List<Task>> cb) {
+        tasks(firebaseUid)
+                .whereEqualTo("firebaseUid", firebaseUid)  // ✅ filter by user UID
+                .orderBy("date", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    List<Task> out = new ArrayList<>();
+                    for (DocumentSnapshot d : snap.getDocuments()) {
+                        Task t = d.toObject(Task.class);
+                        if (t != null) {
+                            t.setId(d.getId());
+                            t = applyExpirationLogic(t, d.getReference());
+                        }
+                        out.add(t);
+                    }
+                    cb.onSuccess(out);
+                })
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    public void fetchAllCategories(RepositoryCallback<Map<String, Map<String, String>>> callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        String firebaseUid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+
+        if (firebaseUid == null) {
+            callback.onSuccess(new HashMap<>());
+            return;
+        }
+
+        db.collection("users")
+                .document(firebaseUid)
+                .collection("categories")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    Map<String, Map<String, String>> categoryMap = new HashMap<>();
+
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        String storedId = doc.getString("id");
+                        String name = doc.getString("name");
+                        String colorHex = doc.getString("colorHex");
+
+                        if (storedId != null && name != null) {
+                            Map<String, String> data = new HashMap<>();
+                            data.put("name", name);
+                            data.put("color", colorHex != null ? colorHex : "#2196F3");
+                            categoryMap.put(storedId, data);
+                        }
+                    }
+
+                    Log.d("STATISTICS", "✅ Loaded categories: " + categoryMap.keySet());
+                    callback.onSuccess(categoryMap);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
 
 
 

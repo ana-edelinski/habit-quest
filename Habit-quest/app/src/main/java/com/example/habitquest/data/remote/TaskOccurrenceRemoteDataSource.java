@@ -26,6 +26,7 @@ public class TaskOccurrenceRemoteDataSource {
         for (TaskOccurrence occurrence : occurrences) {
             DocumentReference docRef = colRef.document();
             occurrence.setId(docRef.getId());
+            occurrence.setLastModified(System.currentTimeMillis());
             batch.set(docRef, occurrence);
         }
 
@@ -54,7 +55,10 @@ public class TaskOccurrenceRemoteDataSource {
                 .collection("tasks").document(taskId)
                 .collection("occurrences").document(occurrenceId);
 
-        docRef.update("status", status.name())
+        docRef.update(
+                        "status", status.name(),
+                        "lastModified", System.currentTimeMillis() 
+                )
                 .addOnSuccessListener(unused -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onFailure);
     }

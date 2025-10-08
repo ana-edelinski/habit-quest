@@ -178,6 +178,12 @@
             app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/statisticsFragment"
+        android:name="com.example.habitquest.presentation.fragments.StatisticsFragment"
+        android:label="Statistics"
+        tools:layout="@layout/fragment_statistics" />
+
 
     <fragment
         android:id="@+id/specialMission"
