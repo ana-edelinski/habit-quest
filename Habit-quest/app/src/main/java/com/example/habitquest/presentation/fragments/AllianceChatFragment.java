@@ -56,7 +56,6 @@ public class AllianceChatFragment extends Fragment {
         allianceId = getArguments().getString("allianceId");
         currentUserId = FirebaseAuth.getInstance().getUid();
 
-        // ✅ 1. Učitaj iz lokalnih preferences odmah
         AppPreferences prefs = new AppPreferences(requireContext());
         currentUsername = prefs.getUsername();
         if (TextUtils.isEmpty(currentUsername)) currentUsername = "Player";
@@ -66,7 +65,9 @@ public class AllianceChatFragment extends Fragment {
         btnSend = view.findViewById(R.id.btnSend);
 
         adapter = new AllianceChatAdapter(currentUserId);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        layoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
         viewModel = new ViewModelProvider(this).get(AllianceChatViewModel.class);
@@ -93,7 +94,15 @@ public class AllianceChatFragment extends Fragment {
     }
 
     private void updateMessages(List<AllianceMessage> messages) {
+        if (messages == null || messages.isEmpty()) return;
+
         adapter.setMessages(messages);
+
+        RecyclerView recyclerView = requireView().findViewById(R.id.recyclerMessages);
+
+        if (previousMessages == null || messages.size() > previousMessages.size()) {
+            recyclerView.scrollToPosition(messages.size() - 1);
+        }
 
         if (previousMessages != null && messages.size() > previousMessages.size()) {
             AllianceMessage lastMessage = messages.get(messages.size() - 1);
@@ -105,6 +114,7 @@ public class AllianceChatFragment extends Fragment {
                 );
             }
         }
+
         previousMessages = messages;
     }
 
