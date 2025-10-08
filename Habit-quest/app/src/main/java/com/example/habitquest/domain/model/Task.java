@@ -27,6 +27,7 @@ public class Task implements Parcelable {
     private int totalXp;
 
     private TaskStatus status;
+    private Long lastModified;
 
     public Task() { }
 
@@ -69,6 +70,12 @@ public class Task implements Parcelable {
         totalXp = in.readInt();
         String statusName = in.readString();
         status = statusName != null ? TaskStatus.valueOf(statusName) : null;
+        if (in.readByte() == 0) {
+            lastModified = null;
+        } else {
+            lastModified = in.readLong();
+        }
+
     }
 
     @Override
@@ -132,6 +139,14 @@ public class Task implements Parcelable {
         dest.writeInt(importanceXp);
         dest.writeInt(totalXp);
         dest.writeString(status != null ? status.name() : null);
+
+        if (lastModified == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(lastModified);
+        }
+
     }
 
     @Override
@@ -285,5 +300,14 @@ public class Task implements Parcelable {
     public void setStatus(TaskStatus status) {
         this.status = status;
     }
+
+    public Long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Long lastModified) {
+        this.lastModified = lastModified;
+    }
+
 }
 

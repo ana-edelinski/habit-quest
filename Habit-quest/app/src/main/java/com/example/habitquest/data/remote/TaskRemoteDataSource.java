@@ -54,6 +54,7 @@ public class TaskRemoteDataSource {
         DocumentReference docRef = tasks(firebaseUid).document();
         String newId = docRef.getId();
         task.setId(newId);
+        task.setLastModified(System.currentTimeMillis());
 
         docRef.set(task)
                 .addOnSuccessListener(v -> cb.onSuccess(task))
@@ -66,6 +67,8 @@ public class TaskRemoteDataSource {
             cb.onFailure(new IllegalArgumentException("Task id is null"));
             return;
         }
+        task.setLastModified(System.currentTimeMillis());
+
         tasks(firebaseUid).document(task.getId())
                 .set(task, SetOptions.merge())
                 .addOnSuccessListener(v -> cb.onSuccess(null))

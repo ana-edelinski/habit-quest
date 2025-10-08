@@ -80,7 +80,7 @@ public class StatisticsFragment extends Fragment {
         chartTasks.getDescription().setEnabled(false);
         chartTasks.setHoleRadius(45f);
         chartTasks.setTransparentCircleRadius(50f);
-        chartTasks.setUsePercentValues(true);
+        chartTasks.setUsePercentValues(false);
         chartTasks.setEntryLabelTextSize(12f);
         chartTasks.setEntryLabelColor(Color.BLACK);
         chartTasks.setDrawEntryLabels(true);
