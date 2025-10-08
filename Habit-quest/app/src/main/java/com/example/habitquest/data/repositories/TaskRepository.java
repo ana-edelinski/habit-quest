@@ -10,6 +10,7 @@ import com.example.habitquest.utils.RepositoryCallback;
 
 import java.io.Closeable;
 import java.util.List;
+import java.util.Map;
 
 public class TaskRepository implements ITaskRepository {
     private final TaskLocalDataSource local;
@@ -123,4 +124,13 @@ public class TaskRepository implements ITaskRepository {
     public void countOneTimeTasksInPeriod(String firebaseUid, long start, long end, RepositoryCallback<Integer> cb) {
         remote.countOneTimeTasksInPeriod(firebaseUid, start, end, cb);
     }
+
+    public void fetchAllForUser(String firebaseUid, RepositoryCallback<List<Task>> cb) {
+        remote.fetchAllForUser(firebaseUid, cb);
+    }
+
+    public void fetchAllCategories(RepositoryCallback<Map<String, Map<String, String>>> callback) {
+        remote.fetchAllCategories(callback);
+    }
+
 }
