@@ -18,7 +18,9 @@
             android:layout_height="wrap_content"
             android:text="@string/active_streak"
             android:textSize="18sp"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="12dp"
+            android:textColor="@color/greenShadeDark"
+            android:textStyle="bold"/>
 
         <!-- 🔹 Longest Streak -->
         <TextView
@@ -27,8 +29,20 @@
             android:layout_height="wrap_content"
             android:text="@string/longest_streak"
             android:textSize="18sp"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="12dp"
+            android:textColor="@color/greenShadeDark"
+            android:textStyle="bold"/>
 
+        <!-- 🔹 Special Missions -->
+        <TextView
+            android:id="@+id/txtMissions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/special_missions"
+            android:textSize="18sp"
+            android:layout_marginBottom="20dp"
+            android:textColor="@color/greenShadeDark"
+            android:textStyle="bold"/>
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/chartTasks"
@@ -80,15 +94,6 @@
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:layout_marginBottom="24dp" />
-
-        <!-- 🔹 Special Missions -->
-        <TextView
-            android:id="@+id/txtMissions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/special_missions"
-            android:textSize="18sp"
-            android:layout_marginBottom="16dp" />
 
     </LinearLayout>
 </ScrollView>

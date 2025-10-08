@@ -46,7 +46,6 @@ public class StatisticsFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_statistics, container, false);
 
-        // --- Initialize UI elements ---
         txtActiveDays = view.findViewById(R.id.txtActiveDays);
         txtLongestStreak = view.findViewById(R.id.txtLongestStreak);
         chartTasks = view.findViewById(R.id.chartTasks);
@@ -54,35 +53,28 @@ public class StatisticsFragment extends Fragment {
         chartAvgDifficulty = view.findViewById(R.id.chartAvgDifficulty);
         chartXP7Days = view.findViewById(R.id.chartXP7Days);
 
-        // --- ViewModel ---
         viewModel = new ViewModelProvider(this).get(StatisticsViewModel.class);
 
         setupCharts();
         observeViewModel();
 
-        // --- Load real user data ---
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() == null) {
-            Log.w("STATISTICS", "User not available yet — waiting for FirebaseAuth…");
             auth.addAuthStateListener(firebaseAuth -> {
                 if (firebaseAuth.getCurrentUser() != null) {
                     String firebaseUid = firebaseAuth.getCurrentUser().getUid();
-                    Log.d("STATISTICS", "✅ User loaded: " + firebaseUid);
                     viewModel.loadStatistics(firebaseUid, 3L);
                 } else {
-                    Log.e("STATISTICS", "❌ AuthStateListener triggered, but user is still null");
                 }
             });
         } else {
             String firebaseUid = auth.getCurrentUser().getUid();
-            Log.d("STATISTICS", "✅ User already available: " + firebaseUid);
             viewModel.loadStatistics(firebaseUid, 3L);
         }
 
         return view;
     }
 
-    /** Configure chart properties for consistent styling and appearance. */
     private void setupCharts() {
         // --- Pie Chart (Task Status) ---
         chartTasks.getDescription().setEnabled(false);
@@ -106,7 +98,6 @@ public class StatisticsFragment extends Fragment {
         pieLegend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         pieLegend.setDrawInside(false);
 
-        // --- Bar Chart (Tasks by Category) ---
         chartCategories.getDescription().setEnabled(false);
         chartCategories.setFitBars(true);
         chartCategories.getAxisRight().setEnabled(false);
@@ -121,17 +112,14 @@ public class StatisticsFragment extends Fragment {
         chartCategories.setDrawValueAboveBar(true);
     }
 
-    /** Observe LiveData from the ViewModel and update UI reactively. */
     private void observeViewModel() {
-        // Active days
         viewModel.getActiveDays().observe(getViewLifecycleOwner(), days ->
-                txtActiveDays.setText("Active streak: " + days + " days"));
+                txtActiveDays.setText(getString(R.string.active_streak, days)));
 
-        // Longest streak
         viewModel.getLongestStreak().observe(getViewLifecycleOwner(), streak ->
-                txtLongestStreak.setText("Longest streak: " + streak + " days"));
+                txtLongestStreak.setText(getString(R.string.longest_streak, streak)));
 
-        // --- Task status pie chart ---
+
         viewModel.getTaskStatusData().observe(getViewLifecycleOwner(), pieData -> {
             if (pieData != null && pieData.getDataSet() != null) {
                 PieDataSet set = (PieDataSet) pieData.getDataSet();
@@ -143,7 +131,6 @@ public class StatisticsFragment extends Fragment {
             chartTasks.invalidate();
         });
 
-        // --- Tasks by category bar chart ---
         viewModel.getCategoryData().observe(getViewLifecycleOwner(), barData -> {
             if (barData != null && barData.getDataSetCount() > 0) {
                 BarDataSet set = (BarDataSet) barData.getDataSetByIndex(0);
@@ -162,14 +149,14 @@ public class StatisticsFragment extends Fragment {
                     xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
                     xAxis.setGranularity(1f);
                     xAxis.setLabelCount(labels.size());
-                    xAxis.setTextSize(9f);              // 🔹 manji font
+                    xAxis.setTextSize(9f);
                     xAxis.setTextColor(Color.DKGRAY);
                     xAxis.setDrawGridLines(false);
-                    xAxis.setLabelRotationAngle(0f);    // 🔹 horizontalno
+                    xAxis.setLabelRotationAngle(0f);
                     xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-                    xAxis.setYOffset(20f);              // 🔹 više prostora ispod stubova
+                    xAxis.setYOffset(20f);
 
-                    chartCategories.setExtraBottomOffset(45f); // 🔹 dodatni prostor ispod grafa
+                    chartCategories.setExtraBottomOffset(45f);
                 }
             });
 
@@ -177,7 +164,6 @@ public class StatisticsFragment extends Fragment {
             chartCategories.invalidate();
         });
 
-        // --- Average XP per day line chart ---
         viewModel.getAvgDifficultyData().observe(getViewLifecycleOwner(), lineData -> {
             if (lineData != null && lineData.getDataSetCount() > 0) {
                 LineDataSet set = (LineDataSet) lineData.getDataSetByIndex(0);
@@ -191,7 +177,6 @@ public class StatisticsFragment extends Fragment {
             chartAvgDifficulty.invalidate();
         });
 
-        // --- XP earned in last 7 days line chart ---
         viewModel.getXP7DaysData().observe(getViewLifecycleOwner(), lineData -> {
             if (lineData != null && lineData.getDataSetCount() > 0) {
                 LineDataSet set = (LineDataSet) lineData.getDataSetByIndex(0);

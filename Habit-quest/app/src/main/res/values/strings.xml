@@ -65,8 +65,8 @@
 
     <!-- Statistics screen -->
     <string name="statistics_title">Statistics</string>
-    <string name="active_streak">Active streak: -</string>
-    <string name="longest_streak">Longest streak: -</string>
-    <string name="special_missions">Special missions: -</string>
+    <string name="active_streak">Active app usage days: %1$d days</string>
+    <string name="longest_streak">Task success streak: %1$d days</string>
+    <string name="special_missions">Special missions completed: %1$d</string>
 
 </resources>
