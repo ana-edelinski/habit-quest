@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.habitquest.R;
 import com.example.habitquest.data.repositories.TaskRepository;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
@@ -48,18 +49,26 @@ public class StatisticsViewModel extends AndroidViewModel {
 
     /** Loads all tasks and prepares statistics data. */
     public void loadStatistics(String firebaseUid, long localUserId) {
-        taskRepo.fetchAllForUser(firebaseUid, new RepositoryCallback<List<Task>>() {
+        taskRepo.fetchAllCategories(new RepositoryCallback<Map<String, String>>() {
             @Override
-            public void onSuccess(List<Task> tasks) {
-                Log.d("STATISTICS_DEBUG", "Fetched tasks: " + (tasks != null ? tasks.size() : -1));
-                if (tasks == null || tasks.isEmpty()) {
-                    Log.d("STATISTICS_DEBUG", "⚠️ No tasks returned from Firestore!");
-                    return;
-                }                calculateActiveAndLongestStreak(tasks);
-                generateTaskStatusChart(tasks);
-                generateCategoryChart(tasks);
-                generateAvgDifficultyChart(tasks);
-                generateXP7DaysChart(tasks);
+            public void onSuccess(Map<String, String> categoryMap) {
+                taskRepo.fetchAllForUser(firebaseUid, new RepositoryCallback<List<Task>>() {
+                    @Override
+                    public void onSuccess(List<Task> tasks) {
+                        if (tasks == null || tasks.isEmpty()) return;
+
+                        calculateActiveAndLongestStreak(tasks);
+                        generateTaskStatusChart(tasks);
+                        generateCategoryChart(tasks, categoryMap);
+                        generateAvgDifficultyChart(tasks);
+                        generateXP7DaysChart(tasks);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        e.printStackTrace();
+                    }
+                });
             }
 
             @Override
@@ -69,15 +78,21 @@ public class StatisticsViewModel extends AndroidViewModel {
         });
     }
 
-    /** Calculates the number of active days and the longest streak of completed tasks. */
+
     private void calculateActiveAndLongestStreak(List<Task> tasks) {
+
+        Map<LocalDate, Boolean> tasksByDay = new HashMap<>();
         Map<LocalDate, Boolean> completedByDay = new HashMap<>();
 
         for (Task t : tasks) {
-            if (t.getStatus() == TaskStatus.COMPLETED && t.getDate() != null) {
-                LocalDate date = Instant.ofEpochMilli(t.getDate())
-                        .atZone(ZoneId.systemDefault()).toLocalDate();
-                completedByDay.put(date, true);
+            if (t.getDate() == null) continue;
+            LocalDate date = Instant.ofEpochMilli(t.getDate())
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+
+            tasksByDay.put(date, true); //dan da ima task
+
+            if (t.getStatus() == TaskStatus.COMPLETED) {
+                completedByDay.put(date, true); //dan ima zavrseni task
             }
         }
 
@@ -85,50 +100,72 @@ public class StatisticsViewModel extends AndroidViewModel {
         int longest = 0;
         LocalDate today = LocalDate.now();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 365; i++) {
             LocalDate date = today.minusDays(i);
+
+            // ako ima taskova u danu, ali nijedan nije uradjen prekida niz
+            if (tasksByDay.containsKey(date) && !completedByDay.containsKey(date)) {
+                break;
+            }
+
+            // ako ima uradjenih taskova povecava streask
             if (completedByDay.containsKey(date)) {
                 currentStreak++;
                 longest = Math.max(longest, currentStreak);
-            } else {
-                if (i == 0) continue; // don't break if there is no task today
-                else break;
             }
+            // ako dan nije ni bilo taskova taj dan se samo preskace
         }
 
         activeDays.postValue(currentStreak);
         longestStreak.postValue(longest);
     }
 
-    /** Generates PieChart data for task status distribution. */
+
+    /** Generates PieChart data for task status distribution (Created, Completed, Not done, Canceled). */
     private void generateTaskStatusChart(List<Task> tasks) {
-        int active = 0, paused = 0, completed = 0, canceled = 0, notDone = 0;
+        int created = 0, completed = 0, notDone = 0, canceled = 0;
 
         for (Task t : tasks) {
             if (t.getStatus() == null) continue;
+
             switch (t.getStatus()) {
-                case ACTIVE: active++; break;
-                case PAUSED: paused++; break;
-                case COMPLETED: completed++; break;
-                case CANCELED: canceled++; break;
-                case NOT_DONE: notDone++; break;
+                case ACTIVE:
+                    created++;
+                    break;
+                case COMPLETED:
+                    completed++;
+                    break;
+                case NOT_DONE:
+                    notDone++;
+                    break;
+                case CANCELED:
+                    canceled++;
+                    break;
+                default:
+                    break;
             }
         }
 
         List<PieEntry> entries = new ArrayList<>();
-        entries.add(new PieEntry(active, "Active"));
-        entries.add(new PieEntry(paused, "Paused"));
-        entries.add(new PieEntry(completed, "Completed"));
+        entries.add(new PieEntry(created, "Created"));
+        entries.add(new PieEntry(completed, "Done"));
+        entries.add(new PieEntry(notDone, "Not Done"));
         entries.add(new PieEntry(canceled, "Canceled"));
-        entries.add(new PieEntry(notDone, "Not done"));
 
         PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setValueTextSize(12f);
+        dataSet.setColors(new int[]{
+                getApplication().getResources().getColor(R.color.chart_blue),
+                getApplication().getResources().getColor(R.color.chart_green),
+                getApplication().getResources().getColor(R.color.chart_orange),
+                getApplication().getResources().getColor(R.color.chart_red)
+        });
+
         PieData pieData = new PieData(dataSet);
         taskStatusData.postValue(pieData);
     }
 
-    /** Generates BarChart data for completed tasks by category. */
+
     private void generateCategoryChart(List<Task> tasks) {
         Map<String, Integer> categoryCount = new HashMap<>();
 
