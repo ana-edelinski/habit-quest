@@ -1,6 +1,7 @@
 package com.example.habitquest.presentation.viewmodels;
 
 import android.app.Application;
+import android.graphics.Color;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -41,17 +42,19 @@ public class StatisticsViewModel extends AndroidViewModel {
     private final MutableLiveData<BarData> categoryData = new MutableLiveData<>();
     private final MutableLiveData<LineData> avgDifficultyData = new MutableLiveData<>();
     private final MutableLiveData<LineData> xp7DaysData = new MutableLiveData<>();
+    private final MutableLiveData<List<String>> categoryLabels = new MutableLiveData<>();
+    public LiveData<List<String>> getCategoryLabels() { return categoryLabels; }
 
     public StatisticsViewModel(@NonNull Application application) {
         super(application);
         this.taskRepo = new TaskRepository(application.getApplicationContext());
     }
 
-    /** Loads all tasks and prepares statistics data. */
+    /** Loads all tasks and prepares statistics data (with category colors). */
     public void loadStatistics(String firebaseUid, long localUserId) {
-        taskRepo.fetchAllCategories(new RepositoryCallback<Map<String, String>>() {
+        taskRepo.fetchAllCategories(new RepositoryCallback<Map<String, Map<String, String>>>() {
             @Override
-            public void onSuccess(Map<String, String> categoryMap) {
+            public void onSuccess(Map<String, Map<String, String>> categoryMap) {
                 taskRepo.fetchAllForUser(firebaseUid, new RepositoryCallback<List<Task>>() {
                     @Override
                     public void onSuccess(List<Task> tasks) {
@@ -78,9 +81,8 @@ public class StatisticsViewModel extends AndroidViewModel {
         });
     }
 
-
+    /** Calculates active streak and longest streak (without breaking on days without tasks). */
     private void calculateActiveAndLongestStreak(List<Task> tasks) {
-
         Map<LocalDate, Boolean> tasksByDay = new HashMap<>();
         Map<LocalDate, Boolean> completedByDay = new HashMap<>();
 
@@ -89,10 +91,9 @@ public class StatisticsViewModel extends AndroidViewModel {
             LocalDate date = Instant.ofEpochMilli(t.getDate())
                     .atZone(ZoneId.systemDefault()).toLocalDate();
 
-            tasksByDay.put(date, true); //dan da ima task
-
+            tasksByDay.put(date, true);
             if (t.getStatus() == TaskStatus.COMPLETED) {
-                completedByDay.put(date, true); //dan ima zavrseni task
+                completedByDay.put(date, true);
             }
         }
 
@@ -102,47 +103,31 @@ public class StatisticsViewModel extends AndroidViewModel {
 
         for (int i = 0; i < 365; i++) {
             LocalDate date = today.minusDays(i);
-
-            // ako ima taskova u danu, ali nijedan nije uradjen prekida niz
             if (tasksByDay.containsKey(date) && !completedByDay.containsKey(date)) {
                 break;
             }
-
-            // ako ima uradjenih taskova povecava streask
             if (completedByDay.containsKey(date)) {
                 currentStreak++;
                 longest = Math.max(longest, currentStreak);
             }
-            // ako dan nije ni bilo taskova taj dan se samo preskace
         }
 
         activeDays.postValue(currentStreak);
         longestStreak.postValue(longest);
     }
 
-
-    /** Generates PieChart data for task status distribution (Created, Completed, Not done, Canceled). */
+    /** Generates PieChart data for task status distribution. */
     private void generateTaskStatusChart(List<Task> tasks) {
         int created = 0, completed = 0, notDone = 0, canceled = 0;
 
         for (Task t : tasks) {
             if (t.getStatus() == null) continue;
-
             switch (t.getStatus()) {
-                case ACTIVE:
-                    created++;
-                    break;
-                case COMPLETED:
-                    completed++;
-                    break;
-                case NOT_DONE:
-                    notDone++;
-                    break;
-                case CANCELED:
-                    canceled++;
-                    break;
-                default:
-                    break;
+                case ACTIVE: created++; break;
+                case COMPLETED: completed++; break;
+                case NOT_DONE: notDone++; break;
+                case CANCELED: canceled++; break;
+                default: break;
             }
         }
 
@@ -165,29 +150,60 @@ public class StatisticsViewModel extends AndroidViewModel {
         taskStatusData.postValue(pieData);
     }
 
-
-    private void generateCategoryChart(List<Task> tasks) {
+    private void generateCategoryChart(List<Task> tasks, Map<String, Map<String, String>> categoryMap) {
         Map<String, Integer> categoryCount = new HashMap<>();
+        Map<String, String> categoryColors = new HashMap<>();
 
+        // 🔹 Prebroj zadatke i zapamti boje
         for (Task t : tasks) {
             if (t.getStatus() == TaskStatus.COMPLETED) {
-                String category = (t.getCategoryId() != null) ? t.getCategoryId() : "Other";
-                categoryCount.put(category, categoryCount.getOrDefault(category, 0) + 1);
+                String categoryName = "Other";
+                String colorHex = "#9E9E9E"; // default siva
+
+                if (t.getCategoryId() != null && categoryMap.containsKey(t.getCategoryId())) {
+                    Map<String, String> data = categoryMap.get(t.getCategoryId());
+                    categoryName = data.get("name");
+                    colorHex = data.get("color");
+                }
+
+                categoryCount.put(categoryName, categoryCount.getOrDefault(categoryName, 0) + 1);
+                categoryColors.put(categoryName, colorHex);
             }
         }
 
         List<BarEntry> entries = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
+
         int i = 0;
         for (Map.Entry<String, Integer> e : categoryCount.entrySet()) {
             entries.add(new BarEntry(i++, e.getValue()));
+            labels.add(e.getKey());
+            try {
+                colors.add(Color.parseColor(categoryColors.get(e.getKey())));
+            } catch (Exception ex) {
+                colors.add(Color.GRAY);
+            }
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, "Tasks by category");
+        BarDataSet dataSet = new BarDataSet(entries, "");
+        dataSet.setValueTextSize(12f);
+        dataSet.setColors(colors); // svaka kategorija u svojoj boji
+        dataSet.setDrawValues(true); // prikazuje vrednosti iznad stubova
+        dataSet.setValueTextColor(Color.DKGRAY);
+        dataSet.setBarBorderWidth(0f);
+
         BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.7f);
+
         categoryData.postValue(barData);
+        categoryLabels.postValue(labels);
+
+        Log.d("STATISTICS", "✅ Category chart generated with colors: " + colors);
     }
 
-    /** Generates LineChart data for average XP (totalXp) per day. */
+
+    /** Generates LineChart data for average XP per day. */
     private void generateAvgDifficultyChart(List<Task> tasks) {
         Map<LocalDate, List<Integer>> xpByDay = new HashMap<>();
 
@@ -219,7 +235,6 @@ public class StatisticsViewModel extends AndroidViewModel {
         for (int i = 6; i >= 0; i--) {
             LocalDate day = today.minusDays(i);
             int totalXP = 0;
-
             for (Task t : tasks) {
                 if (t.getStatus() == TaskStatus.COMPLETED && t.getDate() != null) {
                     LocalDate taskDate = Instant.ofEpochMilli(t.getDate())
@@ -238,7 +253,6 @@ public class StatisticsViewModel extends AndroidViewModel {
     }
 
     // --- Getters for LiveData ---
-
     public LiveData<Integer> getActiveDays() { return activeDays; }
     public LiveData<Integer> getLongestStreak() { return longestStreak; }
     public LiveData<PieData> getTaskStatusData() { return taskStatusData; }

@@ -20,11 +20,15 @@ import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.List;
 
 public class StatisticsFragment extends Fragment {
 
@@ -75,8 +79,6 @@ public class StatisticsFragment extends Fragment {
             viewModel.loadStatistics(firebaseUid, 3L);
         }
 
-
-
         return view;
     }
 
@@ -110,36 +112,13 @@ public class StatisticsFragment extends Fragment {
         chartCategories.getAxisRight().setEnabled(false);
         chartCategories.getAxisLeft().setTextColor(Color.DKGRAY);
         chartCategories.getXAxis().setTextColor(Color.DKGRAY);
-        chartCategories.getLegend().setTextSize(12f);
-        chartCategories.getLegend().setForm(Legend.LegendForm.SQUARE);
+        chartCategories.getLegend().setEnabled(false);
         chartCategories.setDrawGridBackground(false);
         chartCategories.setNoDataText("No completed tasks yet");
         chartCategories.setNoDataTextColor(Color.GRAY);
         chartCategories.animateY(1200, Easing.EaseInOutQuad);
-
-        // --- Line Chart (Average XP) ---
-        chartAvgDifficulty.getDescription().setEnabled(false);
-        chartAvgDifficulty.setDrawGridBackground(false);
-        chartAvgDifficulty.setNoDataText("No data available");
-        chartAvgDifficulty.setNoDataTextColor(Color.GRAY);
-        chartAvgDifficulty.getLegend().setForm(Legend.LegendForm.LINE);
-        chartAvgDifficulty.getLegend().setTextSize(12f);
-        chartAvgDifficulty.getXAxis().setTextColor(Color.DKGRAY);
-        chartAvgDifficulty.getAxisLeft().setTextColor(Color.DKGRAY);
-        chartAvgDifficulty.getAxisRight().setEnabled(false);
-        chartAvgDifficulty.animateX(1200, Easing.EaseInOutQuad);
-
-        // --- Line Chart (XP in Last 7 Days) ---
-        chartXP7Days.getDescription().setEnabled(false);
-        chartXP7Days.setDrawGridBackground(false);
-        chartXP7Days.setNoDataText("No XP data available");
-        chartXP7Days.setNoDataTextColor(Color.GRAY);
-        chartXP7Days.getLegend().setForm(Legend.LegendForm.LINE);
-        chartXP7Days.getLegend().setTextSize(12f);
-        chartXP7Days.getXAxis().setTextColor(Color.DKGRAY);
-        chartXP7Days.getAxisLeft().setTextColor(Color.DKGRAY);
-        chartXP7Days.getAxisRight().setEnabled(false);
-        chartXP7Days.animateX(1200, Easing.EaseInOutQuad);
+        chartCategories.setExtraOffsets(10, 10, 10, 10);
+        chartCategories.setDrawValueAboveBar(true);
     }
 
     /** Observe LiveData from the ViewModel and update UI reactively. */
@@ -168,11 +147,30 @@ public class StatisticsFragment extends Fragment {
         viewModel.getCategoryData().observe(getViewLifecycleOwner(), barData -> {
             if (barData != null && barData.getDataSetCount() > 0) {
                 BarDataSet set = (BarDataSet) barData.getDataSetByIndex(0);
-                set.setColor(getResources().getColor(R.color.chart_blue));
                 set.setValueTextSize(12f);
                 set.setValueTextColor(Color.DKGRAY);
+                set.setBarBorderWidth(1f);
+                set.setBarBorderColor(Color.LTGRAY);
+                chartCategories.getLegend().setEnabled(false);
             }
+
             chartCategories.setData(barData);
+
+            // ✅ Nazivi kategorija ispod stubova (bez lambdi)
+            viewModel.getCategoryLabels().observe(getViewLifecycleOwner(), labels -> {
+                if (labels != null) {
+                    XAxis xAxis = chartCategories.getXAxis();
+                    xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+                    xAxis.setGranularity(1f);
+                    xAxis.setLabelCount(labels.size());
+                    xAxis.setTextSize(12f);
+                    xAxis.setTextColor(Color.DKGRAY);
+                    xAxis.setDrawGridLines(false);
+                    xAxis.setLabelRotationAngle(-25f);
+                    xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                }
+            });
+
             chartCategories.invalidate();
         });
 
@@ -204,5 +202,4 @@ public class StatisticsFragment extends Fragment {
             chartXP7Days.invalidate();
         });
     }
-
 }

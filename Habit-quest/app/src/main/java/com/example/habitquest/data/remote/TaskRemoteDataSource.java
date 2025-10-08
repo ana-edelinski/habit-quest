@@ -1,10 +1,13 @@
 package com.example.habitquest.data.remote;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
 import com.example.habitquest.utils.RepositoryCallback;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -15,7 +18,9 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TaskRemoteDataSource {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -189,6 +194,46 @@ public class TaskRemoteDataSource {
                 })
                 .addOnFailureListener(cb::onFailure);
     }
+
+    public void fetchAllCategories(RepositoryCallback<Map<String, Map<String, String>>> callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        String firebaseUid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+
+        if (firebaseUid == null) {
+            callback.onSuccess(new HashMap<>());
+            return;
+        }
+
+        db.collection("users")
+                .document(firebaseUid)
+                .collection("categories")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    Map<String, Map<String, String>> categoryMap = new HashMap<>();
+
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        String storedId = doc.getString("id");
+                        String name = doc.getString("name");
+                        String colorHex = doc.getString("colorHex");
+
+                        if (storedId != null && name != null) {
+                            Map<String, String> data = new HashMap<>();
+                            data.put("name", name);
+                            data.put("color", colorHex != null ? colorHex : "#2196F3");
+                            categoryMap.put(storedId, data);
+                        }
+                    }
+
+                    Log.d("STATISTICS", "✅ Loaded categories: " + categoryMap.keySet());
+                    callback.onSuccess(categoryMap);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
+
 
 
 
