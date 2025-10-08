@@ -56,5 +56,14 @@ public class AppPreferences {
         return prefs.getString("current_alliance_id", null);
     }
 
+    public void setChatOpen(boolean isOpen) {
+        prefs.edit().putBoolean("chatOpen", isOpen).apply();
+    }
+
+    public boolean isChatOpen() {
+        return prefs.getBoolean("chatOpen", false);
+    }
+
+
 }
 

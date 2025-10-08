@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.domain.model.Alliance;
 import com.example.habitquest.domain.model.AllianceMessage;
 import com.example.habitquest.presentation.services.AllianceNotificationService;
@@ -13,6 +14,7 @@ import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -22,6 +24,8 @@ public class AllianceRemoteDataSource {
 
     private static final String COLLECTION_NAME = "alliances";
     private final FirebaseFirestore db;
+    private ListenerRegistration chatListener;
+    private String lastShownMessageId = null;
 
     public AllianceRemoteDataSource() {
         db = FirebaseFirestore.getInstance();
@@ -59,7 +63,6 @@ public class AllianceRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-
     public void getUserAlliance(String userId, RepositoryCallback<Alliance> callback) {
         db.collection(COLLECTION_NAME)
                 .whereArrayContains("members", userId)
@@ -87,7 +90,6 @@ public class AllianceRemoteDataSource {
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
-
 
     public void leaveAlliance(String allianceId, String userId, RepositoryCallback<Void> callback) {
         DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
@@ -148,7 +150,6 @@ public class AllianceRemoteDataSource {
             }
         });
     }
-
 
     private void joinNewAlliance(Context context, String allianceId, String userId, String username, RepositoryCallback<Void> callback) {
         DocumentReference allianceRef = db.collection(COLLECTION_NAME).document(allianceId);
@@ -299,24 +300,39 @@ public class AllianceRemoteDataSource {
     }
 
     public void listenForAllianceChatMessages(String allianceId, String currentUserId, Context context) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("alliances")
+        if (chatListener != null) return;
+
+        chatListener = db.collection("alliances")
                 .document(allianceId)
                 .collection("messages")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .limit(1)
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null || snapshots == null || snapshots.isEmpty()) return;
+
                     AllianceMessage msg = snapshots.getDocuments().get(0).toObject(AllianceMessage.class);
                     if (msg == null || msg.getSenderId().equals(currentUserId)) return;
+
+                    if (msg.getId() != null && msg.getId().equals(lastShownMessageId)) return;
+                    lastShownMessageId = msg.getId();
+
+                    AppPreferences prefs = new AppPreferences(context);
+                    if (prefs.isChatOpen()) return;
 
                     NotificationHelper.showAllianceChatMessage(
                             context,
                             msg.getSenderName(),
-                            msg.getText()
+                            msg.getText(),
+                            allianceId
                     );
                 });
     }
 
-
+    public void removeChatListener() {
+        if (chatListener != null) {
+            chatListener.remove();
+            chatListener = null;
+            lastShownMessageId = null;
+        }
+    }
 }

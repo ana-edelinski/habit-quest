@@ -93,12 +93,24 @@ public class NotificationHelper {
     }
 
     // 🔹 Chat poruka
-    public static void showAllianceChatMessage(Context context, String senderName, String messageText) {
+    public static void showAllianceChatMessage(Context context, String senderName, String messageText, String allianceId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
                         != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+
+        Intent intent = new Intent(context, com.example.habitquest.presentation.activities.HomeActivity.class);
+        intent.putExtra("openAllianceChat", true);
+        intent.putExtra("allianceId", allianceId);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                context,
+                allianceId.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_CHAT)
                 .setSmallIcon(R.drawable.ic_notification)
@@ -108,11 +120,14 @@ public class NotificationHelper {
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setAutoCancel(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setOnlyAlertOnce(false);
+                .setOnlyAlertOnce(false)
+                .setContentIntent(pendingIntent);
 
         NotificationManagerCompat.from(context)
                 .notify((int) System.currentTimeMillis(), builder.build());
     }
+
+
 
     // 🔹 Kada neko prihvati pozivnicu
     public static void showAllianceAccepted(Context context, String memberName, String allianceName) {

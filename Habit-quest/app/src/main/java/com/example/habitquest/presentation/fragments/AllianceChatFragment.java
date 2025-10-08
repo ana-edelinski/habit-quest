@@ -136,14 +136,17 @@ public class AllianceChatFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        new AppPreferences(requireContext()).setChatOpen(true);
         viewModel.startListening(allianceId);
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        new AppPreferences(requireContext()).setChatOpen(false);
         viewModel.stopListening();
     }
+
 
     @Override
     public void onDestroyView() {
