@@ -294,13 +294,13 @@ public class HomeActivity extends AppCompatActivity {
         MenuItem cartItem = menu.findItem(R.id.action_cart);
         View actionView = cartItem.getActionView();
 
-        BadgeDrawable badge = BadgeDrawable.create(this);
-        badge.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
-        badge.setBadgeTextColor(ContextCompat.getColor(this, R.color.white));
-        badge.setNumber(0);
-
-        BadgeUtils.attachBadgeDrawable(badge, findViewById(R.id.topAppBar), R.id.action_cart);
-        this.cartBadge = badge;
+//        BadgeDrawable badge = BadgeDrawable.create(this);
+//        badge.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
+//        badge.setBadgeTextColor(ContextCompat.getColor(this, R.color.white));
+//        badge.setNumber(0);
+//
+//        BadgeUtils.attachBadgeDrawable(badge, findViewById(R.id.topAppBar), R.id.action_cart);
+//        this.cartBadge = badge;
 
         return true;
     }
