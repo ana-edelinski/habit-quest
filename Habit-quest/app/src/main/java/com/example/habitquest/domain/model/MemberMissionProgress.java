@@ -3,6 +3,7 @@ package com.example.habitquest.domain.model;
 public class MemberMissionProgress {
 
     private String userId;
+    private String username;
     private int hpReduced;
     private int shopActions;
     private int bossHits;
@@ -14,6 +15,7 @@ public class MemberMissionProgress {
     public MemberMissionProgress() {}
 
     public MemberMissionProgress(String userId) {
+
         this.userId = userId;
     }
 

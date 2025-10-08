@@ -20,6 +20,8 @@ public class AllianceMissionViewModel extends ViewModel {
     private final AllianceRepository allianceRepo;
     private final String remoteUid;
 
+    private AppPreferences prefs;
+
     private final MutableLiveData<AllianceMission> _currentMission = new MutableLiveData<>();
     public LiveData<AllianceMission> currentMission = _currentMission;
 
@@ -45,6 +47,7 @@ public class AllianceMissionViewModel extends ViewModel {
         this.missionRepo = missionRepo;
         this.allianceRepo = allianceRepo;
         this.remoteUid = prefs.getFirebaseUid();
+        this.prefs = prefs;
 
     }
 
@@ -192,4 +195,7 @@ public class AllianceMissionViewModel extends ViewModel {
         _missionJustStarted.setValue(false);
     }
 
+    public String getRemoteUid() {
+        return prefs.getFirebaseUid();
+    }
 }

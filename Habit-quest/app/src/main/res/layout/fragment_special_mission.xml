@@ -53,21 +53,106 @@
             android:padding="16dp" />
     </LinearLayout>
 
-    <!-- Ostatak za prikaz aktivne misije dodaćemo kasnije -->
-    <LinearLayout
+    <!-- 🔹 Prikaz aktivne misije -->
+    <ScrollView
         android:id="@+id/layoutMissionActive"
-        android:orientation="vertical"
-        android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone">
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:fillViewport="true">
 
-        <TextView
-            android:id="@+id/tvMissionActivePlaceholder"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="(Mission active view coming soon)"
-            android:textAlignment="center" />
-    </LinearLayout>
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <!-- 🔸 Slika bossa -->
+            <ImageView
+                android:id="@+id/imgBoss"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:src="@drawable/boss_level_4"
+                android:contentDescription="Boss image"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 🔸 HP bosa -->
+            <TextView
+                android:id="@+id/tvBossHp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HP: 1000 / 1000"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="4dp" />
+
+            <ProgressBar
+                android:id="@+id/progressBossHp"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_marginHorizontal="24dp"
+                android:max="100"
+                android:progress="100"
+                android:progressTint="@color/red"
+                android:layout_marginBottom="16dp" />
+
+
+            <!-- 🔸 Preostalo vreme -->
+            <TextView
+                android:id="@+id/tvMissionTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏳ 00:00:00"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/orbitron_regular"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="24dp"
+                android:elevation="6dp" />
+
+
+            <!-- 🔸 Napredak korisnika -->
+            <TextView
+                android:id="@+id/tvUserProgressLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Your contribution:"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <ProgressBar
+                android:id="@+id/progressUserHp"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="16dp"
+                android:layout_marginHorizontal="24dp"
+                android:max="100"
+                android:progressTint="@color/darkGreen"
+                android:layout_marginBottom="12dp" />
+
+
+            <TextView
+                android:id="@+id/tvUserDamage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You dealt 48 HP damage"
+                android:textSize="14sp"
+                android:layout_marginBottom="24dp" />
+
+            <!-- 🔸 Dugme za prikaz napretka članova -->
+            <Button
+                android:id="@+id/btnAllianceProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Alliance Progress"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/colorPrimary" />
+
+        </LinearLayout>
+    </ScrollView>
+
 
 </FrameLayout>

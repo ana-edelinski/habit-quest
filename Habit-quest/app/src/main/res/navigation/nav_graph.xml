@@ -178,6 +178,12 @@
             app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/allianceProgressFragment"
+        android:name="com.example.habitquest.presentation.fragments.AllianceProgressFragment"
+        android:label="Create Alliance"
+        tools:layout="@layout/fragment_alliance_progress" />
+
 
     <fragment
         android:id="@+id/specialMission"
@@ -187,6 +193,9 @@
         <action
             android:id="@+id/action_specialMissionFragment_to_myFriendsFragment"
             app:destination="@id/myFriendsFragment" />
+        <action
+            android:id="@+id/action_specialMissionFragment_to_allianceProgressFragment"
+            app:destination="@id/allianceProgressFragment" />
     </fragment>
 
 
