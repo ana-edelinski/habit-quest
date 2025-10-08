@@ -24,7 +24,10 @@ import com.example.habitquest.domain.model.Boss;
 import com.example.habitquest.domain.model.BossFightResult;
 import com.example.habitquest.domain.model.BattleStats;
 import com.example.habitquest.domain.repositoryinterfaces.IUserRepository;
+import com.example.habitquest.utils.MissionProgressHelper;
 import com.example.habitquest.utils.RepositoryCallback;
+
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.HashMap;

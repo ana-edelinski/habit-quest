@@ -2,13 +2,16 @@ package com.example.habitquest.presentation.fragments;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -22,13 +25,17 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.habitquest.R;
 import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.data.repositories.AllianceMissionRepository;
 import com.example.habitquest.data.repositories.AllianceRepository;
+import com.example.habitquest.domain.model.Alliance;
+import com.example.habitquest.domain.model.AllianceMission;
 import com.example.habitquest.domain.model.MemberMissionProgress;
 import com.example.habitquest.presentation.viewmodels.AllianceMissionViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.AllianceMissionViewModelFactory;
+import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.Timestamp;
 
 import java.util.Locale;
@@ -91,6 +98,18 @@ public class SpecialMissionFragment extends Fragment {
         missionViewModel.currentMission.observe(getViewLifecycleOwner(), mission -> {
             if (mission == null) return;
 
+            if (mission.isFinished()) {
+                showMissionEndDialog(mission.getRemainingHP() <= 0);
+                return;
+            }
+
+            long bossRemainingHP = mission.getRemainingHP();
+//            if (bossRemainingHP <= 0 && !mission.isFinished()) {
+//                missionViewModel.finishMission();
+//                showMissionEndDialog(true);
+//                return;
+//            }
+
             layoutMissionActive.setVisibility(View.VISIBLE);
 
             ProgressBar progressBossHp = view.findViewById(R.id.progressBossHp);
@@ -103,7 +122,7 @@ public class SpecialMissionFragment extends Fragment {
             tvMissionTimer.setShadowLayer(4f, 0f, 0f, Color.BLACK); // 💡 bela slova sa senkom
 
             long bossMaxHP = mission.getBossHP();
-            long bossRemainingHP = mission.getRemainingHP();
+            bossRemainingHP = mission.getRemainingHP();
             long bossLostHP = bossMaxHP - bossRemainingHP;
             double totalProgress = (bossLostHP * 100.0) / bossMaxHP;
 
@@ -126,6 +145,8 @@ public class SpecialMissionFragment extends Fragment {
                 if (millisLeft > 0) startMissionTimer(tvMissionTimer, millisLeft);
                 else tvMissionTimer.setText("Mission ended");
             }
+
+
         });
 
         // 🔹 Dugme za napredak saveza
@@ -162,7 +183,7 @@ public class SpecialMissionFragment extends Fragment {
                 } else if (millisUntilFinished < 60 * 60 * 1000) {
                     tvTimer.setTextColor(ContextCompat.getColor(requireContext(), R.color.orange));
                 } else {
-                    tvTimer.setTextColor(Color.WHITE);
+                    tvTimer.setTextColor(Color.BLACK);
                 }
             }
 
@@ -185,5 +206,48 @@ public class SpecialMissionFragment extends Fragment {
             missionTimer = null;
         }
     }
+
+
+
+
+    private void showMissionEndDialog(boolean victory) {
+        if (getActivity() == null) return;
+
+        Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_reward);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setCancelable(false);
+
+        LottieAnimationView lottieChest = dialog.findViewById(R.id.lottieChest);
+        TextView tvTitle = dialog.findViewById(R.id.tvRewardTitle);
+        TextView tvCoins = dialog.findViewById(R.id.tvCoinsReward);
+        TextView tvEquipment = dialog.findViewById(R.id.tvEquipmentReward);
+        Button btnClose = dialog.findViewById(R.id.btnCloseReward);
+
+        if (victory) {
+            lottieChest.setAnimation(R.raw.chest_opening);
+            tvTitle.setText("Mission Complete!");
+            tvCoins.setText("× 250");
+            tvEquipment.setText("You found rare loot!");
+        } else {
+            lottieChest.setAnimation(R.raw.mission_failed);
+            tvTitle.setText("Mission Failed");
+            tvCoins.setText("No rewards this time...");
+            tvEquipment.setText("Better luck next time!");
+        }
+
+        lottieChest.playAnimation();
+
+        btnClose.setOnClickListener(v -> {
+            dialog.dismiss();
+            // možeš navigirati nazad ili ostaviti prazno
+            Navigation.findNavController(requireView())
+                    .navigate(R.id.action_specialMissionFragment_to_allianceProgressFragment);
+        });
+
+        dialog.show();
+    }
+
 }
 

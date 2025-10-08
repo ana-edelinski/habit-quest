@@ -40,6 +40,7 @@ import com.example.habitquest.domain.model.BossFightResult;
 import com.example.habitquest.presentation.adapters.ActiveEquipmentAdapter;
 import com.example.habitquest.presentation.viewmodels.BossFightViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.BossFightViewModelFactory;
+import com.example.habitquest.utils.MissionProgressHelper;
 import com.google.android.material.button.MaterialButton;
 
 /**
@@ -211,6 +212,7 @@ public class BossFightFragment extends Fragment {
         if (usedAttacks > 0) { // prikazuj feedback tek posle prvog napada
             int hpDiff = lastBossHp - stats.getBossHP();
             if (hpDiff > 0) {
+                MissionProgressHelper.reportBossHit(requireActivity());
                 hitSound.start();
                 tvBattleFeedback.setText("Hit!");
                 tvBattleFeedback.setTextColor(getResources().getColor(R.color.green));

@@ -23,6 +23,7 @@ import com.example.habitquest.R;
 import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.presentation.adapters.ShopAdapter;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
+import com.example.habitquest.utils.MissionProgressHelper;
 import com.example.habitquest.utils.RepositoryCallback;
 
 public class CartFragment extends Fragment {
@@ -76,6 +77,7 @@ public class CartFragment extends Fragment {
             cartViewModel.buyItems(new RepositoryCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
+                    MissionProgressHelper.reportShopPurchase(requireActivity());
                     Toast.makeText(getContext(), "Purchase successful!", Toast.LENGTH_SHORT).show();
                     NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
                     navController.navigate(R.id.nav_equipment);

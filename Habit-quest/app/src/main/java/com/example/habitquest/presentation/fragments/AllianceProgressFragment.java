@@ -20,6 +20,7 @@ import com.example.habitquest.domain.model.MemberMissionProgress;
 import com.example.habitquest.presentation.adapters.AllianceProgressAdapter;
 import com.example.habitquest.presentation.viewmodels.AllianceMissionViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.AllianceMissionViewModelFactory;
+import com.example.habitquest.utils.RepositoryCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import java.util.Map;
 
 public class AllianceProgressFragment extends Fragment {
 
-    private TextView tvLeaderName;
+    private TextView tvLeaderName, tvAllianceName;
     private RecyclerView rvMembers;
     private AllianceMissionViewModel missionViewModel;
     private AllianceProgressAdapter adapter;
@@ -46,6 +47,8 @@ public class AllianceProgressFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         tvLeaderName = view.findViewById(R.id.tvLeaderName);
+        tvAllianceName = view.findViewById(R.id.tvAllianceName);
+
         rvMembers = view.findViewById(R.id.rvAllianceMembersProgress);
         rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
 
@@ -55,6 +58,7 @@ public class AllianceProgressFragment extends Fragment {
         missionViewModel.currentAlliance.observe(getViewLifecycleOwner(), alliance -> {
             if (alliance != null)
                 tvLeaderName.setText("Leader: " + alliance.getLeaderName());
+                tvAllianceName.setText(alliance.getName());
         });
 
         missionViewModel.currentMission.observe(getViewLifecycleOwner(), mission -> {
@@ -71,7 +75,24 @@ public class AllianceProgressFragment extends Fragment {
             Alliance alliance = missionViewModel.currentAlliance.getValue();
             if (alliance != null && alliance.getMembers() != null) {
                 for (String uid : alliance.getMembers()) {
-                    names.put(uid, uid.equals(alliance.getLeaderId()) ? alliance.getLeaderName() : uid);
+                    missionViewModel.getUsername(uid, new RepositoryCallback<String>() {
+                        @Override
+                        public void onSuccess(String username) {
+                            names.put(uid, username);
+
+                            // kad dobijemo sve imena, ažuriraj adapter
+                            if (names.size() == alliance.getMembers().size()) {
+                                AllianceProgressAdapter adapter =
+                                        new AllianceProgressAdapter(members, names, mission.getBossHP());
+                                rvMembers.setAdapter(adapter);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            names.put(uid, "Unknown");
+                        }
+                    });
                 }
             }
 

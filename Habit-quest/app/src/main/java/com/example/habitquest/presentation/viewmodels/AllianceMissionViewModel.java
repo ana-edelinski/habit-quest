@@ -9,7 +9,9 @@ import com.example.habitquest.data.repositories.AllianceRepository;
 import com.example.habitquest.domain.model.Alliance;
 import com.example.habitquest.domain.model.AllianceMission;
 import com.example.habitquest.domain.model.MissionAction;
+import com.example.habitquest.domain.model.User;
 import com.example.habitquest.domain.repositoryinterfaces.IAllianceMissionRepository;
+import com.example.habitquest.domain.repositoryinterfaces.IUserRepository;
 import com.example.habitquest.utils.RepositoryCallback;
 
 import java.util.List;
@@ -18,6 +20,7 @@ public class AllianceMissionViewModel extends ViewModel {
 
     private final IAllianceMissionRepository missionRepo;
     private final AllianceRepository allianceRepo;
+    private final IUserRepository userRepository;
     private final String remoteUid;
 
     private AppPreferences prefs;
@@ -43,9 +46,11 @@ public class AllianceMissionViewModel extends ViewModel {
 
     public AllianceMissionViewModel(AppPreferences prefs,
                                     IAllianceMissionRepository missionRepo,
+                                    IUserRepository userRepository,
                                     AllianceRepository allianceRepo) {
         this.missionRepo = missionRepo;
         this.allianceRepo = allianceRepo;
+        this.userRepository = userRepository;
         this.remoteUid = prefs.getFirebaseUid();
         this.prefs = prefs;
 
@@ -165,7 +170,7 @@ public class AllianceMissionViewModel extends ViewModel {
             _error.setValue("Mission or alliance not loaded.");
             return;
         }
-
+        mission.finish();
         missionRepo.finishMission(mission.getId(), new RepositoryCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -194,6 +199,26 @@ public class AllianceMissionViewModel extends ViewModel {
     public void resetMissionJustStarted() {
         _missionJustStarted.setValue(false);
     }
+
+
+    public void getUsername(String userId, RepositoryCallback<String> callback) {
+        userRepository.getUser(userId, new RepositoryCallback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                if (user != null && user.getUsername() != null) {
+                    callback.onSuccess(user.getUsername());
+                } else {
+                    callback.onSuccess("Unknown");
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
 
     public String getRemoteUid() {
         return prefs.getFirebaseUid();

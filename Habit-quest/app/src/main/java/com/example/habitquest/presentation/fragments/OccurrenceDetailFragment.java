@@ -27,6 +27,7 @@ import com.example.habitquest.presentation.viewmodels.CategoryViewModel;
 import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
+import com.example.habitquest.utils.MissionProgressHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -154,6 +155,11 @@ public class OccurrenceDetailFragment extends Fragment {
         btnDone.setOnClickListener(view -> {
             if (task != null && occurrence != null) {
                 taskViewModel.completeOccurrence(task, occurrence);
+                if (task.getDifficultyXp() >= 4)
+                    MissionProgressHelper.reportHardTask(requireActivity());
+                else
+                    MissionProgressHelper.reportEasyTask(requireActivity());
+
 
                 int xp = task.getTotalXp(); // XP parent taska
                 Toast.makeText(requireContext(),

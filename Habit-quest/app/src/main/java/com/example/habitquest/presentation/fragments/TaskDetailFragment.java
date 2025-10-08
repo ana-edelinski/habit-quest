@@ -34,6 +34,7 @@ import com.example.habitquest.presentation.viewmodels.TaskViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.BossFightViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.CategoryViewModelFactory;
 import com.example.habitquest.presentation.viewmodels.factories.TaskViewModelFactory;
+import com.example.habitquest.utils.MissionProgressHelper;
 import com.example.habitquest.utils.RepositoryCallback;
 
 import androidx.appcompat.app.AlertDialog;
@@ -215,6 +216,11 @@ public class TaskDetailFragment extends Fragment {
 
         // kompletiranje zadatka
         btnDone.setOnClickListener(view1 -> {
+            if (task.getDifficultyXp() >= 4)
+                MissionProgressHelper.reportHardTask(requireActivity());
+            else
+                MissionProgressHelper.reportEasyTask(requireActivity());
+
             taskViewModel.completeTask(task);
             btnDone.setVisibility(View.GONE);
             btnPause.setVisibility(View.GONE);
