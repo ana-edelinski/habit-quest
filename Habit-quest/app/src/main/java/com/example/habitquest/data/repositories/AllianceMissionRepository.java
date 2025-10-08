@@ -10,9 +10,12 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class AllianceMissionRepository implements IAllianceMissionRepository {
@@ -46,8 +49,10 @@ public class AllianceMissionRepository implements IAllianceMissionRepository {
                     AllianceMission mission = snapshot.toObject(AllianceMission.class);
                     if (mission == null || !mission.isActive()) return null;
 
-                    MemberMissionProgress progress = mission.getMemberProgress().get(userId);
-                    if (progress == null) return null;
+                    Map<String, MemberMissionProgress> map = mission.getMemberProgress();
+                    if (map == null) map = new HashMap<>();
+
+                    MemberMissionProgress progress = map.getOrDefault(userId, new MemberMissionProgress(userId));
 
                     int damage = 0;
                     switch (action) {
@@ -60,14 +65,23 @@ public class AllianceMissionRepository implements IAllianceMissionRepository {
                     }
 
                     if (damage > 0) {
+                        // 🔹 ažuriraj mapu članova
+                        map.put(userId, progress);
+                        mission.setMemberProgress(map);
+
+                        // 🔹 primeni štetu na bossa
                         mission.applyDamage(userId, damage);
+
+                        // 🔹 snimi celu misiju
                         transaction.set(ref, mission);
                     }
 
                     return null;
-                }).addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                })
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
+
 
     @Override
     public void listenMission(String missionId, RepositoryCallback<AllianceMission> callback) {
@@ -101,10 +115,37 @@ public class AllianceMissionRepository implements IAllianceMissionRepository {
     }
 
     @Override
-    public void finishMission(String missionId, RepositoryCallback<Void> callback) {
-        db.collection(COLLECTION).document(missionId)
-                .update("active", false, "endDate", Timestamp.now())
+    public void finishMission(String missionId, boolean victory, long remainingHP, RepositoryCallback<Void> callback) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("active", false);
+        updates.put("finished", true);
+        updates.put("victory", victory);
+        updates.put("remainingHP", remainingHP);
+        updates.put("endDate", Timestamp.now());
+
+        db.collection(COLLECTION)
+                .document(missionId)
+                .update(updates)
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void getLastFinishedMission(String allianceId, RepositoryCallback<AllianceMission> callback) {
+        db.collection(COLLECTION)
+                .whereEqualTo("allianceId", allianceId)
+                .whereEqualTo("finished", true)
+                .orderBy("endDate", Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        AllianceMission mission = query.getDocuments().get(0).toObject(AllianceMission.class);
+                        callback.onSuccess(mission);
+                    } else {
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 }

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:orientation="vertical">
 
     <!-- Poruka kad nije u savezu -->
     <LinearLayout
@@ -40,7 +41,8 @@
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:layout_marginTop="16dp">
 
         <TextView
             android:id="@+id/tvNoMissionMessage"
@@ -51,6 +53,17 @@
             android:gravity="center"
             android:textAlignment="center"
             android:padding="16dp" />
+
+        <Button
+            android:id="@+id/btnShowLastResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Show last mission result"
+            android:textAllCaps="false"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/darkGreen"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- 🔹 Prikaz aktivne misije -->
@@ -67,7 +80,6 @@
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
-            <!-- 🔸 Slika bossa -->
             <ImageView
                 android:id="@+id/imgBoss"
                 android:layout_width="200dp"
@@ -76,7 +88,6 @@
                 android:contentDescription="Boss image"
                 android:layout_marginBottom="16dp" />
 
-            <!-- 🔸 HP bosa -->
             <TextView
                 android:id="@+id/tvBossHp"
                 android:layout_width="wrap_content"
@@ -97,8 +108,6 @@
                 android:progressTint="@color/red"
                 android:layout_marginBottom="16dp" />
 
-
-            <!-- 🔸 Preostalo vreme -->
             <TextView
                 android:id="@+id/tvMissionTimer"
                 android:layout_width="wrap_content"
@@ -113,8 +122,6 @@
                 android:layout_marginBottom="24dp"
                 android:elevation="6dp" />
 
-
-            <!-- 🔸 Napredak korisnika -->
             <TextView
                 android:id="@+id/tvUserProgressLabel"
                 android:layout_width="wrap_content"
@@ -133,7 +140,6 @@
                 android:progressTint="@color/darkGreen"
                 android:layout_marginBottom="12dp" />
 
-
             <TextView
                 android:id="@+id/tvUserDamage"
                 android:layout_width="wrap_content"
@@ -142,7 +148,6 @@
                 android:textSize="14sp"
                 android:layout_marginBottom="24dp" />
 
-            <!-- 🔸 Dugme za prikaz napretka članova -->
             <Button
                 android:id="@+id/btnAllianceProgress"
                 android:layout_width="wrap_content"
@@ -154,5 +159,4 @@
         </LinearLayout>
     </ScrollView>
 
-
-</FrameLayout>
+</LinearLayout>

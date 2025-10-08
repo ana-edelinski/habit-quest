@@ -20,5 +20,6 @@ public interface IAllianceMissionRepository {
     void getActiveMission(String allianceId, RepositoryCallback<AllianceMission> callback);
 
     /** Označava kraj misije — dodeljuje nagrade i resetuje status saveza */
-    void finishMission(String missionId, RepositoryCallback<Void> callback);
+    void finishMission(String missionId, boolean victory, long remainingHP, RepositoryCallback<Void> callback);
+    void getLastFinishedMission(String allianceId, RepositoryCallback<AllianceMission> callback);
 }

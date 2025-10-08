@@ -16,6 +16,9 @@ public class AllianceMission {
     private Timestamp endDate;
     private boolean active;
     private Map<String, MemberMissionProgress> memberProgress; // uid -> progress
+    private boolean finished;
+    private boolean victory;
+
 
     public AllianceMission() {
     }
@@ -55,8 +58,10 @@ public class AllianceMission {
     }
 
     /** Završava misiju */
-    public void finish() {
+    public void finish(boolean victory) {
         this.active = false;
+        this.finished = true;
+        this.victory = victory;
         this.remainingHP = Math.max(0, remainingHP);
     }
 
@@ -72,5 +77,17 @@ public class AllianceMission {
 
     public void setMemberProgress(Map<String, MemberMissionProgress> memberProgress) {
         this.memberProgress = memberProgress;
+    }
+
+    public void setBossHP(long bossHP) {
+        this.bossHP = bossHP;
+    }
+
+    public void setRemainingHP(long remainingHP) {
+        this.remainingHP = remainingHP;
+    }
+
+    public boolean isVictory() {
+        return victory;
     }
 }

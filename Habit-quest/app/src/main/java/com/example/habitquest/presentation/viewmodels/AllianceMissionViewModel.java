@@ -40,6 +40,11 @@ public class AllianceMissionViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _missionJustStarted = new MutableLiveData<>(false);
     public LiveData<Boolean> missionJustStarted = _missionJustStarted;
 
+    private final MutableLiveData<AllianceMission> _lastFinishedMission = new MutableLiveData<>();
+    public LiveData<AllianceMission> lastFinishedMission = _lastFinishedMission;
+
+
+
 
 
 
@@ -170,23 +175,48 @@ public class AllianceMissionViewModel extends ViewModel {
             _error.setValue("Mission or alliance not loaded.");
             return;
         }
-        mission.finish();
-        missionRepo.finishMission(mission.getId(), new RepositoryCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                alliance.setMissionActive(false);
-                allianceRepo.updateAlliance(alliance, new RepositoryCallback<Void>() {
+
+        // 🔹 Odredi ishod: pobeda ako je HP <= 0, poraz ako je isteklo vreme
+        boolean victory = mission.getRemainingHP() <= 0;
+
+        // 🔹 Označi misiju kao završenu sa tačnim ishodom
+        mission.finish(victory);
+
+        missionRepo.finishMission(
+                mission.getId(),
+                victory,
+                mission.getRemainingHP(),
+                new RepositoryCallback<Void>() {
                     @Override
-                    public void onSuccess(Void unused) {
-                        _currentMission.postValue(null);
-                        _currentAlliance.postValue(alliance);
+                    public void onSuccess(Void result) {
+                        alliance.setMissionActive(false);
+                        allianceRepo.updateAlliance(alliance, new RepositoryCallback<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                _currentMission.postValue(null);
+                                _currentAlliance.postValue(alliance);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                _error.postValue("Mission finished, but failed to update alliance: " + e.getMessage());
+                            }
+                        });
                     }
 
                     @Override
                     public void onFailure(Exception e) {
-                        _error.postValue("Mission finished, but failed to update alliance: " + e.getMessage());
+                        _error.postValue(e.getMessage());
                     }
-                });
+                }
+        );
+    }
+
+    public void loadLastFinishedMission(String allianceId) {
+        missionRepo.getLastFinishedMission(allianceId, new RepositoryCallback<AllianceMission>() {
+            @Override
+            public void onSuccess(AllianceMission mission) {
+                _lastFinishedMission.postValue(mission);
             }
 
             @Override
@@ -195,6 +225,7 @@ public class AllianceMissionViewModel extends ViewModel {
             }
         });
     }
+
 
     public void resetMissionJustStarted() {
         _missionJustStarted.setValue(false);

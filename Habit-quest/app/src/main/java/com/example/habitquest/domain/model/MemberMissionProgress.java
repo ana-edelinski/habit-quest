@@ -20,7 +20,7 @@ public class MemberMissionProgress {
     }
 
     // --- Granice iz specifikacije ---
-    private static final int MAX_SHOP_ACTIONS = 5;
+    private static final int MAX_SHOP_ACTIONS = 1;
     private static final int MAX_BOSS_HITS = 10;
     private static final int MAX_EASY_TASKS = 10;
     private static final int MAX_HARD_TASKS = 6;
