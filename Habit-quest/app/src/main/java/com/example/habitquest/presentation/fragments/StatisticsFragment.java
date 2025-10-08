@@ -2,7 +2,6 @@ package com.example.habitquest.presentation.fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +22,12 @@ import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.data.PieEntry;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
@@ -64,7 +66,6 @@ public class StatisticsFragment extends Fragment {
                 if (firebaseAuth.getCurrentUser() != null) {
                     String firebaseUid = firebaseAuth.getCurrentUser().getUid();
                     viewModel.loadStatistics(firebaseUid, 3L);
-                } else {
                 }
             });
         } else {
@@ -81,14 +82,16 @@ public class StatisticsFragment extends Fragment {
         chartTasks.setHoleRadius(45f);
         chartTasks.setTransparentCircleRadius(50f);
         chartTasks.setUsePercentValues(false);
-        chartTasks.setEntryLabelTextSize(12f);
-        chartTasks.setEntryLabelColor(Color.BLACK);
-        chartTasks.setDrawEntryLabels(true);
+
+        // 🔹 ne prikazuj etikete unutar kolača
+        chartTasks.setDrawEntryLabels(false);
         chartTasks.setDrawCenterText(true);
         chartTasks.setCenterText("Task Status");
         chartTasks.setCenterTextSize(14f);
         chartTasks.animateY(1400, Easing.EaseInOutQuad);
+        chartTasks.setExtraOffsets(10, 10, 10, 20);
 
+        // 🔹 legenda ispod
         Legend pieLegend = chartTasks.getLegend();
         pieLegend.setEnabled(true);
         pieLegend.setTextSize(12f);
@@ -97,7 +100,11 @@ public class StatisticsFragment extends Fragment {
         pieLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         pieLegend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         pieLegend.setDrawInside(false);
+        pieLegend.setWordWrapEnabled(true);
+        pieLegend.setXEntrySpace(10f);
+        pieLegend.setYEntrySpace(5f);
 
+        // --- Bar Chart ---
         chartCategories.getDescription().setEnabled(false);
         chartCategories.setFitBars(true);
         chartCategories.getAxisRight().setEnabled(false);
@@ -119,18 +126,29 @@ public class StatisticsFragment extends Fragment {
         viewModel.getLongestStreak().observe(getViewLifecycleOwner(), streak ->
                 txtLongestStreak.setText(getString(R.string.longest_streak, streak)));
 
-
+        // --- Pie Chart podaci ---
         viewModel.getTaskStatusData().observe(getViewLifecycleOwner(), pieData -> {
             if (pieData != null && pieData.getDataSet() != null) {
                 PieDataSet set = (PieDataSet) pieData.getDataSet();
                 set.setColors(ColorTemplate.MATERIAL_COLORS);
                 set.setValueTextColor(Color.BLACK);
                 set.setValueTextSize(12f);
+
+                set.setValueFormatter(new ValueFormatter() {
+                    @Override
+                    public String getPieLabel(float value, PieEntry entry) {
+                        if (value < 1f) return "";
+                        String label = entry.getLabel();
+                        return label + " " + (int) value;
+                    }
+                });
             }
+
             chartTasks.setData(pieData);
             chartTasks.invalidate();
         });
 
+        // --- Bar Chart podaci ---
         viewModel.getCategoryData().observe(getViewLifecycleOwner(), barData -> {
             if (barData != null && barData.getDataSetCount() > 0) {
                 BarDataSet set = (BarDataSet) barData.getDataSetByIndex(0);
@@ -155,15 +173,14 @@ public class StatisticsFragment extends Fragment {
                     xAxis.setLabelRotationAngle(0f);
                     xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
                     xAxis.setYOffset(20f);
-
                     chartCategories.setExtraBottomOffset(45f);
                 }
             });
 
-
             chartCategories.invalidate();
         });
 
+        // --- Linijski grafikoni ---
         viewModel.getAvgDifficultyData().observe(getViewLifecycleOwner(), lineData -> {
             if (lineData != null && lineData.getDataSetCount() > 0) {
                 LineDataSet set = (LineDataSet) lineData.getDataSetByIndex(0);
