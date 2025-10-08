@@ -104,17 +104,6 @@ public class AllianceChatFragment extends Fragment {
             recyclerView.scrollToPosition(messages.size() - 1);
         }
 
-        if (previousMessages != null && messages.size() > previousMessages.size()) {
-            AllianceMessage lastMessage = messages.get(messages.size() - 1);
-            if (!lastMessage.getSenderId().equals(currentUserId)) {
-                NotificationHelper.showAllianceChatMessage(
-                        requireContext(),
-                        lastMessage.getSenderName(),
-                        lastMessage.getText()
-                );
-            }
-        }
-
         previousMessages = messages;
     }
 

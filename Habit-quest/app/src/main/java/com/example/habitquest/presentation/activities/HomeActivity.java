@@ -153,6 +153,23 @@ public class HomeActivity extends AppCompatActivity {
                 navController.navigate(R.id.allianceDetailsFragment, bundle);
             }
         }
+
+        if (auth.getCurrentUser() != null) {
+            String uid = auth.getCurrentUser().getUid();
+            AllianceRemoteDataSource allianceRemote = new AllianceRemoteDataSource();
+            allianceRemote.getUserAllianceId(uid, new RepositoryCallback<String>() {
+                @Override
+                public void onSuccess(String allianceId) {
+                    if (allianceId != null) {
+                        appPreferences.setCurrentAllianceId(allianceId);
+                        allianceRemote.listenForAllianceChatMessages(allianceId, uid, HomeActivity.this);
+                    }
+                }
+                @Override
+                public void onFailure(Exception e) { }
+            });
+        }
+
     }
 
     private void requestNotificationPermission() {

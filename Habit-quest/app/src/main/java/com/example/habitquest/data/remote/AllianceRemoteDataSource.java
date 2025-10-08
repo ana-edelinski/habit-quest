@@ -6,12 +6,14 @@ import android.os.Build;
 import android.util.Log;
 
 import com.example.habitquest.domain.model.Alliance;
+import com.example.habitquest.domain.model.AllianceMessage;
 import com.example.habitquest.presentation.services.AllianceNotificationService;
 import com.example.habitquest.utils.NotificationHelper;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -294,6 +296,26 @@ public class AllianceRemoteDataSource {
                     }
                 })
                 .addOnFailureListener(cb::onFailure);
+    }
+
+    public void listenForAllianceChatMessages(String allianceId, String currentUserId, Context context) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("alliances")
+                .document(allianceId)
+                .collection("messages")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(1)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null || snapshots.isEmpty()) return;
+                    AllianceMessage msg = snapshots.getDocuments().get(0).toObject(AllianceMessage.class);
+                    if (msg == null || msg.getSenderId().equals(currentUserId)) return;
+
+                    NotificationHelper.showAllianceChatMessage(
+                            context,
+                            msg.getSenderName(),
+                            msg.getText()
+                    );
+                });
     }
 
 
