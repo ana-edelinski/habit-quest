@@ -33,6 +33,7 @@ import com.example.habitquest.domain.model.User;
 import com.example.habitquest.presentation.viewmodels.CartViewModel;
 import com.example.habitquest.presentation.viewmodels.LoginViewModel;
 import com.example.habitquest.presentation.viewmodels.factories.LoginViewModelFactory;
+import com.example.habitquest.utils.NotificationHelper;
 import com.example.habitquest.utils.RepositoryCallback;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.badge.BadgeDrawable;
@@ -55,11 +56,16 @@ public class HomeActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private NavController navController;
     private BadgeDrawable cartBadge;
+    private boolean chatListenerStarted = false;
+    private AllianceRemoteDataSource allianceRemote;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        NotificationHelper.createChannels(this);
 
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
@@ -80,6 +86,9 @@ public class HomeActivity extends AppCompatActivity {
         TextView tvTitle = headerView.findViewById(R.id.tvTitleHeader);
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
+        appPreferences = new AppPreferences(this);
+        allianceRemote = new AllianceRemoteDataSource();
+
         if (auth.getCurrentUser() != null) {
             String uid = auth.getCurrentUser().getUid();
             UserRepository repo = new UserRepository(this);
@@ -89,6 +98,9 @@ public class HomeActivity extends AppCompatActivity {
                     tvUsername.setText(user.getUsername());
                     tvTitle.setText(user.getTitle());
                     imgAvatar.setImageResource(getAvatarResource(user.getAvatar()));
+
+                    appPreferences.saveUsername(user.getUsername());
+                    appPreferences.saveAvatarIndex(user.getAvatar());
                 }
 
                 @Override
@@ -97,9 +109,21 @@ public class HomeActivity extends AppCompatActivity {
                     tvTitle.setText("");
                 }
             });
-        }
 
-        appPreferences = new AppPreferences(this);
+            allianceRemote.getUserAllianceId(uid, new RepositoryCallback<String>() {
+                @Override
+                public void onSuccess(String allianceId) {
+                    if (allianceId != null) {
+                        appPreferences.setCurrentAllianceId(allianceId);
+                    } else {
+                        appPreferences.setCurrentAllianceId(null);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) { }
+            });
+        }
 
         initViewModel();
         setupObservers();
@@ -111,18 +135,46 @@ public class HomeActivity extends AppCompatActivity {
 
         if (auth.getCurrentUser() != null) {
             String uid = auth.getCurrentUser().getUid();
-            AllianceRemoteDataSource allianceRemote = new AllianceRemoteDataSource();
             allianceRemote.listenForAllianceInvites(uid, this);
             allianceRemote.listenForAllianceAccepts(uid, this);
         }
 
+        if (auth.getCurrentUser() != null && !chatListenerStarted) {
+            chatListenerStarted = true;
+            String uid = auth.getCurrentUser().getUid();
+            allianceRemote.getUserAllianceId(uid, new RepositoryCallback<String>() {
+                @Override
+                public void onSuccess(String allianceId) {
+                    if (allianceId != null) {
+                        appPreferences.setCurrentAllianceId(allianceId);
+                        allianceRemote.listenForAllianceChatMessages(allianceId, uid, HomeActivity.this);
+                    }
+                }
+                @Override
+                public void onFailure(Exception e) { }
+            });
+        }
+
+        if (getIntent() != null && getIntent().getBooleanExtra("openAllianceChat", false)) {
+            String allianceId = getIntent().getStringExtra("allianceId");
+            drawerLayout.post(() -> {
+                if (navController != null && allianceId != null) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("allianceId", allianceId);
+                    navController.navigate(R.id.allianceChatFragment, bundle);
+                }
+            });
+        }
+
         if (getIntent() != null && getIntent().getBooleanExtra("navigateToAllianceDetails", false)) {
             String allianceId = getIntent().getStringExtra("allianceId");
-            if (allianceId != null) {
-                Bundle bundle = new Bundle();
-                bundle.putString("allianceId", allianceId);
-                navController.navigate(R.id.allianceDetailsFragment, bundle);
-            }
+            drawerLayout.post(() -> {
+                if (navController != null && allianceId != null) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("allianceId", allianceId);
+                    navController.navigate(R.id.allianceDetailsFragment, bundle);
+                }
+            });
         }
     }
 
@@ -157,12 +209,21 @@ public class HomeActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         handleDeepLink(intent);
 
-        if (intent != null && intent.getBooleanExtra("navigateToAllianceDetails", false)) {
-            String allianceId = intent.getStringExtra("allianceId");
-            if (allianceId != null) {
-                Bundle bundle = new Bundle();
-                bundle.putString("allianceId", allianceId);
-                navController.navigate(R.id.allianceDetailsFragment, bundle);
+        if (intent != null) {
+            if (intent.getBooleanExtra("navigateToAllianceDetails", false)) {
+                String allianceId = intent.getStringExtra("allianceId");
+                if (allianceId != null) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("allianceId", allianceId);
+                    navController.navigate(R.id.allianceDetailsFragment, bundle);
+                }
+            } else if (intent.getBooleanExtra("openAllianceChat", false)) {
+                String allianceId = intent.getStringExtra("allianceId");
+                if (allianceId != null) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("allianceId", allianceId);
+                    navController.navigate(R.id.allianceChatFragment, bundle);
+                }
             }
         }
     }
@@ -205,6 +266,8 @@ public class HomeActivity extends AppCompatActivity {
     private void setupObservers() {
         loginViewModel.logoutSuccess.observe(this, success -> {
             if (Boolean.TRUE.equals(success)) {
+                chatListenerStarted = false;
+                if (allianceRemote != null) allianceRemote.removeChatListener();
                 navigateToLogin();
             }
         });
@@ -261,18 +324,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_app_bar_menu, menu);
-
-        MenuItem cartItem = menu.findItem(R.id.action_cart);
-        View actionView = cartItem.getActionView();
-
-        BadgeDrawable badge = BadgeDrawable.create(this);
-        badge.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
-        badge.setBadgeTextColor(ContextCompat.getColor(this, R.color.white));
-        badge.setNumber(0);
-
-        BadgeUtils.attachBadgeDrawable(badge, findViewById(R.id.topAppBar), R.id.action_cart);
-        this.cartBadge = badge;
-
         return true;
     }
 
@@ -282,6 +333,19 @@ public class HomeActivity extends AppCompatActivity {
 
         if (id == R.id.action_cart) {
             navController.navigate(R.id.cartFragment);
+            return true;
+
+        } else if (id == R.id.action_chat) {
+            String allianceId = appPreferences.getCurrentAllianceId();
+
+            if (allianceId != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("allianceId", allianceId);
+                navController.navigate(R.id.allianceChatFragment, bundle);
+            } else {
+                Toast.makeText(this, "You are not in an alliance.", Toast.LENGTH_SHORT).show();
+            }
+
             return true;
         } else if (id == R.id.action_logout) {
             loginViewModel.logout();
@@ -293,7 +357,6 @@ public class HomeActivity extends AppCompatActivity {
 
     public void updateCartBadge(int count) {
         if (cartBadge == null) return;
-
         if (count > 0) {
             cartBadge.setVisible(true);
             cartBadge.setNumber(count);
@@ -311,5 +374,11 @@ public class HomeActivity extends AppCompatActivity {
             case 5: return R.drawable.avatar5;
             default: return R.drawable.avatar1;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (allianceRemote != null) allianceRemote.removeChatListener();
     }
 }

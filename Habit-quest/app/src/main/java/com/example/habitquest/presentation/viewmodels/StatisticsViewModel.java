@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.data.repositories.TaskRepository;
 import com.example.habitquest.domain.model.Task;
 import com.example.habitquest.domain.model.TaskStatus;
@@ -23,6 +24,8 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -44,6 +47,9 @@ public class StatisticsViewModel extends AndroidViewModel {
     private final MutableLiveData<LineData> xp7DaysData = new MutableLiveData<>();
     private final MutableLiveData<List<String>> categoryLabels = new MutableLiveData<>();
     public LiveData<List<String>> getCategoryLabels() { return categoryLabels; }
+    private final MutableLiveData<List<Integer>> allianceMissionStats = new MutableLiveData<>();
+    public LiveData<List<Integer>> getAllianceMissionStats() { return allianceMissionStats; }
+
 
     public StatisticsViewModel(@NonNull Application application) {
         super(application);
@@ -64,6 +70,7 @@ public class StatisticsViewModel extends AndroidViewModel {
                         generateCategoryChart(tasks, categoryMap);
                         generateAvgDifficultyChart(tasks);
                         generateXP7DaysChart(tasks);
+                        loadAllianceMissionStats();
                     }
 
                     @Override
@@ -245,6 +252,42 @@ public class StatisticsViewModel extends AndroidViewModel {
         LineDataSet dataSet = new LineDataSet(entries, "XP gained in last 7 days");
         LineData lineData = new LineData(dataSet);
         xp7DaysData.postValue(lineData);
+    }
+
+    public void loadAllianceMissionStats() {
+        AppPreferences prefs = new AppPreferences(getApplication().getApplicationContext());
+        String allianceId = prefs.getCurrentAllianceId();
+
+        if (allianceId == null) {
+            allianceMissionStats.postValue(List.of(0, 0));
+            return;
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("alliance_missions")
+                .whereEqualTo("allianceId", allianceId)
+                .get()
+                .addOnSuccessListener(query -> {
+                    int started = 0;
+                    int finished = 0;
+
+                    for (QueryDocumentSnapshot doc : query) {
+                        Boolean active = doc.getBoolean("active");
+                        Boolean isFinished = doc.getBoolean("finished");
+
+                        if (Boolean.TRUE.equals(isFinished)) {
+                            finished++;
+                        } else if (Boolean.TRUE.equals(active)) {
+                            started++;
+                        }
+                    }
+
+                    allianceMissionStats.postValue(List.of(started, finished));
+                })
+                .addOnFailureListener(e -> {
+                    e.printStackTrace();
+                    allianceMissionStats.postValue(List.of(0, 0));
+                });
     }
 
     public LiveData<Integer> getActiveDays() { return activeDays; }

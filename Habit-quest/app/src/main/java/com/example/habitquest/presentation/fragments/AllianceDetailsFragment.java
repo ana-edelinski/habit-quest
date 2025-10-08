@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitquest.R;
+import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.presentation.adapters.AllianceMemberAdapter;
 import com.example.habitquest.presentation.viewmodels.AllianceDetailsViewModel;
 import com.example.habitquest.presentation.viewmodels.AllianceMissionViewModel;
@@ -74,6 +75,9 @@ public class AllianceDetailsFragment extends Fragment {
             if (alliance != null) {
                 tvName.setText(alliance.getName());
                 tvLeader.setText("Leader: " + alliance.getLeaderName());
+
+                AppPreferences prefs = new AppPreferences(requireContext());
+                prefs.setCurrentAllianceId(alliance.getId());
 
                 if (user == null) return;
 
@@ -153,6 +157,7 @@ public class AllianceDetailsFragment extends Fragment {
             Navigation.findNavController(view)
                     .navigate(R.id.allianceInviteFragment, bundle);
         });
+
     }
 
     private void showMissionStartedDialog() {

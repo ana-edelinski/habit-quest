@@ -52,7 +52,7 @@ public class AllianceCreateViewModel extends AndroidViewModel {
                 _creationSuccess.postValue(true);
                 _statusMessage.postValue("Alliance created successfully!");
 
-                NotificationHelper.createChannel(context);
+                NotificationHelper.createChannels(context);
 
                 if (alliance.getRequests() != null && !alliance.getRequests().isEmpty()) {
                     for (String requestUid : alliance.getRequests()) {
@@ -76,7 +76,7 @@ public class AllianceCreateViewModel extends AndroidViewModel {
     }
 
     public void notifyLeaderMemberJoined(String leaderName, String memberName, String allianceName) {
-        NotificationHelper.createChannel(context);
+        NotificationHelper.createChannels(context);
         NotificationHelper.showAllianceAccepted(context, memberName, allianceName);
         _statusMessage.postValue(memberName + " has joined alliance " + allianceName);
     }
