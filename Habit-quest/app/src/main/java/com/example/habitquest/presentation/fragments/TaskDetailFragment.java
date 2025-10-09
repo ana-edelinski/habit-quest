@@ -420,9 +420,13 @@ public class TaskDetailFragment extends Fragment {
         Button btnActivateEquipment = bossDialog.findViewById(R.id.btnActivateEquipment);
         ImageView imgBoss = bossDialog.findViewById(R.id.imgBoss);
 
+        if(level < 1){
+            btnActivateEquipment.setVisibility(View.GONE);
+        }
+
         tvTitle.setText("⚔️ New Boss Challenge!");
         tvDescription.setText("A powerful Boss (Level " + level + ") has appeared.\nAre you ready to fight?");
-        imgBoss.setImageResource(R.drawable.boss_level_1); // možeš kasnije menjati po nivou
+        imgBoss.setImageResource(R.drawable.boss_idle); // možeš kasnije menjati po nivou
 
         btnFight.setOnClickListener(v -> {
             bossDialog.dismiss();

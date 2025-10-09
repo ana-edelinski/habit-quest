@@ -46,7 +46,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:gravity="center">
 
         <Button
@@ -54,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Activate Equipment"
-            android:layout_marginEnd="12dp"/>
+            android:layout_marginBottom="12dp" />
 
         <Button
             android:id="@+id/btnFightNow"
@@ -63,6 +63,6 @@
             android:text="Fight Now"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:backgroundTint="@color/colorPrimary"/>
+            android:backgroundTint="@color/colorPrimary" />
     </LinearLayout>
 </LinearLayout>

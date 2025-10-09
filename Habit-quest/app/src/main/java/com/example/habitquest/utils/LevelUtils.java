@@ -7,7 +7,7 @@ public class LevelUtils {
         if (level == 0) {
             return 0; // start
         } else if (level == 1) {
-            return 90; // 200
+            return 35; // 200
         }
 
         int prevThreshold = getXpThresholdForLevel(level - 1);

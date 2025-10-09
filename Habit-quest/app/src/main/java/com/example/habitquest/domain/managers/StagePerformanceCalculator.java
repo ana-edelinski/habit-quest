@@ -128,6 +128,10 @@ public class StagePerformanceCalculator {
 
         // Sortiraj logove po vremenu završetka
         logs.sort(Comparator.comparingLong(UserXpLog::getCompletedAt));
+        if(currentLevel == 1){
+
+            return new Pair<>(logs.get(0).getCompletedAt(), logs.get(logs.size() -1).getCompletedAt());
+        }
 
         int prevThreshold = LevelUtils.getXpThresholdForLevel(currentLevel - 1);
         int nextThreshold = LevelUtils.getXpThresholdForLevel(currentLevel);
