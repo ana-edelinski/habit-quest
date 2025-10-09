@@ -22,6 +22,7 @@ import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.domain.model.AllianceMessage;
 import com.example.habitquest.presentation.adapters.AllianceChatAdapter;
 import com.example.habitquest.presentation.viewmodels.AllianceChatViewModel;
+import com.example.habitquest.utils.MissionProgressHelper;
 import com.example.habitquest.utils.NotificationHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -108,6 +109,7 @@ public class AllianceChatFragment extends Fragment {
     }
 
     private void sendMessage() {
+        MissionProgressHelper.reportMessageSent(requireActivity());
         String text = etMessage.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
 

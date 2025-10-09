@@ -1,5 +1,7 @@
 package com.example.habitquest.presentation.viewmodels;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -8,13 +10,20 @@ import com.example.habitquest.data.prefs.AppPreferences;
 import com.example.habitquest.data.repositories.AllianceRepository;
 import com.example.habitquest.domain.model.Alliance;
 import com.example.habitquest.domain.model.AllianceMission;
+import com.example.habitquest.domain.model.EquipmentType;
 import com.example.habitquest.domain.model.MissionAction;
+import com.example.habitquest.domain.model.ShopData;
+import com.example.habitquest.domain.model.ShopItem;
 import com.example.habitquest.domain.model.User;
 import com.example.habitquest.domain.repositoryinterfaces.IAllianceMissionRepository;
 import com.example.habitquest.domain.repositoryinterfaces.IUserRepository;
 import com.example.habitquest.utils.RepositoryCallback;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class AllianceMissionViewModel extends ViewModel {
 
@@ -24,6 +33,8 @@ public class AllianceMissionViewModel extends ViewModel {
     private final String remoteUid;
 
     private AppPreferences prefs;
+    private boolean missionCompletionHandled = false;
+
 
     private final MutableLiveData<AllianceMission> _currentMission = new MutableLiveData<>();
     public LiveData<AllianceMission> currentMission = _currentMission;
@@ -168,6 +179,8 @@ public class AllianceMissionViewModel extends ViewModel {
 
     // 🔹 Završetak misije (i reset saveza)
     public void finishMission() {
+        if (missionCompletionHandled) return; // ⚡ spreči ponavljanje
+        missionCompletionHandled = true;
         Alliance alliance = _currentAlliance.getValue();
         AllianceMission mission = _currentMission.getValue();
 
@@ -178,6 +191,8 @@ public class AllianceMissionViewModel extends ViewModel {
 
         // 🔹 Odredi ishod: pobeda ako je HP <= 0, poraz ako je isteklo vreme
         boolean victory = mission.getRemainingHP() <= 0;
+
+
 
         // 🔹 Označi misiju kao završenu sa tačnim ishodom
         mission.finish(victory);
@@ -193,8 +208,13 @@ public class AllianceMissionViewModel extends ViewModel {
                         allianceRepo.updateAlliance(alliance, new RepositoryCallback<Void>() {
                             @Override
                             public void onSuccess(Void unused) {
+                                if(victory){
+                                    distributeMissionRewards();
+                                }
                                 _currentMission.postValue(null);
                                 _currentAlliance.postValue(alliance);
+                                missionCompletionHandled = false;
+
                             }
 
                             @Override
@@ -225,6 +245,92 @@ public class AllianceMissionViewModel extends ViewModel {
             }
         });
     }
+
+    public void distributeMissionRewards() {
+        Alliance alliance = _currentAlliance.getValue();
+        if (alliance == null || alliance.getMembers() == null || alliance.getMembers().isEmpty()) return;
+
+        for (String memberId : alliance.getMembers()) {
+            userRepository.getUser(memberId, new RepositoryCallback<User>() {
+                @Override
+                public void onSuccess(User user) {
+                    if (user == null) return;
+
+                    // 🔹 Izračunaj osnovnu nagradu: pola od sledeće boss nagrade
+                    int baseReward = user.getPreviousBossReward() > 0
+                            ? (int) Math.round(user.getPreviousBossReward() * 1.2)
+                            : 200;
+                    int earnedCoins = baseReward / 2;
+
+                    // 🔹 Učitaj sve iteme i filtriraj CLOTHING
+                    List<ShopItem> allItems = ShopData.ITEMS;
+                    List<ShopItem> clothingItems = new ArrayList<>();
+                    List<ShopItem> potionItems = new ArrayList<>();
+                    for (ShopItem item : allItems) {
+                        if (item.getType() == EquipmentType.CLOTHING) clothingItems.add(item);
+                        if (item.getType() == EquipmentType.POTION) potionItems.add(item);
+                    }
+
+                    // 🔹 Random odeća
+                    ShopItem clothingReward = null;
+                    ShopItem potionReward = null;
+                    if (!clothingItems.isEmpty()) {
+                        clothingReward = new ShopItem(
+                                clothingItems.get(new Random().nextInt(clothingItems.size())),
+                                user.getPreviousBossReward()
+                        );
+                        clothingReward.setActive(false);
+                    }
+                    if (!potionItems.isEmpty()) {
+                        potionReward = new ShopItem(
+                                potionItems.get(new Random().nextInt(clothingItems.size())),
+                                user.getPreviousBossReward()
+                        );
+                        clothingReward.setActive(false);
+                    }
+
+
+
+                    // 🔹 Dodaj sve nagrade korisniku
+                    List<ShopItem> updatedEquipment = user.getEquipment() != null
+                            ? new ArrayList<>(user.getEquipment())
+                            : new ArrayList<>();
+
+                    if (clothingReward != null) updatedEquipment.add(clothingReward);
+                    if (potionReward != null) updatedEquipment.add(potionReward);
+                    user.setEquipment(updatedEquipment);
+
+                    // 🔹 Ažuriraj polja korisnika
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("coins", user.getCoins() + earnedCoins);
+                    updates.put("equipment", updatedEquipment);
+
+                    // 🔹 Sačuvaj izmene
+                    userRepository.updateUserFields(memberId, updates, new RepositoryCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void data) {
+                            Log.d("MissionReward", "Alliance reward → " + user.getUsername()
+                                    + ": +" + earnedCoins + " coins, +1 potion, +1 clothing");
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Log.e("MissionReward", "Failed to update user " + memberId, e);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("MissionReward", "Failed to load user " + memberId, e);
+                }
+            });
+        }
+    }
+
+
+
+
 
 
     public void resetMissionJustStarted() {

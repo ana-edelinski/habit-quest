@@ -82,8 +82,9 @@ public class SpecialMissionFragment extends Fragment {
         tvBossHp.setOnLongClickListener(v1 -> {
             AllianceMission mission = missionViewModel.currentMission.getValue();
             if (mission != null && mission.isActive()) {
+                mission.setRemainingHP(0);
                 mission.finish(true);              // označi da je misija završena
-                missionViewModel.finishMission(); // ažuriraj u Firestore
+                missionViewModel.finishMission();
             }
             return true;
         });
@@ -230,7 +231,6 @@ public class SpecialMissionFragment extends Fragment {
                 tvTimer.setText("💀 Mission ended");
                 tvTimer.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
                 tvTimer.setTypeface(null, Typeface.BOLD);
-                missionViewModel.finishMission(); // ➜ automatski kraj
             }
         }.start();
     }

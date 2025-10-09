@@ -324,13 +324,14 @@ public class BossFightFragment extends Fragment {
      * Povezuje nivo bossa sa odgovarajućom slikom iz drawable foldera.
      */
     private int getBossImageRes(int level) {
-        switch (level) {
-            case 1: return R.drawable.boss_idle;
-            case 2: return R.drawable.boss_level_2;
-            case 3: return R.drawable.boss_level_3;
-            case 4: return R.drawable.boss_level_4;
-            default: return R.drawable.boss_idle;
-        }
+        return R.drawable.boss_idle;
+//        switch (level) {
+//            case 1: return R.drawable.boss_idle;
+//            case 2: return R.drawable.boss_level_2;
+//            case 3: return R.drawable.boss_level_3;
+//            case 4: return R.drawable.boss_level_4;
+//            default: return R.drawable.boss_idle;
+//        }
     }
 
     @Override
