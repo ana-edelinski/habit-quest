@@ -1,34 +1,36 @@
-# e2-ma-tim08-2025
+# Habit Quest 
+Academic project for the Mobile Applications course at Faculty of Technical Sciences, University of Novi Sad 
 
-# 📱 HabitQuest – Android aplikacija
+## About Project 
+HabitQuest is an Android application developed in Java that gamifies habit and goal tracking using RPG mechanics allowing users to complete daily tasks, earn XP, collect rewards, and level up through boss battles and achievements.
 
-**HabitQuest** je gamifikovana aplikacija za praćenje navika i ciljeva po uzoru na RPG igre.  
-Korisnici kreiraju zadatke, dobijaju XP i PP poene, napreduju kroz nivoe, bore se sa bosovima i zajedno sa prijateljima učestvuju u savezima i specijalnim misijama.
+## Used Tools and Libraries 
+► Android Studio </br> 
+► Firebase Firestore </br> 
+► SQLite </br> 
+► LottieFiles </br> 
+► ZXing </br> 
+► MPAndroidChart </br>
 
----
+### Authors
+► Ana Edelinski <br>
+► Masa Mastilovic
 
-## ▶️ Pokretanje aplikacije
+## Screenshots
+<div align="center">
+  <img src="Screenshots/sign-up.jpg" alt="Sign Up" width="30%" style="margin-right: 30px;">
+  <img src="Screenshots/drawer.jpg" alt="Drawer" width="30%">
+  <img src="Screenshots/sign-in.jpg" alt="Sign In" width="30%" style="margin-right: 30px;">
+</div>
 
-1. Otvoriti projekat u **Android Studio**.  
-2. Sačekati da se Gradle build završi.  
-3. Pokrenuti aplikaciju na emulatoru ili fizičkom uređaju.
-4. Registrujte novi nalog ili se prijavite postojećim.  
-5. Aplikacija automatski povezuje Firebase Authentication i Firestore bazu (nije potrebno dodatno podešavanje).  
+<div align="center">
+  <img src="Screenshots/stats.jpg" alt="Stats" width="30%">
+  <img src="Screenshots/store.jpg" alt="Store" width="30%" style="margin-right: 30px;">
+  <img src="Screenshots/level-progress.jpg" alt="Level Progress" width="30%" style="margin-right: 30px;">
+</div>
 
----
-
-## ⚙️ Tehnologije
-
-- Java  
-- Firebase (Auth + Firestore)  
-- SQLite (lokalna baza)  
-- MVVM arhitektura  
-- Lottie animacije  
-
----
-
-## 👩‍🎓 Studneti
-- RA165/2021 Ana Edelisnki
-- RA194/2021 Maša Mastilović
-
-
+<div align="center">
+  <img src="Screenshots/profile.jpg" alt="Profile" width="30%">
+  <img src="Screenshots/explore.jpg" alt="Explore" width="30%" style="margin-right: 30px;">
+  <img src="Screenshots/friends.jpg" alt="Friends" width="30%" style="margin-right: 30px;">
+</div>
